@@ -5,7 +5,7 @@
 #include "include/ARiftControl.h"
 #include <iostream>
 using namespace cv;
-
+// Hallo VS!?
 int main(int, char**)
 {
   ARiftControl cont;
