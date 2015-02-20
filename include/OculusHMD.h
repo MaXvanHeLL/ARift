@@ -9,10 +9,10 @@
 class OculusHMD
 {
 	private:
+		static OculusHMD* instance_;
 		ovrHmd oculus_device_;
 		ovrSizei resolution_;
 		bool running_ = false;
-		static OculusHMD* instance_;
 
 	public:
 		OculusHMD();
@@ -25,7 +25,7 @@ class OculusHMD
 		// @param2: x rotation
 		// @param3: z rotation
 		// @return: void
-		// --------------------
+		// ----
 		void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
 };
 

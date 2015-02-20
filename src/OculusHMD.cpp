@@ -1,6 +1,6 @@
-#include "../include/CameraInputHandler.h"
-#include "../include/IDSuEyeInputHandler.h"
-#include "../include/ARiftControl.h"
+// #include "../include/CameraInputHandler.h"
+// #include "../include/IDSuEyeInputHandler.h"
+// #include "../include/ARiftControl.h"
 #include "../include/OculusHMD.h"
 #include "Kernel\OVR_Math.h"
 #include <iostream>
@@ -17,6 +17,7 @@ using namespace std;
 
 OculusHMD* OculusHMD::instance_ = NULL;
 
+// -----------------------------------------------------------------------     
 OculusHMD::OculusHMD()
 {
 	if (!instance_)
@@ -40,10 +41,11 @@ OculusHMD::OculusHMD()
 	}
 }
 
+// -----------------------------------------------------------------------     
 OculusHMD::~OculusHMD()
 {
-	// ovrHmd_Destroy(oculus_device_);
-	// ovr_Shutdown();
+	ovrHmd_Destroy(oculus_device_);
+	ovr_Shutdown();
 	instance_ = NULL;
 }
 
@@ -55,12 +57,14 @@ OculusHMD* OculusHMD::instance()
 	return instance_;
 }
 
+// -----------------------------------------------------------------------     
 void OculusHMD::initialization()
 {
 	if (!instance_)
 		instance_ = new OculusHMD();
 }
 
+// -----------------------------------------------------------------------     
 void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 {
 	// get current tracking state
@@ -72,7 +76,7 @@ void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 		pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
 
 		// for debug purposes only
-		std::cout << "yaw: " << RadToDegree(yaw) << std::endl;
+		cout << "yaw: " << RadToDegree(yaw) << endl;
 		cout << "pitch: " << RadToDegree(eyepitch) << endl;
 		cout << "roll: " << RadToDegree(eyeroll) << endl;
 	}

@@ -13,7 +13,10 @@ int main(int, char**)
   ARiftControl cont;
   cont.init();
 
+  // install the Oculus Rift
+  // *****************************************************************
   OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
+  // *****************************************************************
 
   namedWindow("undist",1);
   namedWindow("both",1);
@@ -27,8 +30,10 @@ int main(int, char**)
   while(cont.keepRunning())
   {
 	// motion tracking debug tests here
+	// *****************************************************************
 	float test1; float test2; float test3;
 	OculusHMD::instance()->trackMotion(test1, test2, test3);
+	// *****************************************************************
 
     if(cont.getImages())
     {
@@ -37,13 +42,14 @@ int main(int, char**)
 
       cont.undistortImages();
       imshow("undist",cont.full_view_undist);
-
     }
     // main control loop
     char key = waitKey(20);
     cont.handleKey(key);
   }
+  // *****************************************************************
   delete OculusHMD::instance();
+  // *****************************************************************
   return 0;
 }
 
