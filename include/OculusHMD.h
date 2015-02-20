@@ -8,16 +8,25 @@
 
 class OculusHMD
 {
-public:
-	OculusHMD();
-	virtual ~OculusHMD();
-	void initialization();
-	static OculusHMD& instance();
-	
-private:
-	ovrHmd oculus_device;
-	ovrSizei resolution;
-	bool running = false;
+	private:
+		ovrHmd oculus_device_;
+		ovrSizei resolution_;
+		bool running_ = false;
+		static OculusHMD* instance_;
+
+	public:
+		OculusHMD();
+		virtual ~OculusHMD();
+		static void initialization();
+		static OculusHMD* instance();
+
+		//** - Description: gets 3 floats by reference and calculates the motion directly to them
+		// @param1: y rotation
+		// @param2: x rotation
+		// @param3: z rotation
+		// @return: void
+		// --------------------
+		void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
 };
 
 #endif // OCULUSHMD_H

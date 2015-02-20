@@ -2,43 +2,79 @@
 #include "../include/IDSuEyeInputHandler.h"
 #include "../include/ARiftControl.h"
 #include "../include/OculusHMD.h"
+#include "Kernel\OVR_Math.h"
+#include <iostream>
+
 // #include "include/Helpers.h"
 // #include <opencv2/core/core.hpp>
 // #include <opencv2/calib3d/calib3d.hpp>
-// #include <iostream>
+
 // #include <direct.h>
 
 // #define GetCurrentDir _getcwd
+using namespace OVR;
+using namespace std;
 
-// using namespace cv;
+OculusHMD* OculusHMD::instance_ = NULL;
 
 OculusHMD::OculusHMD()
-{}
+{
+	if (!instance_)
+	{
+		ovr_Initialize();
+
+		oculus_device_ = ovrHmd_Create(0); // (0) means: create first available HMD - indexed access
+		if (oculus_device_)
+		{
+			resolution_ = oculus_device_->Resolution;
+
+			// setup for sensors and motion tracking
+			ovrHmd_ConfigureTracking(oculus_device_, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection |
+				ovrTrackingCap_Position, 0);
+		}
+		else
+		{
+			// do error stuff here
+		}
+		running_ = true;
+	}
+}
 
 OculusHMD::~OculusHMD()
 {
-	// ovrHmd_Destroy(oculus_device);
+	// ovrHmd_Destroy(oculus_device_);
 	// ovr_Shutdown();
+	instance_ = NULL;
+}
+
+OculusHMD* OculusHMD::instance()
+{
+	if (!instance_)
+		instance_ = new OculusHMD();
+
+	return instance_;
 }
 
 void OculusHMD::initialization()
 {
-	ovr_Initialize();
+	if (!instance_)
+		instance_ = new OculusHMD();
+}
 
-	
-	oculus_device = ovrHmd_Create(0); // (0) means: create first available HMD
-	if (oculus_device)
+void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
+{
+	// get current tracking state
+	ovrTrackingState tracking_state = ovrHmd_GetTrackingState(oculus_device_, ovr_GetTimeInSeconds());
+
+	if (tracking_state.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked))
 	{
-		resolution = oculus_device->Resolution;
+		OVR::Posef pose = tracking_state.HeadPose.ThePose;
+		pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
 
-		// setup for sensors and motion tracking
-		ovrHmd_ConfigureTracking(oculus_device, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection |
-			ovrTrackingCap_Position, 0);
-
-	}
-	else
-	{
-		// do error stuff here
+		// for debug purposes only
+		std::cout << "yaw: " << RadToDegree(yaw) << std::endl;
+		cout << "pitch: " << RadToDegree(eyepitch) << endl;
+		cout << "roll: " << RadToDegree(eyeroll) << endl;
 	}
 }
 
