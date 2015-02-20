@@ -3,13 +3,18 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 #include "include/ARiftControl.h"
+#include "include/OculusHMD.h"
 #include <iostream>
+
 using namespace cv;
 // Hallo VS!?
 int main(int, char**)
 {
   ARiftControl cont;
   cont.init();
+
+  OculusHMD hmd;
+  hmd.initialization();
 
   namedWindow("undist",1);
   namedWindow("both",1);
