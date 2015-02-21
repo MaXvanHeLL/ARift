@@ -5,6 +5,7 @@
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
 #include <iostream>
+#include "DirectXRendering.cpp"
 
 using namespace cv;
 // Hallo VS!?
@@ -15,6 +16,7 @@ int main(int, char**)
 
   // install the Oculus Rift
   // *****************************************************************
+  InitD3D();
   OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
   // *****************************************************************
 
@@ -27,6 +29,7 @@ int main(int, char**)
 
   std::cout << "Starting main loop" << std::endl;
   cont.start();
+
   while(cont.keepRunning())
   {
 	// motion tracking debug tests here
@@ -42,6 +45,10 @@ int main(int, char**)
 
       cont.undistortImages();
       imshow("undist",cont.full_view_undist);
+
+	  // *****************************************************************
+	  OculusHMD::instance()->render(cont.left_undistorted, cont.right_undistorted);
+	  // *****************************************************************
     }
     // main control loop
     char key = waitKey(20);
@@ -49,6 +56,7 @@ int main(int, char**)
   }
   // *****************************************************************
   delete OculusHMD::instance();
+  CleanD3D();
   // *****************************************************************
   return 0;
 }
@@ -69,3 +77,4 @@ void rotate(cv::Mat& src, double angle, cv::Mat& dst)
 
   cv::warpAffine(src, dst, r, cv::Size(len, len));
 }
+
