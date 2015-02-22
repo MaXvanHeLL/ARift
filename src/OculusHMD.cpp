@@ -2,12 +2,13 @@
 // #include "../include/IDSuEyeInputHandler.h"
 // #include "../include/ARiftControl.h"
 #include "../include/OculusHMD.h"
+#include "../include/DirectX.h"
 #include "Kernel\OVR_Math.h"
 #include <iostream>
 #include <algorithm> 
 #include <d3d11.h>
 #pragma comment (lib, "d3d11.lib")
-#include "DirectXRendering.cpp"
+
 // #include "../../oculus/ovr_sdk_win_0.4.4/OculusSDK/Samples/CommonSrc/Render/Render_Device.h"
 
 // #include "Util\Util_Render_Stereo.h"
@@ -31,6 +32,7 @@ using namespace OVR;
 using namespace std;
 
 OculusHMD* OculusHMD::instance_ = NULL;
+// extern ID3D11Device *dev;
 
 /*
 ovrEyeRenderDesc EyeRenderDesc[2];     // Description of the VR.
@@ -123,6 +125,7 @@ void OculusHMD::configureStereoRendering()
 
 		const int eyeRenderMultisample = 1;
 		
+		// DirectX::instance()->dev->CreateTexture2D
 		// pDevice->CreateTexture2D
 		
 		// Make the eye render buffers (caution if actual size < requested due to HW limits). 
