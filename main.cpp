@@ -128,13 +128,24 @@ DWORD WINAPI runDirectX(LPVOID lpArg)
 	MSG msg;
 
 	// wait for the next message in the queue, store the result in 'msg'
-	while (GetMessage(&msg, NULL, 0, 0))
+	// Enter the infinite message loop
+	while (TRUE)
 	{
-		// translate keystroke messages into the right format
-		TranslateMessage(&msg);
+		// Check to see if any messages are waiting in the queue
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			// translate keystroke messages into the right format
+			TranslateMessage(&msg);
 
-		// send the message to the WindowProc function
-		DispatchMessage(&msg);
+			// send the message to the WindowProc function
+			DispatchMessage(&msg);
+		}
+		// If the message is WM_QUIT, exit the while loop
+		if (msg.message == WM_QUIT)
+			break;
+		// Run game code here
+		// ...
+		// ...
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
