@@ -7,31 +7,39 @@
 #include "include/DirectX.h"
 #include <iostream>
 #include <windows.h>
+#define   OVR_D3D_VERSION 11
+#include "OVR_CAPI_D3D.h"
+
 
 using namespace cv;
 using namespace std;
-
-DWORD WINAPI runDirectX(LPVOID lpArg);
+// ********************************************************************************
+DWORD WINAPI directXHandling(LPVOID lpArg);
+void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 DirectX* dx11 = NULL;
+// ********************************************************************************
 
 int main(int, char**)
 {
   ARiftControl cont;
   cont.init();
 
-  // install the Oculus Rift and DirectX Renderer
+  // install the Oculus Rift and DirectX Renderer and init Render Thread
   // *****************************************************************
   dx11 = new DirectX();
   HANDLE handle_render_thread = 0;
   OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
+  OculusHMD::instance()->setRenderer(dx11);
+  OculusHMD::instance()->configureStereoRendering();
+
   handle_render_thread = CreateThread(NULL, 0,
-	  runDirectX, &cont, 0, NULL);
+	  directXHandling, &cont, 0, NULL);
   // *****************************************************************
 
   namedWindow("undist",1);
-  namedWindow("both",1);
+  namedWindow("both", CV_WINDOW_FULLSCREEN);
   cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
@@ -55,10 +63,6 @@ int main(int, char**)
 
       cont.undistortImages();
       imshow("undist",cont.full_view_undist);
-
-	  // *****************************************************************
-	  // OculusHMD::instance()->render(cont.left_undistorted, cont.right_undistorted);
-	  // *****************************************************************
     }
     // main control loop
     char key = waitKey(20);
@@ -67,6 +71,7 @@ int main(int, char**)
   // *****************************************************************
   delete OculusHMD::instance();
   dx11->CleanD3D();
+  delete dx11;
   // *****************************************************************
   return 0;
 }
@@ -89,7 +94,7 @@ void rotate(cv::Mat& src, double angle, cv::Mat& dst)
 }
 
 // Multithreaded Version
-DWORD WINAPI runDirectX(LPVOID lpArg)
+DWORD WINAPI directXHandling(LPVOID lpArg)
 {
 	ARiftControl* arift_c = (ARiftControl*)lpArg;
 	// arift_control->left_undistorted;
@@ -113,10 +118,10 @@ DWORD WINAPI runDirectX(LPVOID lpArg)
 		"WindowClass1",    // name of the window class
 		"DirectX Render Scene",   // title of the window
 		WS_OVERLAPPEDWINDOW,    // window style
-		300,    // x-position of the window
-		300,    // y-position of the window
-		500,    // width of the window
-		400,    // height of the window
+		20,    // x-position of the window
+		20,    // y-position of the window
+		RIFT_RESOLUTION_WIDTH,    // width of the window
+		RIFT_RESOLUTION_HEIGHT,    // height of the window
 		NULL,    // we have no parent window, NULL
 		NULL,    // we aren't using menus, NULL
 		GetModuleHandle(NULL),    // application handle
@@ -143,9 +148,8 @@ DWORD WINAPI runDirectX(LPVOID lpArg)
 		// If the message is WM_QUIT, exit the while loop
 		if (msg.message == WM_QUIT)
 			break;
-		// Run game code here
-		// ...
-		// ...
+		// Run "game" code here
+		render(arift_c);
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
@@ -164,9 +168,31 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 		return 0;
 	} break;
 	}
-
 	// Handle any messages the switch statement didn't
 	return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+
+void render(ARiftControl* arift_c)
+{
+	D3D11_TEXTURE2D_DESC desc;
+	desc.Width = RIFT_RESOLUTION_WIDTH / 2;
+	desc.Height = RIFT_RESOLUTION_HEIGHT / 2;
+	desc.MipLevels = desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+
+	int pixelSize = sizeof(int);//pixel size. Each pixels are represented by a int 32bits.
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = arift_c->left_undistorted.data; //pixel buffer
+	data.SysMemPitch = pixelSize * RIFT_RESOLUTION_WIDTH / 2;// line size in byte
+	data.SysMemSlicePitch = pixelSize * RIFT_RESOLUTION_WIDTH/ 2 * RIFT_RESOLUTION_HEIGHT/ 2;// total buffer size in byte
+
+	// dx11->pTexture = dx11->dev->CreateTexture2D(&desc, );
 }
 
 

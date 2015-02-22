@@ -6,10 +6,13 @@
 // #include "../../oculus/ovr_sdk_win_0.4.4/OculusSDK/LibOVR/Src/OVR_CAPI.h" // add oculus sdk to project libs afterwards!
 #include "OVR_CAPI.h"
 
+class DirectX;
+
 class OculusHMD
 {
 	private:
 		static OculusHMD* instance_;
+		DirectX* directX_renderer_;
 		ovrHmd hmd_;
 		ovrSizei resolution_;
 		bool running_ = false;
@@ -48,6 +51,8 @@ class OculusHMD
 		// @return: void
 		// ----
 		void render(cv::Mat, cv::Mat);
+
+		void setRenderer(DirectX* dx11);
 };
 
 #endif // OCULUSHMD_H

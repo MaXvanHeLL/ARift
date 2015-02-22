@@ -3,7 +3,8 @@
 // #include "../include/ARiftControl.h"
 #include "../include/OculusHMD.h"
 #include "../include/DirectX.h"
-#include "Kernel\OVR_Math.h"
+#include "../include/ARiftControl.h"
+#include "Kernel/OVR_Math.h"
 #include <iostream>
 #include <algorithm> 
 #include <d3d11.h>
@@ -61,7 +62,6 @@ OculusHMD::OculusHMD()
 		{
 			// do error stuff here
 		}
-		configureStereoRendering();
 		running_ = true;
 	}
 }
@@ -124,8 +124,11 @@ void OculusHMD::configureStereoRendering()
 		renderTargetSize.h = max(recommendedTex0Size.h, recommendedTex1Size.h);
 
 		const int eyeRenderMultisample = 1;
+
 		
-		// DirectX::instance()->dev->CreateTexture2D
+	    // renderTargetSize.w, renderTargetSize.h, NULL);
+
+		// directX_renderer_->CreateTexture2D(Texture_RGBA |
 		// pDevice->CreateTexture2D
 		
 		// Make the eye render buffers (caution if actual size < requested due to HW limits). 
@@ -155,8 +158,8 @@ void OculusHMD::configureStereoRendering()
 		ovrHmd_ConfigureRendering(hmd_, &d3d11cfg.Config, ovrDistortionCap_Chromatic | ovrDistortionCap_Vignette |
 			ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive, hmd_->DefaultEyeFov, EyeRenderDesc);
 
-		// ovrHmd_AttachToWindow(hmd_, DX11.Window, NULL, NULL);	
 		*/
+		ovrHmd_AttachToWindow(hmd_, directX_renderer_->window_, NULL, NULL);
 	}
 }
 
@@ -191,4 +194,8 @@ void OculusHMD::render(cv::Mat left_cam, cv::Mat right_cam)
 	}
 }
 
+void OculusHMD::setRenderer(DirectX* dx11)
+{
+	directX_renderer_ = dx11;
+}
 
