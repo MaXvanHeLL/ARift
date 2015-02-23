@@ -2,7 +2,7 @@
 // #include "../include/IDSuEyeInputHandler.h"
 // #include "../include/ARiftControl.h"
 #include "../include/OculusHMD.h"
-#include "../include/DirectX.h"
+#include "../include/GraphicsAPI.h"
 #include "../include/ARiftControl.h"
 #include "Kernel/OVR_Math.h"
 #include <iostream>
@@ -194,7 +194,7 @@ void OculusHMD::render(cv::Mat left_cam, cv::Mat right_cam)
 	}
 }
 
-void OculusHMD::setRenderer(DirectX* dx11)
+void OculusHMD::setRenderer(GraphicsAPI* dx11)
 {
 	directX_renderer_ = dx11;
 }

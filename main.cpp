@@ -4,12 +4,11 @@
 #include <opencv2/core/core.hpp>
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
-#include "include/DirectX.h"
+#include "include/GraphicsAPI.h"
 #include <iostream>
 #include <windows.h>
 #define   OVR_D3D_VERSION 11
 #include "OVR_CAPI_D3D.h"
-
 
 using namespace cv;
 using namespace std;
@@ -18,7 +17,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg);
 void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-DirectX* dx11 = NULL;
+GraphicsAPI* dx11 = NULL;
 // ********************************************************************************
 
 int main(int, char**)
@@ -26,9 +25,9 @@ int main(int, char**)
   ARiftControl cont;
   cont.init();
 
-  // install the Oculus Rift and DirectX Renderer and init Render Thread
+  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
   // *****************************************************************
-  dx11 = new DirectX();
+  dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
   OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
   OculusHMD::instance()->setRenderer(dx11);
