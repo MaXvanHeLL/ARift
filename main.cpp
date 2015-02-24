@@ -32,7 +32,6 @@ int main(int, char**)
   OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
   OculusHMD::instance()->setRenderer(dx11);
   OculusHMD::instance()->configureStereoRendering();
-
   handle_render_thread = CreateThread(NULL, 0,
 	  directXHandling, &cont, 0, NULL);
   // *****************************************************************
@@ -170,7 +169,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	// Handle any messages the switch statement didn't
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-
 
 void render(ARiftControl* arift_c)
 {
