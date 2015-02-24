@@ -8,7 +8,7 @@
 #include "include/ARiftControl.h"
 // std includes
 #include <iostream>
-
+#include <time.h>
 using namespace cv;
 
 int main(int, char**)
@@ -25,9 +25,12 @@ int main(int, char**)
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
   waitKey(0);
+  time_t raw_time;
+  
 
   std::cout << "Starting main loop" << std::endl;
   cont.start();
+  int count = 0;
   while(cont.keepRunning())
   {
 
@@ -38,12 +41,19 @@ int main(int, char**)
 
       cont.undistortImages();
       imshow("undist",cont.full_view_undist);
+      // Display when images were displayed
+      //time(&raw_time);
+      //std::string time_str = ctime(&raw_time);
+      //std::cout << "Frame done at " << time_str  << " " << count++<< std::endl;
 
     }
     // main control loop
     char key = waitKey(20);
     cont.handleKey(key);
   }
+  // quit LibOVR
+  //ovrHmd_Destroy(hmd);
+  ovr_Shutdown();
   return 0;
 }
 

@@ -162,6 +162,7 @@ void ARiftControl::hanldeFlip()
   std::cout << " Flip status l: " << cam_input->flip_status_cam[0];
   std::cout << ", r:" << cam_input->flip_status_cam[1] << std::endl;
 }
+
 void ARiftControl::handleSave()
 {
   std::stringstream save_name_left;
