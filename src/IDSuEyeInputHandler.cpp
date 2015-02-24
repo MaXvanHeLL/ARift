@@ -100,7 +100,7 @@ bool IDSuEyeInputHandler::addMemoryToCam(int cam)
 void IDSuEyeInputHandler::printMem(int cam)
 {
   std::cout << "Mem stored for cam " << cam << ": " << m_cam_img_mem[cam].size() << std::endl;
-  for(int mems = 0; mems < m_cam_img_mem[cam].size(); mems++)
+  for(unsigned int mems = 0; mems < m_cam_img_mem[cam].size(); mems++)
   {
     std::cout << "m_cam_img_mem[" << cam << "][" << mems<< "] ";
     if(m_cam_img_mem[cam][mems].first == NULL)

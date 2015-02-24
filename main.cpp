@@ -1,13 +1,21 @@
-
+// OpenCV includes
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
+// Include the OculusVR SDK
+#include "OVR_CAPI.h"
+// ARift includes
 #include "include/ARiftControl.h"
+// std includes
 #include <iostream>
+
 using namespace cv;
-// Hallo VS!?
+
 int main(int, char**)
 {
+  // Initializes LibOVR, and the Rift
+  ovr_Initialize();
+
   ARiftControl cont;
   cont.init();
 
@@ -50,7 +58,7 @@ void rotate(cv::Mat& src, double angle, cv::Mat& dst)
     return;
   }
   int len = max(src.cols, src.rows);
-  cv::Point2f pt(len/2., len/2.);
+  cv::Point2f pt((float)(len / 2.), (float)(len / 2.));
   cv::Mat r = cv::getRotationMatrix2D(pt, angle, 1.0);
 
   cv::warpAffine(src, dst, r, cv::Size(len, len));
