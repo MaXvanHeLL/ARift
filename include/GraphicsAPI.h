@@ -24,6 +24,7 @@ struct SimpleVertex
 	XMFLOAT3 Pos;
 };
 */
+class ARiftControl;
 
 class GraphicsAPI
 {
@@ -32,19 +33,22 @@ private:
 public:
 	GraphicsAPI();
 	virtual ~GraphicsAPI();
-
-	//** - Description: used for creating the Singleton Object once
-	// @return: void
 	
 	DWORD WINAPI run(LPVOID lpArg);
 	void InitD3D();
+	void render(ARiftControl* arift_c);
 	void CleanD3D();
 
+	// Windows stuff
+	HINSTANCE m_hinstance_;
+	HWND window_;
+	WNDCLASSEX window_class_;
+	LPCSTR m_applicationName_;
+
+	// Direct X stuff
 	IDXGISwapChain *swapchain;             // the pointer to the swap chain interface
 	ID3D11Device *dev;                     // the pointer to our Direct3D device interface
 	ID3D11DeviceContext *devcon;
-	HWND window_;
-	WNDCLASSEX window_class_;
 	ID3D11Texture2D* pTexture;
 };
 

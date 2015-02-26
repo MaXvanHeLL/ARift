@@ -35,9 +35,10 @@ int main(int, char**)
 	  OculusHMD::instance()->setRenderer(dx11);
 	  OculusHMD::instance()->configureStereoRendering();
   }  
+
+	// start the Render Thread
   handle_render_thread = CreateThread(NULL, 0,
 	  directXHandling, &cont, 0, NULL);
-  // *****************************************************************
 
   namedWindow("undist",1);
   namedWindow("both", CV_WINDOW_FULLSCREEN);
@@ -108,17 +109,17 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	dx11->window_class_.cbSize = sizeof(WNDCLASSEX);
 	dx11->window_class_.style = CS_HREDRAW | CS_VREDRAW;
 	dx11->window_class_.lpfnWndProc = WindowProc;
-	dx11->window_class_.hInstance = GetModuleHandle(NULL);
+	dx11->window_class_.hInstance = dx11->m_hinstance_;
 	dx11->window_class_.hCursor = LoadCursor(NULL, IDC_ARROW);
 	dx11->window_class_.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	dx11->window_class_.lpszClassName = "WindowClass1";
+	dx11->window_class_.lpszClassName = dx11->m_applicationName_;
 
 	// register the window class
 	RegisterClassEx(&dx11->window_class_);
 
 	// create the window and use the result as the handle
 	dx11->window_ = CreateWindowEx(NULL,
-		"WindowClass1",    // name of the window class
+		dx11->m_applicationName_,    // name of the window class
 		"DirectX Render Scene",   // title of the window
 		WS_OVERLAPPEDWINDOW,    // window style
 		20,    // x-position of the window
@@ -127,12 +128,12 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		RIFT_RESOLUTION_HEIGHT,    // height of the window
 		NULL,    // we have no parent window, NULL
 		NULL,    // we aren't using menus, NULL
-		GetModuleHandle(NULL),    // application handle
+		dx11->m_hinstance_,    // application handle
 		NULL);    // used with multiple windows, NULL
 
 	dx11->InitD3D();
-	ShowWindow(dx11->window_, SW_SHOW);
-	// display the window on the screen
+	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
+
 	MSG msg;
 
 	// wait for the next message in the queue, store the result in 'msg'
@@ -151,8 +152,9 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		// If the message is WM_QUIT, exit the while loop
 		if (msg.message == WM_QUIT)
 			break;
+
 		// Run "game" code here
-		render(arift_c);
+		dx11->render(arift_c);
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
@@ -163,38 +165,15 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	// sort through and find what code to run for the message given
 	switch (message)
 	{
-		// this message is read when the window is closed
-	case WM_DESTROY:
-	{
-		// close the application entirely
-		PostQuitMessage(0);
-		return 0;
-	} break;
+			// this message is read when the window is closed
+		case WM_DESTROY:
+		{
+			// close the application entirely
+			PostQuitMessage(0);
+			return 0;
+		} break;
 	}
 	// Handle any messages the switch statement didn't
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
-
-void render(ARiftControl* arift_c)
-{
-	D3D11_TEXTURE2D_DESC desc;
-	desc.Width = RIFT_RESOLUTION_WIDTH / 2;
-	desc.Height = RIFT_RESOLUTION_HEIGHT / 2;
-	desc.MipLevels = desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
-
-	int pixelSize = sizeof(int);//pixel size. Each pixels are represented by a int 32bits.
-	D3D11_SUBRESOURCE_DATA data;
-	data.pSysMem = arift_c->left_undistorted.data; //pixel buffer
-	data.SysMemPitch = pixelSize * RIFT_RESOLUTION_WIDTH / 2;// line size in byte
-	data.SysMemSlicePitch = pixelSize * RIFT_RESOLUTION_WIDTH/ 2 * RIFT_RESOLUTION_HEIGHT/ 2;// total buffer size in byte
-
-	// dx11->pTexture = dx11->dev->CreateTexture2D(&desc, );
-}
-
 
