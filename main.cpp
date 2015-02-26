@@ -19,12 +19,13 @@ DWORD WINAPI directXHandling(LPVOID lpArg);
 void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-GraphicsAPI* dx11 = NULL;
+GraphicsAPI dx11;
 // ********************************************************************************
 
 int main(int, char**)
 {
-  dx11 = new GraphicsAPI();
+  // dx11 = new GraphicsAPI();
+	dx11 = GraphicsAPI();
   HANDLE handle_render_thread = 0;
   ARiftControl cont;
   if (AR_HMD_ENABLED)
@@ -32,7 +33,7 @@ int main(int, char**)
 	  cont.init();
 	  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
 	  OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
-	  OculusHMD::instance()->setRenderer(dx11);
+	  OculusHMD::instance()->setRenderer(&dx11);
 	  OculusHMD::instance()->configureStereoRendering();
   }  
 
@@ -75,8 +76,6 @@ int main(int, char**)
 		if (AR_HMD_ENABLED)
 			delete OculusHMD::instance();
 	}
-  dx11->CleanD3D();
-  delete dx11;
   return 0;
 }
 
@@ -103,24 +102,24 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	ARiftControl* arift_c = (ARiftControl*)lpArg;
 	// arift_control->left_undistorted;
 	// clear out the window class for use
-	ZeroMemory(&dx11->window_class_, sizeof(WNDCLASSEX));
+	ZeroMemory(&dx11.window_class_, sizeof(WNDCLASSEX));
 
 	// fill in the struct with the needed information
-	dx11->window_class_.cbSize = sizeof(WNDCLASSEX);
-	dx11->window_class_.style = CS_HREDRAW | CS_VREDRAW;
-	dx11->window_class_.lpfnWndProc = WindowProc;
-	dx11->window_class_.hInstance = dx11->m_hinstance_;
-	dx11->window_class_.hCursor = LoadCursor(NULL, IDC_ARROW);
-	dx11->window_class_.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	dx11->window_class_.lpszClassName = dx11->m_applicationName_;
+	dx11.window_class_.cbSize = sizeof(WNDCLASSEX);
+	dx11.window_class_.style = CS_HREDRAW | CS_VREDRAW;
+	dx11.window_class_.lpfnWndProc = WindowProc;
+	dx11.window_class_.hInstance = dx11.hinstance_;
+	dx11.window_class_.hCursor = LoadCursor(NULL, IDC_ARROW);
+	dx11.window_class_.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	dx11.window_class_.lpszClassName = dx11.applicationName_;
 
 	// register the window class
-	RegisterClassEx(&dx11->window_class_);
+	RegisterClassEx(&dx11.window_class_);
 
 	// create the window and use the result as the handle
-	dx11->window_ = CreateWindowEx(NULL,
-		dx11->m_applicationName_,    // name of the window class
-		"DirectX Render Scene",   // title of the window
+	dx11.window_ = CreateWindowEx(NULL,
+		dx11.applicationName_,    // name of the window class
+		L"DirectX Render Scene",   // title of the window
 		WS_OVERLAPPEDWINDOW,    // window style
 		20,    // x-position of the window
 		20,    // y-position of the window
@@ -128,11 +127,12 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		RIFT_RESOLUTION_HEIGHT,    // height of the window
 		NULL,    // we have no parent window, NULL
 		NULL,    // we aren't using menus, NULL
-		dx11->m_hinstance_,    // application handle
+		dx11.hinstance_,    // application handle
 		NULL);    // used with multiple windows, NULL
 
-	dx11->InitD3D();
-	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
+	// *TODO*: change the last 2 float Params properly when we do real rendering!
+	dx11.InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, true, dx11.window_, false, (float)5.0, (float)3.0);
+	ShowWindow(dx11.window_, SW_SHOW); 	// display the window on the screen
 
 	MSG msg;
 
@@ -154,7 +154,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 			break;
 
 		// Run "game" code here
-		dx11->render(arift_c);
+		dx11.render(arift_c);
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;

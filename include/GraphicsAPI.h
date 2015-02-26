@@ -4,52 +4,61 @@
 #include <opencv2/core/core.hpp>
 #include <d3d11.h>
 #pragma comment (lib, "d3d11.lib")
-
 #include <windows.h>
-// #include <d3d11_1.h>
-// #include <d3dcompiler.h>
-// #include <directxmath.h>
-// #include <directxcolors.h>
+#include <dxgi.h>
+#include <d3dcommon.h>
+#include <d3d11.h>
+#include <DirectXMath.h>
 
-// using namespace DirectX;
-// #include "CameraInputHandler.h"
-// #include "IDSuEyeInputHandler.h"
-// #include "../../oculus/ovr_sdk_win_0.4.4/OculusSDK/LibOVR/Src/OVR_CAPI.h" // add oculus sdk to project libs afterwards!
-// #include "OVR_CAPI.h"
-
-/*
-using namespace DirectX 
-struct SimpleVertex
-{
-	XMFLOAT3 Pos;
-};
-*/
 class ARiftControl;
 
 class GraphicsAPI
 {
 private:
+	ID3D11Device* device_;
+	ID3D11DeviceContext* devicecontext_;
+	DirectX::XMMATRIX projectionmatrix_;
+	DirectX::XMMATRIX worldmatrix_;
+	DirectX::XMMATRIX orthomatrix_;
+	int videocardmemory_;
+	char videocarddescription_[128];
          
 public:
 	GraphicsAPI();
 	virtual ~GraphicsAPI();
 	
 	DWORD WINAPI run(LPVOID lpArg);
-	void InitD3D();
+	bool InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
+		float screenDepth, float screenNear);
 	void render(ARiftControl* arift_c);
-	void CleanD3D();
+	void shutDownD3D();
+
+	void BeginScene(float, float, float, float);
+	void EndScene();
+
+	ID3D11Device* GetDevice();
+	ID3D11DeviceContext* GetDeviceContext();
+	void GetProjectionMatrix(DirectX::XMMATRIX&);
+	void GetWorldMatrix(DirectX::XMMATRIX&);
+	void GetOrthoMatrix(DirectX::XMMATRIX&);
+	void GetVideoCardInfo(char*, int&);
 
 	// Windows stuff
-	HINSTANCE m_hinstance_;
+	HINSTANCE hinstance_;
 	HWND window_;
 	WNDCLASSEX window_class_;
-	LPCSTR m_applicationName_;
+	LPCWSTR applicationName_;
+	unsigned int screenwidth_;
+	unsigned int screenheight_;
 
 	// Direct X stuff
-	IDXGISwapChain *swapchain;             // the pointer to the swap chain interface
-	ID3D11Device *dev;                     // the pointer to our Direct3D device interface
-	ID3D11DeviceContext *devcon;
-	ID3D11Texture2D* pTexture;
+	bool vsync_enabled_;
+	IDXGISwapChain* swapchain_;
+	ID3D11RenderTargetView* rendertargetview_;
+	ID3D11Texture2D* depthstencilbuffer_;
+	ID3D11DepthStencilState* depthstencilstate_;
+	ID3D11DepthStencilView* depthstencilview_;
+	ID3D11RasterizerState* rasterstate_;
 };
 
 #endif // GraphicsAPI_H
