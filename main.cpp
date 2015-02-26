@@ -8,7 +8,9 @@
 #include <iostream>
 #include <windows.h>
 #define   OVR_D3D_VERSION 11
+#define AR_HMD_ENABLED 0
 #include "OVR_CAPI_D3D.h"
+
 
 using namespace cv;
 using namespace std;
@@ -22,16 +24,17 @@ GraphicsAPI* dx11 = NULL;
 
 int main(int, char**)
 {
-  ARiftControl cont;
-  cont.init();
-
-  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
-  // *****************************************************************
   dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
-  OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
-  OculusHMD::instance()->setRenderer(dx11);
-  OculusHMD::instance()->configureStereoRendering();
+  ARiftControl cont;
+  if (AR_HMD_ENABLED)
+  {
+	  cont.init();
+	  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
+	  OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
+	  OculusHMD::instance()->setRenderer(dx11);
+	  OculusHMD::instance()->configureStereoRendering();
+  }  
   handle_render_thread = CreateThread(NULL, 0,
 	  directXHandling, &cont, 0, NULL);
   // *****************************************************************
@@ -48,29 +51,31 @@ int main(int, char**)
 
   while(cont.keepRunning())
   {
-	// motion tracking debug tests here
-	// *****************************************************************
-	float test1; float test2; float test3;
-	OculusHMD::instance()->trackMotion(test1, test2, test3);
-	// *****************************************************************
+		if (AR_HMD_ENABLED)
+		{
+			// motion tracking debug tests here
+			// *****************************************************************
+			float test1; float test2; float test3;
+			OculusHMD::instance()->trackMotion(test1, test2, test3);
+			// *****************************************************************
 
-    if(cont.getImages())
-    {
-      cont.createDisplay();
-      imshow("both",cont.full_view);
+			if (cont.getImages())
+			{
+				cont.createDisplay();
+				imshow("both", cont.full_view);
 
-      cont.undistortImages();
-      imshow("undist",cont.full_view_undist);
-    }
-    // main control loop
-    char key = waitKey(20);
-    cont.handleKey(key);
-  }
-  // *****************************************************************
-  delete OculusHMD::instance();
+				cont.undistortImages();
+				imshow("undist", cont.full_view_undist);
+			}
+			// main control loop
+			char key = waitKey(20);
+			cont.handleKey(key);
+		}
+		if (AR_HMD_ENABLED)
+			delete OculusHMD::instance();
+	}
   dx11->CleanD3D();
   delete dx11;
-  // *****************************************************************
   return 0;
 }
 
