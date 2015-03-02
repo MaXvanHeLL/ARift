@@ -36,8 +36,8 @@ void ColorShader::Shutdown()
 	return;
 }
 
-bool ColorShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, const XMMATRIX& worldMatrix,
-	const XMMATRIX& viewMatrix, const XMMATRIX& projectionMatrix)
+bool ColorShader::Render(ID3D11DeviceContext* deviceContext, int indexCount,  XMMATRIX worldMatrix,
+	 XMMATRIX viewMatrix, XMMATRIX projectionMatrix)
 {
 	bool result;
 
