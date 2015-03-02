@@ -9,8 +9,18 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "../include/Camera.h"
+#include "../include/Model.h"
+#include "../include/ColorShader.h"
 
 class ARiftControl;
+
+// not used currently
+const bool FULL_SCREEN = true;
+const bool VSYNC_ENABLED = true;
+const float SCREEN_DEPTH = 1000.0f;
+const float SCREEN_NEAR = 0.1f;
+// -------------------------------
 
 class GraphicsAPI
 {
@@ -22,6 +32,10 @@ private:
 	DirectX::XMMATRIX orthomatrix_;
 	int videocardmemory_;
 	char videocarddescription_[128];
+
+	Camera* camera_;
+	Model* model_;
+	ColorShader* colorshader_;
          
 public:
 	GraphicsAPI();
@@ -29,8 +43,9 @@ public:
 	
 	DWORD WINAPI run(LPVOID lpArg);
 	bool InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
-		float screenDepth, float screenNear);
-	void render(ARiftControl* arift_c);
+		float screenDepth, float screenNear); 
+	bool Frame(ARiftControl* arift_c);
+	bool Render(ARiftControl* arift_c);
 	void shutDownD3D();
 
 	void BeginScene(float, float, float, float);

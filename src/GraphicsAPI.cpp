@@ -16,6 +16,10 @@ GraphicsAPI::GraphicsAPI()
 	depthstencilstate_ = 0;
 	depthstencilview_ = 0;
 	rasterstate_ = 0;
+
+	camera_ = 0;
+	model_ = 0;
+	colorshader_ = 0;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -338,14 +342,128 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Create an orthographic projection matrix for 2D rendering.
 	orthomatrix_ = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 
+	// ------------------------------------------- Tutorial 2 ------------------------------------------
+
+	// Create the camera object.
+		camera_ = new Camera();
+	if (!camera_)
+	{
+		return false;
+	}
+
+	// Set the initial position of the camera.
+	camera_->SetPosition(0.0f, 0.0f, -10.0f);
+
+	// Create the model object.
+	model_ = new Model();
+	if (!model_)
+	{
+		return false;
+	}
+
+	// Initialize the model object.
+	result = model_->Initialize(device_);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the color shader object.
+	colorshader_ = new ColorShader();
+	if (!colorshader_)
+	{
+		return false;
+	}
+
+	// Initialize the color shader object.
+	result = colorshader_->Initialize(device_, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the color shader object.", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 }
 
-void GraphicsAPI::render(ARiftControl* arift_c)
-{}
+
+bool GraphicsAPI::Frame(ARiftControl* arift_c)
+{
+	bool result;
+
+	// Render the graphics scene.
+	result = Render(arift_c);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
+bool GraphicsAPI::Render(ARiftControl* arift_c)
+{
+	XMMATRIX viewMatrix, projectionMatrix, worldMatrix;
+	bool result;
+
+
+	// Clear the buffers to begin the scene.
+	BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	camera_->Render();
+
+	// Get the world, view, and projection matrices from the camera and d3d objects.
+	camera_->GetViewMatrix(viewMatrix);
+	GetWorldMatrix(worldMatrix);
+	GetProjectionMatrix(projectionMatrix);
+
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	model_->Render(devicecontext_);
+
+	// Render the model using the color shader.
+	result = colorshader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Present the rendered scene to the screen.
+	EndScene();
+
+	return true;
+}
 
 void GraphicsAPI::shutDownD3D()
 {
+	// ------------------------- Tutorial 2 -----------------------------------------
+
+	// Release the color shader object.
+	if (colorshader_)
+	{
+		colorshader_->Shutdown();
+		delete colorshader_;
+		colorshader_ = 0;
+	}
+
+	// Release the model object.
+	if (model_)
+	{
+		model_->Shutdown();
+		delete model_;
+		model_ = 0;
+	}
+
+	// Release the camera object.
+	if (camera_)
+	{
+		delete camera_;
+		camera_ = 0;
+	}
+	// ------------------------- Tutorial 1 -----------------------------------------
+
 	// Before shutting down set to windowed mode or when you release the swap chain it will throw an exception.
 	if (swapchain_)
 	{
