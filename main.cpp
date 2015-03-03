@@ -1,7 +1,10 @@
-
+// OpenCV includes
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
+// Include the OculusVR SDK
+#include "OVR_CAPI.h"
+// ARift includes
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
 #include "include/GraphicsAPI.h"
@@ -27,6 +30,7 @@ int main(int, char**)
   // dx11 = new GraphicsAPI();
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
+
   ARiftControl cont;
   if (AR_HMD_ENABLED)
   {
@@ -47,6 +51,7 @@ int main(int, char**)
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
   waitKey(0);
+  
 
   std::cout << "Starting main loop" << std::endl;
   cont.start();
@@ -90,7 +95,7 @@ void rotate(cv::Mat& src, double angle, cv::Mat& dst)
     return;
   }
   int len = max(src.cols, src.rows);
-  cv::Point2f pt(len/2., len/2.);
+  cv::Point2f pt((float)(len / 2.), (float)(len / 2.));
   cv::Mat r = cv::getRotationMatrix2D(pt, angle, 1.0);
 
   cv::warpAffine(src, dst, r, cv::Size(len, len));

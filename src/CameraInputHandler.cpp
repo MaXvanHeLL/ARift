@@ -34,12 +34,12 @@ bool CameraInputHandler::openCams()
     return false;
   }
 
-  int l_fps = m_cap1.get(CV_CAP_PROP_FPS);
-  int r_fps = m_cap2.get(CV_CAP_PROP_FPS);
-  int l_h = m_cap1.get(CV_CAP_PROP_FRAME_HEIGHT);
-  int r_h = m_cap2.get(CV_CAP_PROP_FRAME_HEIGHT);
-  int l_w = m_cap1.get(CV_CAP_PROP_FRAME_WIDTH);
-  int r_w = m_cap2.get(CV_CAP_PROP_FRAME_WIDTH);
+  double l_fps = m_cap1.get(CV_CAP_PROP_FPS);
+  double r_fps = m_cap2.get(CV_CAP_PROP_FPS);
+  int l_h = (int)m_cap1.get(CV_CAP_PROP_FRAME_HEIGHT);
+  int r_h = (int)m_cap2.get(CV_CAP_PROP_FRAME_HEIGHT);
+  int l_w = (int)m_cap1.get(CV_CAP_PROP_FRAME_WIDTH);
+  int r_w = (int)m_cap2.get(CV_CAP_PROP_FRAME_WIDTH);
 //    std::cout << "   l      r " << std::endl;
 //    std::cout << "fps " << l_fps << "  " << r_fps << std::endl;
 //  std::cout << "size " << l_w << " x " << l_h << " | " << r_w << " x " << r_h << std::endl;
