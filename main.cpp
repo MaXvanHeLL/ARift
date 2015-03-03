@@ -25,7 +25,6 @@ int main(int, char**)
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
   waitKey(0);
-  time_t raw_time;
   
 
   std::cout << "Starting main loop" << std::endl;
