@@ -334,13 +334,19 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	screenAspect = (float)screenWidth / (float)screenHeight;
 
 	// Create the projection matrix for 3D rendering.
-	projectionmatrix_ = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+	// projectionmatrix_ = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+	XMMATRIX projectionMatrix_XmMat = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+	XMStoreFloat4x4(&projectionmatrix_, projectionMatrix_XmMat);
 
 	// Initialize the world matrix to the identity matrix.
-	worldmatrix_ = XMMatrixIdentity();
+	// worldmatrix_ = XMMatrixIdentity();
+	XMMATRIX worldMatrix_XmMat = XMMatrixIdentity();
+	XMStoreFloat4x4(&worldmatrix_, worldMatrix_XmMat);
 
 	// Create an orthographic projection matrix for 2D rendering.
-	orthomatrix_ = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+	// orthomatrix_ = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+	XMMATRIX orthoMatrix_XmMat = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+	XMStoreFloat4x4(&orthomatrix_, orthoMatrix_XmMat);
 
 	// ------------------------------------------- Tutorial 2 ------------------------------------------
 
@@ -406,7 +412,7 @@ bool GraphicsAPI::Frame(ARiftControl* arift_c)
 
 bool GraphicsAPI::Render(ARiftControl* arift_c)
 {
-	XMMATRIX viewMatrix, projectionMatrix, worldMatrix;
+	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix;
 	bool result;
 
 
@@ -577,21 +583,21 @@ ID3D11DeviceContext* GraphicsAPI::GetDeviceContext()
 	return devicecontext_;
 }
 
-void GraphicsAPI::GetProjectionMatrix(XMMATRIX& projectionMatrix)
+void GraphicsAPI::GetProjectionMatrix(XMFLOAT4X4& projectionMatrix)
 {
 	projectionMatrix = projectionmatrix_;
 	return;
 }
 
 
-void GraphicsAPI::GetWorldMatrix(XMMATRIX& worldMatrix)
+void GraphicsAPI::GetWorldMatrix(XMFLOAT4X4& worldMatrix)
 {
 	worldMatrix = worldmatrix_;
 	return;
 }
 
 
-void GraphicsAPI::GetOrthoMatrix(XMMATRIX& orthoMatrix)
+void GraphicsAPI::GetOrthoMatrix(XMFLOAT4X4& orthoMatrix)
 {
 	orthoMatrix = orthomatrix_;
 	return;

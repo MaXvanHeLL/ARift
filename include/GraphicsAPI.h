@@ -27,9 +27,9 @@ class GraphicsAPI
 private:
 	ID3D11Device* device_;
 	ID3D11DeviceContext* devicecontext_;
-	DirectX::XMMATRIX projectionmatrix_;
-	DirectX::XMMATRIX worldmatrix_;
-	DirectX::XMMATRIX orthomatrix_;
+	DirectX::XMFLOAT4X4 projectionmatrix_;
+	DirectX::XMFLOAT4X4 worldmatrix_;
+	DirectX::XMFLOAT4X4 orthomatrix_;
 	int videocardmemory_;
 	char videocarddescription_[128];
 
@@ -53,9 +53,9 @@ public:
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
-	void GetProjectionMatrix(DirectX::XMMATRIX&);
-	void GetWorldMatrix(DirectX::XMMATRIX&);
-	void GetOrthoMatrix(DirectX::XMMATRIX&);
+	void GetProjectionMatrix(DirectX::XMFLOAT4X4&);
+	void GetWorldMatrix(DirectX::XMFLOAT4X4&);
+	void GetOrthoMatrix(DirectX::XMFLOAT4X4&);
 	void GetVideoCardInfo(char*, int&);
 
 	// Windows stuff

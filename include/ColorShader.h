@@ -21,9 +21,9 @@ class ColorShader
 
 		struct MatrixBufferType
 		{
-			XMMATRIX world;
-			XMMATRIX view;
-			XMMATRIX projection;
+			XMFLOAT4X4 world;
+			XMFLOAT4X4 view;
+			XMFLOAT4X4 projection;
 		};
 
 	public:
@@ -33,14 +33,14 @@ class ColorShader
 
 		bool Initialize(ID3D11Device*, HWND);
 		void Shutdown();
-		bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX);
+		bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4);
 
 	private:
 		bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*);
 		void ShutdownShader();
 		void OutputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
 
-		bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX);
+		bool SetShaderParameters(ID3D11DeviceContext*, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4);
 		void RenderShader(ID3D11DeviceContext*, int);
 };
 

@@ -95,12 +95,14 @@ void Camera::Render()
 
 	// Finally create the view matrix from the three updated vectors.
 	// D3DXMatrixLookAtLH(&m_viewMatrix, &position, &lookAt, &up);
-	viewmatrix_ = XMMatrixLookAtLH(position, lookAt, up);
+	// viewmatrix_ = XMMatrixLookAtLH(position, lookAt, up);
+	XMMATRIX viewMatrix_XmMat = XMMatrixLookAtLH(position, lookAt, up);
+	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
 
 	return;
 }
 
-void Camera::GetViewMatrix(XMMATRIX& viewMatrix)
+void Camera::GetViewMatrix(XMFLOAT4X4& viewMatrix)
 {
 	viewMatrix = viewmatrix_;
 	return;
