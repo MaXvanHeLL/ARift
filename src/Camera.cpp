@@ -67,14 +67,14 @@ void Camera::Render()
 	position.y = positionY_;
 	position.z = positionZ_;
 	*/
-	XMVECTOR position = XMVectorSet(positionX_, positionY_, positionZ_, 1.0);
+	XMVECTOR position = XMVectorSet(positionX_, positionY_, positionZ_, 1.0f);
 	/*
 	// Setup where the camera is looking by default.
 	lookAt.x = 0.0f;
 	lookAt.y = 0.0f;
 	lookAt.z = 1.0f;
 	*/
-	XMVECTOR lookAt = XMVectorSet(0.0, 0.0, 1.0, 1.0);
+	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
 	pitch = rotationX_ * 0.0174532925f;

@@ -76,7 +76,6 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	{
 		return false;
 	}
-
 	// Load the vertex array with data.
 	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
 	vertices[0].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);

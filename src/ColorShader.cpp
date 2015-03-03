@@ -41,7 +41,6 @@ bool ColorShader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMF
 {
 	bool result;
 
-
 	// Set the shader parameters that it will use for rendering.
 	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix);
 	if (!result)
