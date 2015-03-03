@@ -22,6 +22,11 @@ DWORD WINAPI directXHandling(LPVOID lpArg);
 void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+// not used currently
+const bool FULL_SCREEN = true;
+const bool VSYNC_ENABLED = true;
+const float SCREEN_DEPTH = 1000.0f;
+const float SCREEN_NEAR = 0.1f;
 GraphicsAPI* dx11 = NULL;
 // ********************************************************************************
 
@@ -136,10 +141,11 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		NULL);    // used with multiple windows, NULL
 
 	// *TODO*: change the last 2 float Params properly when we do real rendering!
-	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, true, dx11->window_, false, (float)5.0, (float)3.0);
+	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
 
 	MSG msg;
+	bool frame_return;
 
 	// wait for the next message in the queue, store the result in 'msg'
 	// Enter the infinite message loop
@@ -159,7 +165,8 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 			break;
 
 		// Run "game" code here
-		dx11->Frame(arift_c);
+		frame_return = dx11->Frame(arift_c);
+	  std::cout << "[main::directXHandling] Frame() returned "  << frame_return << std::endl << std::endl;
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
