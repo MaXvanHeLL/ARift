@@ -10,10 +10,9 @@
 #include "include/GraphicsAPI.h"
 #include <iostream>
 #include <windows.h>
-#define   OVR_D3D_VERSION 11
-#define AR_HMD_ENABLED 0
+#define OVR_D3D_VERSION 11
+#define AR_HMD_ENABLED 1
 #include "OVR_CAPI_D3D.h"
-
 
 using namespace cv;
 using namespace std;
@@ -40,6 +39,7 @@ int main(int, char**)
   if (AR_HMD_ENABLED)
   {
 	  cont.init();
+    std::cout << "init done" << std::endl;
 	  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
 	  OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
 	  OculusHMD::instance()->setRenderer(dx11);
@@ -87,23 +87,6 @@ int main(int, char**)
 			delete OculusHMD::instance();
 	}
   return 0;
-}
-
-/**
- * Rotate an image
- */
-void rotate(cv::Mat& src, double angle, cv::Mat& dst)
-{
-  if(angle < 0.0001 )
-  {
-    dst = src.clone();
-    return;
-  }
-  int len = max(src.cols, src.rows);
-  cv::Point2f pt((float)(len / 2.), (float)(len / 2.));
-  cv::Mat r = cv::getRotationMatrix2D(pt, angle, 1.0);
-
-  cv::warpAffine(src, dst, r, cv::Size(len, len));
 }
 
 // Multithreaded Version
