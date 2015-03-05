@@ -424,22 +424,8 @@ bool GraphicsAPI::Render(ARiftControl* arift_c)
 
 	// Get the world, view, and projection matrices from the camera and d3d objects.
 	camera_->GetViewMatrix(viewMatrix);
-	std::cout << "[ GraphicsAPI::Render ] - View Matrix | Row # 1 ] : " << viewMatrix._11 << " " << viewMatrix._12 << " " << viewMatrix._13 << " " << viewMatrix._14 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - View Matrix | Row # 2 ] : " << viewMatrix._21 << " " << viewMatrix._22 << " " << viewMatrix._23 << " " << viewMatrix._24 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - View Matrix | Row # 3 ] : " << viewMatrix._31 << " " << viewMatrix._32 << " " << viewMatrix._33 << " " << viewMatrix._34 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - View Matrix | Row # 4 ] : " << viewMatrix._41 << " " << viewMatrix._42 << " " << viewMatrix._43 << " " << viewMatrix._44 << std::endl << " # ------------------------------------------------------------- " << std::endl;
-	
-	GetWorldMatrix(worldMatrix);
-	std::cout << "[ GraphicsAPI::Render ] - World Matrix | Row # 1 ] : " << worldMatrix._11 << " " << worldMatrix._12 << " " << worldMatrix._13 << " " << worldMatrix._14 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - World Matrix | Row # 2 ] : " << worldMatrix._21 << " " << worldMatrix._22 << " " << worldMatrix._23 << " " << worldMatrix._24 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - World Matrix | Row # 3 ] : " << worldMatrix._31 << " " << worldMatrix._32 << " " << worldMatrix._33 << " " << worldMatrix._34 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - World Matrix | Row # 4 ] : " << worldMatrix._41 << " " << worldMatrix._42 << " " << worldMatrix._43 << " " << worldMatrix._44 << std::endl << " # ------------------------------------------------------------- " << std::endl;
-	
+	GetWorldMatrix(worldMatrix);	
 	GetProjectionMatrix(projectionMatrix);
-	std::cout << "[ GraphicsAPI::Render ] - Projection Matrix | Row # 1 ] : " << projectionMatrix._11 << " " << projectionMatrix._12 << " " << projectionMatrix._13 << " " << projectionMatrix._14 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - Projection Matrix | Row # 2 ] : " << projectionMatrix._21 << " " << projectionMatrix._22 << " " << projectionMatrix._23 << " " << projectionMatrix._24 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - Projection Matrix | Row # 3 ] : " << projectionMatrix._31 << " " << projectionMatrix._32 << " " << projectionMatrix._33 << " " << projectionMatrix._34 << std::endl;
-	std::cout << "[ GraphicsAPI::Render ] - Projection Matrix | Row # 4 ] : " << projectionMatrix._41 << " " << projectionMatrix._42 << " " << projectionMatrix._43 << " " << projectionMatrix._44 << std::endl << std::endl;
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model_->Render(devicecontext_);
@@ -448,14 +434,12 @@ bool GraphicsAPI::Render(ARiftControl* arift_c)
 	result = colorshader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
 	if (!result)
 	{
-		std::cout << "[GraphicsAPI::Render] ColorShader could not render! " << std::endl;
 		return false;
 	}
 
 	// Present the rendered scene to the screen.
 	EndScene();
 
-	std::cout << "[GraphicsAPI::Render] ColorShader successfully rendered! " << std::endl;
 	return true;
 }
 

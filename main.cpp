@@ -11,7 +11,7 @@
 #include <iostream>
 #include <windows.h>
 #define OVR_D3D_VERSION 11
-#define AR_HMD_ENABLED 1
+#define AR_HMD_ENABLED 0
 #include "OVR_CAPI_D3D.h"
 
 using namespace cv;
@@ -149,7 +149,6 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 
 		// Run "game" code here
 		frame_return = dx11->Frame(arift_c);
-	  std::cout << "[main::directXHandling] Frame() returned "  << frame_return << std::endl << std::endl;
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
