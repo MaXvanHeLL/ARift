@@ -25,48 +25,53 @@ IDSuEyeInputHandler::~IDSuEyeInputHandler()
 
 bool IDSuEyeInputHandler::openCams()
 {
-  std::cout << "IDSuEyeInputHandler: openCams() "<< std::endl;
+  std::cout << "IDSuEyeInputHandler: openCams() " << std::endl;
   m_hcam[0] = m_cam1;
   m_hcam[1] = m_cam2;
   int nRet1 = is_InitCamera(&m_hcam[0], NULL);
   int nRet2 = is_InitCamera(&m_hcam[1], NULL);
-  if(nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
+  if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
-    if(nRet1 != IS_SUCCESS)
-      std::cout << "Error could not open cam " << m_cam1<< " code " << nRet1<<std::endl;
-    if(nRet2 != IS_SUCCESS)
-      std::cout << "Error could not open cam " << m_cam2<< " code " << nRet2<<std::endl;
+    if (nRet1 != IS_SUCCESS)
+      std::cout << "Error could not open cam " << m_cam1 << " code " << nRet1 << std::endl;
+    if (nRet2 != IS_SUCCESS)
+      std::cout << "Error could not open cam " << m_cam2 << " code " << nRet2 << std::endl;
     return false;
   }
 
-  nRet1 = is_SetColorMode(m_hcam[0],IS_CM_RGB8_PACKED);// TODO set memory format to agree with opencv
-  nRet2 = is_SetColorMode(m_hcam[1],IS_CM_RGB8_PACKED);
-  if(nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
+  nRet1 = is_SetColorMode(m_hcam[0], IS_CM_RGB8_PACKED);// TODO set memory format to agree with opencv
+  nRet2 = is_SetColorMode(m_hcam[1], IS_CM_RGB8_PACKED);
+  if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
-    std::cout << "Error could specify color formats to IS_CM_BGR8_PACKED"<< std::endl;
+    std::cout << "Error could specify color formats to IS_CM_BGR8_PACKED" << std::endl;
     return false;
   }
-  is_SetDisplayMode(m_hcam[0],IS_SET_DM_DIB); // no image display by the driver
-  is_SetDisplayMode(m_hcam[1],IS_SET_DM_DIB);
+  is_SetDisplayMode(m_hcam[0], IS_SET_DM_DIB); // no image display by the driver
+  is_SetDisplayMode(m_hcam[1], IS_SET_DM_DIB);
   initMemory();
 
-  is_SetExternalTrigger(m_hcam[0],IS_SET_TRIGGER_SOFTWARE);
-  is_SetExternalTrigger(m_hcam[1],IS_SET_TRIGGER_SOFTWARE);
+  is_SetExternalTrigger(m_hcam[0], IS_SET_TRIGGER_SOFTWARE);
+  is_SetExternalTrigger(m_hcam[1], IS_SET_TRIGGER_SOFTWARE);
   std::cout << "Starting capture " << std::endl;
-  nRet1 = is_CaptureVideo(m_hcam[0],IS_WAIT); // start capture and wait for first image to be in memory
-  nRet2 = is_CaptureVideo(m_hcam[1],IS_WAIT);
-  if(nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
+  nRet1 = is_CaptureVideo(m_hcam[0], IS_WAIT); // start capture and wait for first image to be in memory
+  nRet2 = is_CaptureVideo(m_hcam[1], IS_WAIT);
+  if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
-    if(nRet1 != IS_SUCCESS)
-      std::cout << "Error could not capture video on cam " << m_cam1<< " code " << nRet1<<std::endl;
-    if(nRet2 != IS_SUCCESS)
-      std::cout << "Error could not capture video on cam " << m_cam2<< " code " << nRet2<<std::endl;
+    if (nRet1 != IS_SUCCESS)
+      std::cout << "Error could not capture video on cam " << m_cam1 << " code " << nRet1 << std::endl;
+    if (nRet2 != IS_SUCCESS)
+      std::cout << "Error could not capture video on cam " << m_cam2 << " code " << nRet2 << std::endl;
     return false;
   }
   switchAutoSensorGain(1);
   switchAutoSensorGain(2);
   switchAutoSensorShutter(1);
   switchAutoSensorShutter(2);
+  // DEBUG
+  double fps = 0;
+  is_GetFramesPerSecond(m_hcam[0],&fps);
+  std::cout << "fps: " << fps << std::endl;
+  // \Debug
   return true;
 }
 
@@ -100,7 +105,7 @@ bool IDSuEyeInputHandler::addMemoryToCam(int cam)
 void IDSuEyeInputHandler::printMem(int cam)
 {
   std::cout << "Mem stored for cam " << cam << ": " << m_cam_img_mem[cam].size() << std::endl;
-  for(int mems = 0; mems < m_cam_img_mem[cam].size(); mems++)
+  for(unsigned int mems = 0; mems < m_cam_img_mem[cam].size(); mems++)
   {
     std::cout << "m_cam_img_mem[" << cam << "][" << mems<< "] ";
     if(m_cam_img_mem[cam][mems].first == NULL)

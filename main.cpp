@@ -1,16 +1,18 @@
-
+// OpenCV includes
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
+// Include the OculusVR SDK
+#include "OVR_CAPI.h"
+// ARift includes
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
 #include "include/GraphicsAPI.h"
 #include <iostream>
 #include <windows.h>
-#define   OVR_D3D_VERSION 11
-#define AR_HMD_ENABLED 0
+#define OVR_D3D_VERSION 11
+#define AR_HMD_ENABLED 1
 #include "OVR_CAPI_D3D.h"
-
 
 using namespace cv;
 using namespace std;
@@ -32,10 +34,12 @@ int main(int, char**)
   // dx11 = new GraphicsAPI();
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
+
   ARiftControl cont;
   if (AR_HMD_ENABLED)
   {
 	  cont.init();
+    std::cout << "init done" << std::endl;
 	  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
 	  OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
 	  OculusHMD::instance()->setRenderer(dx11);
@@ -52,6 +56,7 @@ int main(int, char**)
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
   waitKey(0);
+  
 
   std::cout << "Starting main loop" << std::endl;
   cont.start();
@@ -82,23 +87,6 @@ int main(int, char**)
 			delete OculusHMD::instance();
 	}
   return 0;
-}
-
-/**
- * Rotate an image
- */
-void rotate(cv::Mat& src, double angle, cv::Mat& dst)
-{
-  if(angle < 0.0001 )
-  {
-    dst = src.clone();
-    return;
-  }
-  int len = max(src.cols, src.rows);
-  cv::Point2f pt(len/2., len/2.);
-  cv::Mat r = cv::getRotationMatrix2D(pt, angle, 1.0);
-
-  cv::warpAffine(src, dst, r, cv::Size(len, len));
 }
 
 // Multithreaded Version
