@@ -127,6 +127,16 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
 
+	// Reading Videocard Information and writing to a File
+	ofstream myfile;
+	char videocard[128];
+	int videomemory;
+	myfile.open("VideocardConfig.txt");
+	dx11->GetVideoCardInfo(videocard, videomemory);
+	myfile << videocard << endl;
+	myfile << videomemory << endl;
+	myfile.close();
+
 	MSG msg;
 	bool frame_return;
 

@@ -359,7 +359,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Set the initial position of the camera.
-	camera_->SetPosition(0.0f, 0.0f, -10.0f);
+	camera_->SetPosition(0.0f, 0.0f, -8.0f);
 
 	
 	// Create the model object.
