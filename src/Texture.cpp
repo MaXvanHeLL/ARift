@@ -1,5 +1,5 @@
 #include "../include/Texture.h"
-
+#include <iostream>
 
 Texture::Texture()
 {
@@ -8,25 +8,24 @@ Texture::Texture()
 
 
 Texture::Texture(const Texture& other)
-{
-}
+{}
 
 
 Texture::~Texture()
-{
-}
+{}
 
 
 bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 {
 	HRESULT result;
 
-
 	// Load the texture in.
 	// result = D3DX11CreateShaderResourceViewFromFile(device, filename, NULL, NULL, &m_texture, NULL);
 	result = CreateDDSTextureFromFile(device, filename, nullptr, &texture_);
+
 	if (FAILED(result))
 	{
+		std::wcout << filename << std::endl;
 		return false;
 	}
 

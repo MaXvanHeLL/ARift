@@ -1,9 +1,11 @@
 #include "../include/Model.h"
+#include <iostream>
 
 Model::Model()
 {
 	vertexbuffer_ = 0;
 	indexbuffer_ = 0;
+	texture_ = 0;
 }
 
 
@@ -14,7 +16,8 @@ Model::Model(const Model& other)
 Model::~Model()
 {}
 
-bool Model::Initialize(ID3D11Device* device)
+
+bool Model::Initialize(ID3D11Device* device, WCHAR* textureFilename)
 {
 	bool result;
 
@@ -25,16 +28,27 @@ bool Model::Initialize(ID3D11Device* device)
 		return false;
 	}
 
+	// Load the texture for this model.
+	result = LoadTexture(device, textureFilename);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
 void Model::Shutdown()
 {
+	// Release the model texture.
+	ReleaseTexture();
+
 	// Release the vertex and index buffers.
 	ShutdownBuffers();
 
 	return;
 }
+
 
 void Model::Render(ID3D11DeviceContext* deviceContext)
 {
@@ -44,10 +58,18 @@ void Model::Render(ID3D11DeviceContext* deviceContext)
 	return;
 }
 
+
 int Model::GetIndexCount()
 {
 	return indexcount_;
 }
+
+
+ID3D11ShaderResourceView* Model::GetTexture()
+{
+	return texture_->GetTexture();
+}
+
 
 bool Model::InitializeBuffers(ID3D11Device* device)
 {
@@ -58,10 +80,10 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	HRESULT result;
 
 	// Set the number of vertices in the vertex array.
-	vertexcount_ = 4;
+	vertexcount_ = 3;
 
 	// Set the number of indices in the index array.
-	indexcount_ = 6;
+	indexcount_ = 3;
 
 	// Create the vertex array.
 	vertices = new VertexType[vertexcount_];
@@ -77,27 +99,25 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
-	// Load the vertex array with data.
 	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
-	vertices[0].color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
 
-	vertices[1].position = XMFLOAT3(-1.0f, 0.0f, 0.0f);  // top left.
-	vertices[1].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[1].position = XMFLOAT3(0.0f, 1.0f, 0.0f);  // Top middle.
+	vertices[1].texture = XMFLOAT2(0.5f, 0.0f);
 
-	vertices[2].position = XMFLOAT3(1.0f, 0.0f, 0.0f);  // Top right.
-	vertices[2].color = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	vertices[3].position = XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
-	vertices[3].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f);  // Bottom right.
+	vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
 
 	// Load the index array with data.
 	indices[0] = 0;  // Bottom left.
 	indices[1] = 1;  // Top middle.
 	indices[2] = 2;  // Bottom right.
 
+	/*
 	indices[3] = 0;
 	indices[4] = 2;
 	indices[5] = 3;  // Bottom right.
+	*/
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -149,6 +169,29 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	return true;
 }
 
+
+bool Model::LoadTexture(ID3D11Device* device, WCHAR* filename)
+{
+	bool result;
+
+	// Create the texture object.
+	texture_ = new Texture();
+	if (!texture_)
+	{
+		return false;
+	}
+
+	// Initialize the texture object.
+	result = texture_->Initialize(device, filename);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
 void Model::ShutdownBuffers()
 {
 	// Release the index buffer.
@@ -167,6 +210,21 @@ void Model::ShutdownBuffers()
 
 	return;
 }
+
+
+void Model::ReleaseTexture()
+{
+	// Release the texture object.
+	if (texture_)
+	{
+		texture_->Shutdown();
+		delete texture_;
+		texture_ = 0;
+	}
+
+	return;
+}
+
 
 void Model::RenderBuffers(ID3D11DeviceContext* deviceContext)
 {

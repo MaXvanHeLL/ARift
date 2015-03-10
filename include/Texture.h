@@ -1,14 +1,12 @@
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 
-
-//////////////
-// INCLUDES //
-//////////////
 #include <d3d11.h>
 // #include <DirectXTex\DirectXTex.h>
-#include <DDSTextureLoader/DDSTextureLoader.h>
+// #include "../../DirectXTex//DDSTextureLoader/DDSTextureLoader.h"
+// #include "../../DirectXTex//DDSTextureLoader/DDSTextureLoader.cpp"
 #include <DirectXMath.h>
+#include <DDSTextureLoader\DDSTextureLoader.h>
 
 using namespace DirectX;
 

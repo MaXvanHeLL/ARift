@@ -20,7 +20,7 @@ GraphicsAPI::GraphicsAPI()
 
 	camera_ = 0;
 	model_ = 0;
-	colorshader_ = 0;
+	shader_ = 0;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -349,10 +349,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	XMMATRIX orthoMatrix_XmMat = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 	XMStoreFloat4x4(&orthomatrix_, orthoMatrix_XmMat);
 
-	// ------------------------------------------- Tutorial 2 ------------------------------------------
-
 	// Create the camera object.
-		camera_ = new Camera();
+	camera_ = new Camera();
 	if (!camera_)
 	{
 		return false;
@@ -370,25 +368,26 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Initialize the model object.
-	result = model_->Initialize(device_);
+	// TODO: create the Data Folder
+	result = model_->Initialize(device_, L"data/seafloor.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the color shader object.
-	colorshader_ = new ColorShader();
-	if (!colorshader_)
+	// Create the texture shader object.
+	shader_ = new Shader();
+	if (!shader_)
 	{
 		return false;
 	}
 
-	// Initialize the color shader object.
-	result = colorshader_->Initialize(device_, hwnd);
+	// Initialize the shader object.
+	result = shader_->Initialize(device_, hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the color shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -430,8 +429,9 @@ bool GraphicsAPI::Render(ARiftControl* arift_c)
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model_->Render(devicecontext_);
 
-	// Render the model using the color shader.
-	result = colorshader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	// Render the model using the texture shader.
+	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		model_->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -445,14 +445,20 @@ bool GraphicsAPI::Render(ARiftControl* arift_c)
 
 void GraphicsAPI::shutDownD3D()
 {
-	// ------------------------- Tutorial 2 -----------------------------------------
+	// Release the texture shader object.
+	if (shader_)
+	{
+		shader_->Shutdown();
+		delete shader_;
+		shader_ = 0;
+	}
 
 	// Release the color shader object.
-	if (colorshader_)
+	if (shader_)
 	{
-		colorshader_->Shutdown();
-		delete colorshader_;
-		colorshader_ = 0;
+		shader_->Shutdown();
+		delete shader_;
+		shader_ = 0;
 	}
 
 	// Release the model object.
@@ -469,7 +475,6 @@ void GraphicsAPI::shutDownD3D()
 		delete camera_;
 		camera_ = 0;
 	}
-	// ------------------------- Tutorial 1 -----------------------------------------
 
 	// Before shutting down set to windowed mode or when you release the swap chain it will throw an exception.
 	if (swapchain_)

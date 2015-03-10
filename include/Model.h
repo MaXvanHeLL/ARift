@@ -1,9 +1,10 @@
 #ifndef _MODEL_H_
 #define _MODEL_H_
 
-#include "../include/Model.h"
+// #include "../include/Model.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "Texture.h"
 
 using namespace DirectX;
 
@@ -14,11 +15,12 @@ class Model
 		ID3D11Buffer* indexbuffer_;
 		int vertexcount_;
 		int indexcount_;
+		Texture* texture_;
 
 		struct VertexType
 		{
 			XMFLOAT3 position;
-			XMFLOAT4 color;
+			XMFLOAT2 texture;
 		};
 
 	public:
@@ -26,7 +28,7 @@ class Model
 		Model(const Model&);
 		~Model();
 
-		bool Initialize(ID3D11Device*);
+		bool Initialize(ID3D11Device*, WCHAR*);
 		void Shutdown();
 		// called from GraphicsAPI::Render()
 		void Render(ID3D11DeviceContext*);
@@ -35,10 +37,15 @@ class Model
 		// The color shader will need this information to draw this model. 
 		int GetIndexCount();
 
+		ID3D11ShaderResourceView* GetTexture();
+
 	private:
 		bool InitializeBuffers(ID3D11Device*);
 		void ShutdownBuffers();
 		void RenderBuffers(ID3D11DeviceContext*);
+
+		bool LoadTexture(ID3D11Device*, WCHAR*);
+		void ReleaseTexture();
 };
 
 #endif

@@ -11,7 +11,7 @@
 #include <DirectXMath.h>
 #include "../include/Camera.h"
 #include "../include/Model.h"
-#include "../include/ColorShader.h"
+#include "../include/Shader.h"
 
 class ARiftControl;
 // -------------------------------
@@ -29,7 +29,7 @@ private:
 
 	Camera* camera_;
 	Model* model_;
-	ColorShader* colorshader_;
+	Shader* shader_;
          
 public:
 	GraphicsAPI();
