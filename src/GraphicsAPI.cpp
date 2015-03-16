@@ -20,7 +20,10 @@ GraphicsAPI::GraphicsAPI()
 
 	camera_ = 0;
 	model_ = 0;
+	bitmap_ = 0;
 	shader_ = 0;
+
+	depthDisabledStencilState_ = 0;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -52,6 +55,9 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	D3D11_RASTERIZER_DESC rasterDesc;
 	D3D11_VIEWPORT viewport;
 	float fieldOfView, screenAspect;
+
+	// used for disabling Depth Buffer regarding 2D (Bitmap) - 3D (Models) Rendering on Screen
+	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
 
 	// Store the vsync setting.
 	vsync_enabled_ = vsync;
@@ -349,6 +355,34 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	XMMATRIX orthoMatrix_XmMat = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 	XMStoreFloat4x4(&orthomatrix_, orthoMatrix_XmMat);
 
+	// Clear the second depth stencil state before setting the parameters.
+	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
+
+	// used for 2D (Bitmap) - 3D (Model) Depth Rendering on Screen
+	// Now create a second depth stencil state which turns off the Z buffer for 2D rendering.  The only difference is 
+	// that DepthEnable is set to false, all other parameters are the same as the other depth stencil state.
+	depthDisabledStencilDesc.DepthEnable = false;
+	depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisabledStencilDesc.StencilEnable = true;
+	depthDisabledStencilDesc.StencilReadMask = 0xFF;
+	depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+	depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Create the state using the device.
+	result = device_->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState_);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	// Create the camera object.
 	camera_ = new Camera();
 	if (!camera_)
@@ -369,12 +403,28 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Initialize the model object.
 	// TODO: create the Data Folder
-	result = model_->Initialize(device_, L"data/seafloor.dds");
+	result = model_->Initialize(device_, L"data/texture.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
+
+	// Create the bitmap object.
+	bitmap_ = new BitMap();
+	if (!bitmap_)
+	{
+		return false;
+	}
+
+	// Initialize the bitmap object.
+	result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", 256, 256);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the bitmap object.", L"Error", MB_OK);
+		return false;
+	}
+
 
 	// Create the texture shader object.
 	shader_ = new Shader();
@@ -412,7 +462,7 @@ bool GraphicsAPI::Frame(ARiftControl* arift_c)
 
 bool GraphicsAPI::Render(ARiftControl* arift_c)
 {
-	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix;
+	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix, orthoMatrix;
 	bool result;
 
 	// Clear the buffers to begin the scene.
@@ -425,6 +475,33 @@ bool GraphicsAPI::Render(ARiftControl* arift_c)
 	camera_->GetViewMatrix(viewMatrix);
 	GetWorldMatrix(worldMatrix);	
 	GetProjectionMatrix(projectionMatrix);
+	GetOrthoMatrix(orthoMatrix);
+
+	// ******************************** || 2D RENDERING || *********************************
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	// TODO: change that later depending on the real scene!
+
+  TurnZBufferOff();
+
+	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	result = bitmap_->Render(devicecontext_, 100, 100);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the bitmap with the texture shader.
+	result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap_->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	TurnZBufferOn();
+
+	// ******************************** || 3D RENDERING || *********************************
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model_->Render(devicecontext_);
@@ -451,6 +528,20 @@ void GraphicsAPI::shutDownD3D()
 		shader_->Shutdown();
 		delete shader_;
 		shader_ = 0;
+	}
+
+	// Release the bitmap object.
+	if (bitmap_)
+	{
+		bitmap_->Shutdown();
+		delete bitmap_;
+		bitmap_ = 0;
+	}
+
+	if (depthDisabledStencilState_)
+	{
+		depthDisabledStencilState_->Release();
+		depthDisabledStencilState_ = 0;
 	}
 
 	// Release the color shader object.
@@ -608,9 +699,24 @@ void GraphicsAPI::GetOrthoMatrix(XMFLOAT4X4& orthoMatrix)
 	return;
 }
 
+
 void GraphicsAPI::GetVideoCardInfo(char* cardName, int& memory)
 {
 	strcpy_s(cardName, 128, videocarddescription_);
 	memory = videocardmemory_;
+	return;
+}
+
+
+void GraphicsAPI::TurnZBufferOn()
+{
+	devicecontext_->OMSetDepthStencilState(depthstencilstate_, 1);
+	return;
+}
+
+
+void GraphicsAPI::TurnZBufferOff()
+{
+	devicecontext_->OMSetDepthStencilState(depthDisabledStencilState_, 1);
 	return;
 }

@@ -12,6 +12,7 @@
 #include "../include/Camera.h"
 #include "../include/Model.h"
 #include "../include/Shader.h"
+#include "../include/BitMap.h"
 
 class ARiftControl;
 // -------------------------------
@@ -29,7 +30,10 @@ private:
 
 	Camera* camera_;
 	Model* model_;
+	BitMap* bitmap_;
 	Shader* shader_;
+
+	ID3D11DepthStencilState* depthDisabledStencilState_;
          
 public:
 	GraphicsAPI();
@@ -44,6 +48,10 @@ public:
 
 	void BeginScene(float, float, float, float);
 	void EndScene();
+
+	// used for 2D (Bitmaps) - 3D (Models) Rendering on Screen
+	void TurnZBufferOn();
+	void TurnZBufferOff();
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
