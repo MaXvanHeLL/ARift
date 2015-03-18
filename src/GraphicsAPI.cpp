@@ -485,7 +485,7 @@ bool GraphicsAPI::Render(ARiftControl* arift_c)
   TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = bitmap_->Render(devicecontext_, 100, 100);
+	result = bitmap_->Render(devicecontext_, bitmap_->GetPositionX() + 1, bitmap_->GetPositionY() + 1);
 	if (!result)
 	{
 		return false;

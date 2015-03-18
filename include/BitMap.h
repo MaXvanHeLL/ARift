@@ -40,7 +40,9 @@ public:
 	bool Render(ID3D11DeviceContext*, int, int);
 
 	int GetIndexCount();
-	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView* GetTexture(); 
+	int GetPositionX();
+	int GetPositionY();
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
