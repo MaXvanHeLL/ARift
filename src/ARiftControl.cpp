@@ -14,7 +14,24 @@ using namespace cv;
 
 ARiftControl::ARiftControl()
 {
-  //ctor
+  //ctor [Debug]
+	cameraBufferLeft_ = new unsigned char[CAMERA_BUFFER_LENGTH];
+	cameraBufferRight_ = new char[CAMERA_BUFFER_LENGTH];
+
+	String picture1_string = "data/test_picture1.jpg";
+	String picture2_string = "data/picture_2.bmp";
+
+	picture_1_ = imread(picture1_string, CV_LOAD_IMAGE_COLOR);   // Read the file
+	picture_2_ = imread(picture2_string, CV_LOAD_IMAGE_COLOR);
+
+	if (!picture_1_.data)	// Check for invalid input
+	{
+		std::cout << "Could not open or find the image: " << picture1_string << std::endl;
+	}
+	if (!picture_2_.data)	// Check for invalid input
+	{
+		std::cout << "Could not open or find the image: " << picture2_string << std::endl;
+	}
 }
 
 ARiftControl::~ARiftControl()
@@ -76,8 +93,8 @@ bool ARiftControl::getImages()
 {
   cam_input->grabFrames();
 //    cam_input->retrieveFrames(left_pic, right_pic, CAM1, CAM2);
-  cam_input->retrieveFrame(left_pic, CAM1);
-  cam_input->retrieveFrame(right_pic, CAM2);
+  cam_input->retrieveFrame(left_pic, CAM1, cameraBufferLeft_);
+  cam_input->retrieveFrame(right_pic, CAM2, cameraBufferLeft_);
   if(left_pic.empty() || right_pic.empty())
   {
     std::cout << "Warning empty image(s) in loop "<< std::endl;

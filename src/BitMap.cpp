@@ -52,6 +52,39 @@ bool BitMap::Initialize(ID3D11Device* device, int screenWidth, int screenHeight,
 	return true;
 }
 
+bool BitMap::InitializeCameras(ID3D11Device* device, int screenWidth, int screenHeight, ARiftControl* arift_control, int bitmapWidth, int bitmapHeight)
+{
+	bool result;
+
+	// Store the screen size.
+	screenwidth_ = screenWidth;
+	screenheight_ = screenHeight;
+
+	// Store the size in pixels that this bitmap should be rendered at.
+	bitmapwidth_ = bitmapWidth;
+	bitmapheight_ = bitmapHeight;
+
+	// Initialize the previous rendering position to negative one.
+	previousposX_ = -1;
+	previousposY_ = -1;
+
+	// Initialize the vertex and index buffers.
+	result = InitializeBuffers(device);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Load the texture for this model.
+	result = LoadCameraStream(device, arift_control);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 void BitMap::Shutdown()
 {
@@ -335,6 +368,27 @@ bool BitMap::LoadTexture(ID3D11Device* device, WCHAR* filename)
 
 	// Initialize the texture object.
 	result = texture_->Initialize(device, filename);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool BitMap::LoadCameraStream(ID3D11Device* device, ARiftControl* arift_control)
+{
+	bool result;
+
+	// Create the texture object.
+	texture_ = new Texture();
+	if (!texture_)
+	{
+		return false;
+	}
+
+	// Initialize the texture object.
+	result = texture_->InitCameraStream(device, arift_control);
 	if (!result)
 	{
 		return false;

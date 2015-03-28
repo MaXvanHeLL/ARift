@@ -13,8 +13,8 @@ class IDSuEyeInputHandler : public CameraInputHandler
 
     bool openCams();
     bool grabFrames() {return true;};
-    void retrieveFrame(cv::Mat& frame, int cam);
-    void readFrame(cv::Mat& frame, int cam);
+    void retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer);
+		void readFrame(cv::Mat& frame, int cam);
     int width = 752; // strange I know
     int height = 480;
     int depth = 8;
@@ -23,6 +23,7 @@ class IDSuEyeInputHandler : public CameraInputHandler
   protected:
   private:
     bool auto_sensor_shutter[2];
+		bool cameraCaptureing_;
 	bool auto_sensor_gain[2];
     HIDS m_hcam[2];
     std::vector<std::pair<char*,int > > m_cam_img_mem[2];

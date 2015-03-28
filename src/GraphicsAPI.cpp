@@ -6,6 +6,8 @@ using namespace DirectX;
 
 GraphicsAPI::GraphicsAPI()
 {
+	ariftcontrol_ = 0;
+
 	hinstance_ = GetModuleHandle(NULL);
 	applicationName_ = L"Oculus Rift AR";
 
@@ -32,8 +34,10 @@ GraphicsAPI::~GraphicsAPI()
 }
 
 bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
-	float screenDepth, float screenNear)
+	float screenDepth, float screenNear, ARiftControl* arift_control)
 {
+
+	ariftcontrol_ = arift_control;
 
 	screenwidth_ = screenWidth;
 	screenheight_ = screenHeight;
@@ -203,7 +207,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// Create the swap chain, Direct3D device, and Direct3D device context.
-	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevel, 1,
+	// D3D11_CREATE_DEVICE_DEBUG
+	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, &featureLevel, 1,
 		D3D11_SDK_VERSION, &swapChainDesc, &swapchain_, &device_, NULL, &devicecontext_);
 	if (FAILED(result))
 	{
@@ -416,9 +421,10 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	{
 		return false;
 	}
-
+	
 	// Initialize the bitmap object.
-	result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", 256, 256);
+  // result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", 256, 256);
+	result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, 256, 256);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the bitmap object.", L"Error", MB_OK);
@@ -445,12 +451,12 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 }
 
 
-bool GraphicsAPI::Frame(ARiftControl* arift_c)
+bool GraphicsAPI::Frame()
 {
 	bool result;
 
 	// Render the graphics scene.
-	result = Render(arift_c);
+	result = Render();
 	if (!result)
 	{
 		return false;
@@ -460,7 +466,7 @@ bool GraphicsAPI::Frame(ARiftControl* arift_c)
 }
 
 
-bool GraphicsAPI::Render(ARiftControl* arift_c)
+bool GraphicsAPI::Render()
 {
 	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix, orthoMatrix;
 	bool result;

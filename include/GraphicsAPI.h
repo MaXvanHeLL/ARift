@@ -20,6 +20,7 @@ class ARiftControl;
 class GraphicsAPI
 {
 private:
+	ARiftControl* ariftcontrol_;
 	ID3D11Device* device_;
 	ID3D11DeviceContext* devicecontext_;
 	DirectX::XMFLOAT4X4 projectionmatrix_;
@@ -41,9 +42,9 @@ public:
 	
 	DWORD WINAPI run(LPVOID lpArg);
 	bool InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
-		float screenDepth, float screenNear); 
-	bool Frame(ARiftControl* arift_c);
-	bool Render(ARiftControl* arift_c);
+		float screenDepth, float screenNear, ARiftControl* arift_control); 
+	bool Frame();
+	bool Render();
 	void shutDownD3D();
 
 	void BeginScene(float, float, float, float);

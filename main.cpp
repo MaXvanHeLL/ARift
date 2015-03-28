@@ -11,7 +11,7 @@
 #include <iostream>
 #include <windows.h>
 #define OVR_D3D_VERSION 11
-#define AR_HMD_ENABLED 0
+#define AR_HMD_ENABLED 1
 #include "OVR_CAPI_D3D.h"
 
 using namespace cv;
@@ -34,41 +34,41 @@ int main(int, char**)
   // dx11 = new GraphicsAPI();
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
-
   ARiftControl cont;
+
   if (AR_HMD_ENABLED)
   {
 	  cont.init();
     std::cout << "init done" << std::endl;
 	  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
-	  OculusHMD::initialization(); // OculusHMD is a singleton for accessing the Oculus Device in a static way for better comfort
-	  OculusHMD::instance()->setRenderer(dx11);
-	  OculusHMD::instance()->configureStereoRendering();
+	  // OculusHMD::initialization();
+	  // OculusHMD::instance()->setRenderer(dx11);
+	  // OculusHMD::instance()->configureStereoRendering();
   }  
 
 	// start the Render Thread
   handle_render_thread = CreateThread(NULL, 0,
 	  directXHandling, &cont, 0, NULL);
 
+	// namedWindow("camera_freeze", 1);
   namedWindow("undist",1);
   namedWindow("both", CV_WINDOW_FULLSCREEN);
   cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
-  waitKey(0);
+  // waitKey(0);
   
 
   std::cout << "Starting main loop" << std::endl;
   cont.start();
-
   while(cont.keepRunning())
   {
 		if (AR_HMD_ENABLED)
 		{
 			// motion tracking debug tests here
 			// *****************************************************************
-			float test1; float test2; float test3;
-			OculusHMD::instance()->trackMotion(test1, test2, test3);
+			// float test1; float test2; float test3;
+			// OculusHMD::instance()->trackMotion(test1, test2, test3);
 			// *****************************************************************
 
 			if (cont.getImages())
@@ -78,13 +78,16 @@ int main(int, char**)
 
 				cont.undistortImages();
 				imshow("undist", cont.full_view_undist);
+
+				 // cv::Mat camera_mat = cv::Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CV_8UC4, cont.cameraBufferLeft_);
+				 // imshow("camera_freeze", camera_mat);
 			}
 			// main control loop
 			char key = waitKey(20);
 			cont.handleKey(key);
 		}
-		if (AR_HMD_ENABLED)
-			delete OculusHMD::instance();
+		// if (AR_HMD_ENABLED)
+			// delete OculusHMD::instance();
 	}
   return 0;
 }
@@ -124,7 +127,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		NULL);    // used with multiple windows, NULL
 
 	// *TODO*: change the last 2 float Params properly when we do real rendering!
-	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
+	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
 
 	// Reading Videocard Information and writing to a File
@@ -158,7 +161,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 			break;
 
 		// Run "game" code here
-		frame_return = dx11->Frame(arift_c);
+		frame_return = dx11->Frame();
 	}
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;

@@ -18,7 +18,7 @@ class CameraInputHandler
     virtual bool openCams();
 
     virtual bool grabFrames();
-    virtual void retrieveFrame(cv::Mat& frame, int cam);
+    virtual void retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer);
     void retrieveFrames(cv::Mat& frame1, cv::Mat& frame2, int cam1, int cam2);
 
     virtual void readFrame(cv::Mat& frame, int cam);

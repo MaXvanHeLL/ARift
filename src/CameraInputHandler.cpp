@@ -63,7 +63,7 @@ bool CameraInputHandler::grabFrames()
   return ( m_cap1.grab() & m_cap2.grab() );
 }
 
-void CameraInputHandler::retrieveFrame(cv::Mat& frame, int cam)
+void CameraInputHandler::retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer = NULL)
 {
   if(m_cam1 == cam)
     m_cap1.retrieve(frame);
