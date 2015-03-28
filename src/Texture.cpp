@@ -88,7 +88,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	HRESULT result = device->CreateShaderResourceView(tex, &srDesc, &texture_);
 	std::cout << result << std::endl;
 
-	if (result == S_OK);
+	if (SUCCEEDED(device->CreateShaderResourceView(tex, &srDesc, &texture_)));
 	{
 		std::cerr << "Can't create Shader Resource View" << std::endl;
 		return true;
