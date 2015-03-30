@@ -12,7 +12,7 @@ class OculusHMD
 {
 	private:
 		static OculusHMD* instance_;
-		GraphicsAPI* directX_renderer_;
+		GraphicsAPI* graphicsAPI_;
 		ovrHmd hmd_;
 		ovrSizei resolution_;
 		bool running_ = false;
@@ -24,7 +24,7 @@ class OculusHMD
 		//** - Description: used for creating the Singleton Object once
 		// @return: void
 		// ----
-		static void initialization();
+		static void initialization(GraphicsAPI*);
 
 		//** - Description: As a Singleton class, this static function returns the object instance of OculusHMD
 		// @return: the OculusHMD* object instance
@@ -51,8 +51,6 @@ class OculusHMD
 		// @return: void
 		// ----
 		void render(cv::Mat, cv::Mat);
-
-		void setRenderer(GraphicsAPI* dx11);
 };
 
 #endif // OCULUSHMD_H

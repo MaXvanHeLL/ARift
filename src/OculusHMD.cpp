@@ -83,10 +83,13 @@ OculusHMD* OculusHMD::instance()
 }
 
 // -----------------------------------------------------------------------     
-void OculusHMD::initialization()
+void OculusHMD::initialization(GraphicsAPI* graphicsAPI)
 {
 	if (!instance_)
+	{
 		instance_ = new OculusHMD();
+		instance_->graphicsAPI_ = graphicsAPI;
+	}
 }
 
 // -----------------------------------------------------------------------     
@@ -124,6 +127,7 @@ void OculusHMD::configureStereoRendering()
 		renderTargetSize.h = max(recommendedTex0Size.h, recommendedTex1Size.h);
 
 		const int eyeRenderMultisample = 1;
+		// graphicsAPI_->GetDevice->CreateTexture( Texture_RGBA | Texture_RenderTarget | eyeRenderMultisample, renderTargetSize.w, renderTargetsize.h, NULL);
 
 		
 	    // renderTargetSize.w, renderTargetSize.h, NULL);
@@ -159,7 +163,7 @@ void OculusHMD::configureStereoRendering()
 			ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive, hmd_->DefaultEyeFov, EyeRenderDesc);
 
 		*/
-		ovrHmd_AttachToWindow(hmd_, directX_renderer_->window_, NULL, NULL);
+		// ovrHmd_AttachToWindow(hmd_, directX_->window_, NULL, NULL);
 	}
 }
 
@@ -192,10 +196,5 @@ void OculusHMD::render(cv::Mat left_cam, cv::Mat right_cam)
 		// --------------- |  NEW | ------------------- *************************
 
 	}
-}
-
-void OculusHMD::setRenderer(GraphicsAPI* dx11)
-{
-	directX_renderer_ = dx11;
 }
 

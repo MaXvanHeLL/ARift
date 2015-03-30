@@ -101,7 +101,7 @@ void BitMap::Shutdown()
 
 bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int positionY, ARiftControl* arift_control)
 {
-	bool result;
+	bool result = 0;
 
 	// Re-build the dynamic vertex buffer for rendering to possibly a different location on the screen.
 	result = UpdateBuffers(deviceContext, positionX, positionY);
@@ -109,7 +109,7 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 	{
 		return false;
 	}
-
+	
 	result = texture_->Update(deviceContext, arift_control);
 	if (!result)
 	{
@@ -263,11 +263,6 @@ bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, in
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	VertexType* verticesPtr;
 	HRESULT result;
-
-	if (positionX > 1200)
-		positionX = 100;
-	if (positionY > 800)
-		positionY = 100;
 
 	// If the position we are rendering this bitmap to has not changed then don't update the vertex buffer since it
 	// currently has the correct parameters.

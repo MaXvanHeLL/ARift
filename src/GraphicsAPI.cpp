@@ -396,7 +396,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Set the initial position of the camera.
-	camera_->SetPosition(0.0f, 0.0f, -8.0f);
+	camera_->SetPosition(0.0f, 0.0f, -10.0f);
 
 	
 	// Create the model object.
@@ -424,7 +424,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	
 	// Initialize the bitmap object.
   // result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", 256, 256);
-	result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, 256, 256);
+	result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the bitmap object.", L"Error", MB_OK);
@@ -491,7 +491,7 @@ bool GraphicsAPI::Render()
   TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = bitmap_->Render(devicecontext_, bitmap_->GetPositionX() + 1, bitmap_->GetPositionY() + 1, ariftcontrol_);
+	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_);
 	if (!result)
 	{
 		return false;

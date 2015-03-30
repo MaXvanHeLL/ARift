@@ -7,7 +7,6 @@ Texture::Texture()
 {
 	shaderResource_ = 0;
 	cameraTexture_ = 0;
-
 }
 
 
@@ -87,9 +86,6 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	srDesc.Texture2D.MostDetailedMip = 0;
 	srDesc.Texture2D.MipLevels = 1;
 
-	// HRESULT result = device->CreateShaderResourceView(tex, &srDesc, &shaderResource_);
-	// std::cout << result << std::endl;
-
 	if (SUCCEEDED(device->CreateShaderResourceView(cameraTexture_, &srDesc, &shaderResource_)));
 	{
 		return true;
@@ -128,7 +124,6 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, ARiftControl* arift_con
 void Texture::Shutdown()
 {
 
-	void* buffer = ::CoTaskMemAlloc(600 * 400 * 3);
 	// Release the texture resource.
 	if (shaderResource_)
 	{

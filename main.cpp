@@ -40,10 +40,6 @@ int main(int, char**)
   {
 	  cont.init();
     std::cout << "init done" << std::endl;
-	  // install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
-	  // OculusHMD::initialization();
-	  // OculusHMD::instance()->setRenderer(dx11);
-	  // OculusHMD::instance()->configureStereoRendering();
   }  
 
 	// start the Render Thread
@@ -51,15 +47,14 @@ int main(int, char**)
 	  directXHandling, &cont, 0, NULL);
 
 	// namedWindow("camera_freeze", 1);
-  namedWindow("undist",1);
-  namedWindow("both", CV_WINDOW_FULLSCREEN);
+  // namedWindow("undist",1);
+  // namedWindow("both", CV_WINDOW_FULLSCREEN);
   // cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
   // waitKey(0);
   
-
-  std::cout << "Starting main loop" << std::endl;
+  std::cout << "Starting Camera loop" << std::endl;
   cont.start();
   while(cont.keepRunning())
   {
@@ -68,16 +63,16 @@ int main(int, char**)
 			// motion tracking debug tests here
 			// *****************************************************************
 			// float test1; float test2; float test3;
-			// OculusHMD::instance()->trackMotion(test1, test2, test3);
+		  // OculusHMD::instance()->trackMotion(test1, test2, test3);
 			// *****************************************************************
 
 			if (cont.getImages())
 			{
 				cont.createDisplay();
-				imshow("both", cont.full_view);
+				// imshow("both", cont.full_view);
 
 				cont.undistortImages();
-				imshow("undist", cont.full_view_undist);
+				// imshow("undist", cont.full_view_undist);
 
 				 // cv::Mat camera_mat = cv::Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CV_8UC4, cont.cameraBufferLeft_);
 				 // imshow("camera_freeze", camera_mat);
@@ -86,9 +81,10 @@ int main(int, char**)
 			char key = waitKey(20);
 			cont.handleKey(key);
 		}
-		// if (AR_HMD_ENABLED)
-			// delete OculusHMD::instance();
 	}
+	if (AR_HMD_ENABLED)
+		delete OculusHMD::instance();
+
   return 0;
 }
 
@@ -130,6 +126,15 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
 	SetFocus(dx11->window_); // set window priority
+
+
+	if (AR_HMD_ENABLED)
+	{
+		// install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
+		// OculusHMD::initialization(dx11);
+		// OculusHMD::instance()->configureStereoRendering();
+	}
+
 
 	// Reading Videocard Information and writing to a File
 	ofstream myfile;
