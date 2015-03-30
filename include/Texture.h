@@ -16,8 +16,8 @@ using namespace DirectX;
 class Texture
 {
 	private:
-		ID3D11ShaderResourceView* texture_;
-		ID3D11Texture2D* cameraTextureLeft_;
+		ID3D11ShaderResourceView* shaderResource_;
+		ID3D11Texture2D* cameraTexture_;
 
 	public:
 		Texture();

@@ -5,8 +5,8 @@
 
 Texture::Texture()
 {
-	texture_ = 0;
-	cameraTextureLeft_ = 0;
+	shaderResource_ = 0;
+	cameraTexture_ = 0;
 
 }
 
@@ -25,7 +25,7 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 
 	// Load the texture in.
 	// result = D3DX11CreateShaderResourceViewFromFile(device, filename, NULL, NULL, &m_texture, NULL);
-	result = CreateDDSTextureFromFile(device, filename, nullptr, &texture_);
+	result = CreateDDSTextureFromFile(device, filename, nullptr, &shaderResource_);
 	if (FAILED(result))
 	{
 		std::wcout << filename << std::endl;
@@ -41,7 +41,6 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	ZeroMemory(&tdesc, sizeof(tdesc));
 	D3D11_SUBRESOURCE_DATA srInitData;
 	ZeroMemory(&srInitData, sizeof(srInitData));
-	ID3D11Texture2D* tex = 0;
 	D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
 	ZeroMemory(&srDesc, sizeof(srDesc));
 
@@ -71,7 +70,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	else
 		std::cout << "wrong inputs" << std::endl;
 
-	if (FAILED(device->CreateTexture2D(&tdesc, &srInitData, &tex)))
+	if (FAILED(device->CreateTexture2D(&tdesc, &srInitData, &cameraTexture_)))
 	{
 		std::cout << "Failed" << std::endl;
 		return(false);
@@ -85,10 +84,10 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	srDesc.Texture2D.MostDetailedMip = 0;
 	srDesc.Texture2D.MipLevels = 1;
 
-	HRESULT result = device->CreateShaderResourceView(tex, &srDesc, &texture_);
-	std::cout << result << std::endl;
+	// HRESULT result = device->CreateShaderResourceView(tex, &srDesc, &shaderResource_);
+	// std::cout << result << std::endl;
 
-	if (SUCCEEDED(device->CreateShaderResourceView(tex, &srDesc, &texture_)));
+	if (SUCCEEDED(device->CreateShaderResourceView(cameraTexture_, &srDesc, &shaderResource_)));
 	{
 		std::cerr << "Can't create Shader Resource View" << std::endl;
 		return true;
@@ -148,10 +147,10 @@ void Texture::Shutdown()
 
 	void* buffer = ::CoTaskMemAlloc(600 * 400 * 3);
 	// Release the texture resource.
-	if (texture_)
+	if (shaderResource_)
 	{
-		texture_->Release();
-		texture_ = 0;
+		shaderResource_->Release();
+		shaderResource_ = 0;
 	}
 
 	return;
@@ -160,5 +159,5 @@ void Texture::Shutdown()
 
 ID3D11ShaderResourceView* Texture::GetTexture()
 {
-	return texture_;
+	return shaderResource_;
 }
