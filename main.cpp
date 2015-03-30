@@ -53,7 +53,7 @@ int main(int, char**)
 	// namedWindow("camera_freeze", 1);
   namedWindow("undist",1);
   namedWindow("both", CV_WINDOW_FULLSCREEN);
-  cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+  // cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //    cvNamedWindow("both", CV_WINDOW_NORMAL);
 //    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
   // waitKey(0);
@@ -129,6 +129,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	// *TODO*: change the last 2 float Params properly when we do real rendering!
 	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
+	SetFocus(dx11->window_); // set window priority
 
 	// Reading Videocard Information and writing to a File
 	ofstream myfile;

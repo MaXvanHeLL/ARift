@@ -39,7 +39,7 @@ public:
 	bool Initialize(ID3D11Device*, int, int, WCHAR*, int, int);
 	bool InitializeCameras(ID3D11Device*, int, int, ARiftControl*, int, int);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, int);
+	bool Render(ID3D11DeviceContext*, int, int, ARiftControl*);
 
 	int GetIndexCount();
 	ID3D11ShaderResourceView* GetTexture(); 

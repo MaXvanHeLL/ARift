@@ -134,16 +134,17 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam, unsigned char* 
   is_LockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
 	char* driver_data = new char[memory_bytes];
 	memcpy(driver_data, last_img_mem, memory_bytes);
-	// [Added]
-	if (cam_buffer && cameraCaptureing_)
-	{
-		memcpy(cam_buffer, last_img_mem, memory_bytes);
-		cameraCaptureing_ = false;
-		std::cout << "Camera Image Freezed!" << std::endl;
-	}
-	//
-  is_UnlockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
 
+	// copy Camera Memory into Buffer for Textures used by DirectX
+	if (cam_buffer && cameraCaptureing_)
+	{		
+		memcpy(cam_buffer, last_img_mem, memory_bytes);
+		// cameraCaptureing_ = false;
+		// std::cout << "Camera Image Freezed!" << std::endl;
+	}
+	//--------------------------------------------------------
+
+  is_UnlockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
 	
   Mat rgb(height,width,CV_8UC4,(void*)driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
   if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )

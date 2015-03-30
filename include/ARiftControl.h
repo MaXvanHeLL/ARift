@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include "CameraInputHandler.h"
 #include "IDSuEyeInputHandler.h"
+#include <direct.h>
 
 #define CAM1 1
 #define CAM2 2
@@ -43,12 +44,16 @@ class ARiftControl
     cv::Mat full_view;
     cv::Mat full_view_undist;
     std::string base_save_name;
-		// [Testing Purpose]
+		// [Stuff for other DirectX Thread]
 		cv::Mat picture_1_;
 		cv::Mat picture_2_;
 		unsigned char* cameraBufferLeft_;
 		char* cameraBufferRight_;
-		// ---------------
+		HANDLE cameraMutexLeft_;
+		HANDLE cameraMutexRight_;
+		// Mutex cameraMutexLeft_;
+		// Mutex cameraMutexRight_;
+		// --------------------------------
     cv::Mat left_camera_mat;
     cv::Mat right_camera_mat;
     cv::Mat left_distortion;

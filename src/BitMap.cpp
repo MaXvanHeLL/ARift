@@ -1,4 +1,5 @@
 #include "../include/BitMap.h"
+#include <iostream>
 
 
 BitMap::BitMap()
@@ -98,7 +99,7 @@ void BitMap::Shutdown()
 }
 
 
-bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int positionY)
+bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int positionY, ARiftControl* arift_control)
 {
 	bool result;
 
@@ -106,6 +107,13 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 	result = UpdateBuffers(deviceContext, positionX, positionY);
 	if (!result)
 	{
+		return false;
+	}
+
+	result = texture_->Update(deviceContext, arift_control);
+	if (!result)
+	{
+		std::cout << "Error: Could not Update Bitmap Object!" << std::endl;
 		return false;
 	}
 

@@ -7,7 +7,6 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <iostream>
 
-#include <direct.h>
 #define GetCurrentDir _getcwd
 
 using namespace cv;
@@ -17,6 +16,12 @@ ARiftControl::ARiftControl()
   //ctor [Debug]
 	cameraBufferLeft_ = new unsigned char[CAMERA_BUFFER_LENGTH];
 	cameraBufferRight_ = new char[CAMERA_BUFFER_LENGTH];
+	cameraMutexLeft_ = CreateMutex(NULL, FALSE, L"Camera Left Mutex");
+
+	if (cameraMutexLeft_ == NULL)
+	{
+		std::cout << "Create Mutex error!" << std::endl;
+	}
 
 	String picture1_string = "data/test_picture1.jpg";
 	String picture2_string = "data/picture_2.bmp";
@@ -91,9 +96,13 @@ void ARiftControl::init()
 
 bool ARiftControl::getImages()
 {
+
   cam_input->grabFrames();
 //    cam_input->retrieveFrames(left_pic, right_pic, CAM1, CAM2);
+	WaitForSingleObject(cameraMutexLeft_, INFINITE);
   cam_input->retrieveFrame(left_pic, CAM1, cameraBufferLeft_);
+	ReleaseMutex(cameraMutexLeft_);
+
   cam_input->retrieveFrame(right_pic, CAM2, cameraBufferLeft_);
   if(left_pic.empty() || right_pic.empty())
   {
