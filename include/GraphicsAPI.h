@@ -39,12 +39,15 @@ private:
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
 	// used for Eye Rendering
-	RenderTexture* renderTexture_;
+	RenderTexture* renderTextureLeft_;
 	EyeWindow* eyeWindowLeft_;
+	RenderTexture* renderTextureRight_;
+	EyeWindow* eyeWindowRight_;
 
 	// used for Eye Rendering
-	bool RenderToTexture();
+	bool RenderToTexture(RenderTexture*);
 	bool RenderScene();
+	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          
 public:
 	GraphicsAPI();

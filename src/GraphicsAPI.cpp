@@ -27,8 +27,10 @@ GraphicsAPI::GraphicsAPI()
 
 	depthDisabledStencilState_ = 0;
 
-	renderTexture_ = 0;
+	renderTextureLeft_ = 0;
 	eyeWindowLeft_ = 0;
+	renderTextureRight_ = 0;
+	eyeWindowRight_ = 0;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -434,16 +436,16 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
-	// ------------------- [ Setup Eye Rendering ----------------------------
-	// Create the render to texture object.
-	renderTexture_ = new RenderTexture();
-	if (!renderTexture_)
+	// ------------------- [ Setup Eye Rendering ] ----------------------------
+	// [Left] Create the render to texture object.
+	renderTextureLeft_ = new RenderTexture();
+	if (!renderTextureLeft_)
 	{
 		return false;
 	}
 
 	// Initialize the render to texture object.
-	result = renderTexture_->Initialize(device_, screenWidth, screenHeight);
+	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
 	{
 		return false;
@@ -460,7 +462,33 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// There will obviously be some distortion since we will be mapping a full screen image down to a 100x100 texture.
 	// To fix the aspect ratio (if it is important for your purposes) then just make sure the debug window is sized smaller 
 	// but with the same aspect ratio. 
-	result = eyeWindowLeft_->Initialize(device_, screenWidth, screenHeight, 100, 100);
+	result = eyeWindowLeft_->Initialize(device_, screenWidth, screenHeight, screenWidth / 2,  screenHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the debug window object.", L"Error", MB_OK);
+		return false;
+	}
+	// [Right]
+	renderTextureRight_ = new RenderTexture();
+	if (!renderTextureRight_)
+	{
+		return false;
+	}
+
+	// Initialize the render to texture object.
+	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
+	if (!result)
+	{
+		return false;
+	}
+	// Create the debug window object.
+	eyeWindowRight_ = new EyeWindow();
+	if (!eyeWindowRight_)
+	{
+		return false;
+	}
+
+	result = eyeWindowRight_->Initialize(device_, screenWidth, screenHeight, 200, 200);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the debug window object.", L"Error", MB_OK);
@@ -508,8 +536,8 @@ bool GraphicsAPI::Render()
 	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix, orthoMatrix;
 	bool result;
 
-	// The first pass of our render is to a texture now. 
-	result = RenderToTexture();
+	// [Left Eye] The first pass of our render is to a texture now. 
+	result = RenderToTexture(renderTextureLeft_);
 	if (!result)
 	{
 		return false;
@@ -519,11 +547,13 @@ bool GraphicsAPI::Render()
 	BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Render the scene as normal to the back buffer.
+	// [Normal Rendering] ------------------------------
 	result = RenderScene();
 	if (!result)
 	{
 		return false;
 	}
+	// -------------------------------------------------
 
 	// Then after the rendering is complete we render the 2D debug window so we can see the render to texture
 	// as a 2D image at the 50x50 pixel location. 
@@ -531,44 +561,41 @@ bool GraphicsAPI::Render()
 	// Turn off the Z buffer to begin all 2D rendering.
 	TurnZBufferOff();
 
-	// Get the world, view, and ortho matrices from the camera and d3d objects.
-	GetWorldMatrix(worldMatrix);
-	camera_->GetViewMatrix(viewMatrix);
-	GetOrthoMatrix(orthoMatrix);
-
-	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = eyeWindowLeft_->Render(devicecontext_, 50, 50);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Render the debug window using the texture shader.
-	result = shader_->Render(devicecontext_, eyeWindowLeft_->GetIndexCount(), worldMatrix, viewMatrix,
-		orthoMatrix, renderTexture_->GetShaderResourceView());
-	if (!result)
-	{
-		return false;
-	}
+	// Render The Eye Window orthogonal to the screen
+	RenderEyeWindow(eyeWindowLeft_, renderTextureLeft_);
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	TurnZBufferOn();
 
-	// Present the rendered scene to the screen.
+
+	// [Right Eye]  ------------------------------------
+	result = RenderToTexture(renderTextureRight_);
+	if (!result)
+	{
+		return false;
+	}
+
+	TurnZBufferOff();
+
+	RenderEyeWindow(eyeWindowLeft_, renderTextureLeft_);
+
+	TurnZBufferOn();
+
+	// [End] Present the rendered scene to the screen.
 	EndScene();
 
 	return true;
 }
 
 
-bool GraphicsAPI::RenderToTexture()
+bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture)
 {
 	bool result;
 
 	// Set the render target to be the render to texture.
-	renderTexture_->SetRenderTarget(devicecontext_, GetDepthStencilView());
+	renderTexture->SetRenderTarget(devicecontext_, GetDepthStencilView());
 	// Clear the render to texture.
-	renderTexture_->ClearRenderTarget(devicecontext_, GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+	renderTexture->ClearRenderTarget(devicecontext_, GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Render the scene now and it will draw to the render to texture instead of the back buffer.
 	result = RenderScene();
@@ -589,7 +616,7 @@ bool GraphicsAPI::RenderScene()
 	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
 	// rotation
-	// float rotation = 0.0f;
+	static float rotation = 0.0f;
 
 	// Generate the view matrix based on the camera's position.
 	camera_->Render();
@@ -600,15 +627,16 @@ bool GraphicsAPI::RenderScene()
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
 
-	/* update the rotation variable each frame
+	// update the rotation variable each frame
 	rotation += (float)XM_PI * 0.005f;
 	if (rotation > 360.0f)
 	{
 	rotation -= 360.0f;
 	}
 
-	worldMatrix = XMMatrixRotationY(rotation);
-	*/
+	// XMMATRIX rotationMatrix = XMMatrixRotationY(rotation);
+	// XMStoreFloat4x4(&worldMatrix, rotationMatrix);
+	
 
 	// ******************************** || 2D RENDERING || *********************************
 
@@ -650,9 +678,65 @@ bool GraphicsAPI::RenderScene()
 	return true;
 }
 
+bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTexture)
+{
+	static int eye = 0;
+
+	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	HRESULT result;
+
+	// Get the world, view, and ortho matrices from the camera and d3d objects.
+	GetWorldMatrix(worldMatrix);
+	camera_->GetViewMatrix(viewMatrix);
+	GetOrthoMatrix(orthoMatrix);
+
+	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	if (eye == 0)
+	{
+		result = eyeWindow->Render(devicecontext_, 0, 0);
+		eye = 1;
+	}
+	else if (eye == 1)
+	{
+		result = eyeWindow->Render(devicecontext_, screenwidth_ / 2, 0);
+		eye = 0;
+	}
+
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the debug window using the texture shader.
+	result = shader_->Render(devicecontext_, eyeWindow->GetIndexCount(), worldMatrix, viewMatrix,
+		orthoMatrix, renderTexture->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 void GraphicsAPI::shutDownD3D()
 {
+
+	// Release the debug window object.
+	if (eyeWindowRight_)
+	{
+		eyeWindowRight_->Shutdown();
+		delete eyeWindowRight_;
+		eyeWindowRight_ = 0;
+	}
+
+	// Release the render to texture object.
+	if (renderTextureRight_)
+	{
+		renderTextureRight_->Shutdown();
+		delete renderTextureRight_;
+		renderTextureRight_ = 0;
+	}
 
 	// Release the debug window object.
 	if (eyeWindowLeft_)
@@ -663,11 +747,11 @@ void GraphicsAPI::shutDownD3D()
 	}
 
 	// Release the render to texture object.
-	if (renderTexture_)
+	if (renderTextureLeft_)
 	{
-		renderTexture_->Shutdown();
-		delete renderTexture_;
-		renderTexture_ = 0;
+		renderTextureLeft_->Shutdown();
+		delete renderTextureLeft_;
+		renderTextureLeft_ = 0;
 	}
 
 	// Release the texture shader object.
