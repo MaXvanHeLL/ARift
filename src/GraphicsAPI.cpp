@@ -26,6 +26,9 @@ GraphicsAPI::GraphicsAPI()
 	shader_ = 0;
 
 	depthDisabledStencilState_ = 0;
+
+	renderTexture_ = 0;
+	eyeWindowLeft_ = 0;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -431,6 +434,40 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
+	// ------------------- [ Setup Eye Rendering ----------------------------
+	// Create the render to texture object.
+	renderTexture_ = new RenderTexture();
+	if (!renderTexture_)
+	{
+		return false;
+	}
+
+	// Initialize the render to texture object.
+	result = renderTexture_->Initialize(device_, screenWidth, screenHeight);
+	if (!result)
+	{
+		return false;
+	}
+	// Create the debug window object.
+	eyeWindowLeft_ = new EyeWindow();
+	if (!eyeWindowLeft_)
+	{
+		return false;
+	}
+
+	// Initialize the debug window object.
+	// Here we create and initialize a new debug window object. Notice I have made the window size 100x100. 
+	// There will obviously be some distortion since we will be mapping a full screen image down to a 100x100 texture.
+	// To fix the aspect ratio (if it is important for your purposes) then just make sure the debug window is sized smaller 
+	// but with the same aspect ratio. 
+	result = eyeWindowLeft_->Initialize(device_, screenWidth, screenHeight, 100, 100);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the debug window object.", L"Error", MB_OK);
+		return false;
+	}
+	// ----------------------------------------------------------------------
+
 
 	// Create the texture shader object.
 	shader_ = new Shader();
@@ -471,24 +508,114 @@ bool GraphicsAPI::Render()
 	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix, orthoMatrix;
 	bool result;
 
+	// The first pass of our render is to a texture now. 
+	result = RenderToTexture();
+	if (!result)
+	{
+		return false;
+	}
+
 	// Clear the buffers to begin the scene.
 	BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Render the scene as normal to the back buffer.
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Then after the rendering is complete we render the 2D debug window so we can see the render to texture
+	// as a 2D image at the 50x50 pixel location. 
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	TurnZBufferOff();
+
+	// Get the world, view, and ortho matrices from the camera and d3d objects.
+	GetWorldMatrix(worldMatrix);
+	camera_->GetViewMatrix(viewMatrix);
+	GetOrthoMatrix(orthoMatrix);
+
+	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	result = eyeWindowLeft_->Render(devicecontext_, 50, 50);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the debug window using the texture shader.
+	result = shader_->Render(devicecontext_, eyeWindowLeft_->GetIndexCount(), worldMatrix, viewMatrix,
+		orthoMatrix, renderTexture_->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	EndScene();
+
+	return true;
+}
+
+
+bool GraphicsAPI::RenderToTexture()
+{
+	bool result;
+
+	// Set the render target to be the render to texture.
+	renderTexture_->SetRenderTarget(devicecontext_, GetDepthStencilView());
+	// Clear the render to texture.
+	renderTexture_->ClearRenderTarget(devicecontext_, GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+
+	// Render the scene now and it will draw to the render to texture instead of the back buffer.
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	SetBackBufferRenderTarget();
+
+	return true;
+}
+
+
+bool GraphicsAPI::RenderScene()
+{
+	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	bool result;
+	// rotation
+	// float rotation = 0.0f;
 
 	// Generate the view matrix based on the camera's position.
 	camera_->Render();
 
 	// Get the world, view, and projection matrices from the camera and d3d objects.
 	camera_->GetViewMatrix(viewMatrix);
-	GetWorldMatrix(worldMatrix);	
+	GetWorldMatrix(worldMatrix);
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
+
+	/* update the rotation variable each frame
+	rotation += (float)XM_PI * 0.005f;
+	if (rotation > 360.0f)
+	{
+	rotation -= 360.0f;
+	}
+
+	worldMatrix = XMMatrixRotationY(rotation);
+	*/
 
 	// ******************************** || 2D RENDERING || *********************************
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	// TODO: change that later depending on the real scene!
 
-  TurnZBufferOff();
+	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_);
@@ -520,14 +647,29 @@ bool GraphicsAPI::Render()
 		return false;
 	}
 
-	// Present the rendered scene to the screen.
-	EndScene();
-
 	return true;
 }
 
+
 void GraphicsAPI::shutDownD3D()
 {
+
+	// Release the debug window object.
+	if (eyeWindowLeft_)
+	{
+		eyeWindowLeft_->Shutdown();
+		delete eyeWindowLeft_;
+		eyeWindowLeft_ = 0;
+	}
+
+	// Release the render to texture object.
+	if (renderTexture_)
+	{
+		renderTexture_->Shutdown();
+		delete renderTexture_;
+		renderTexture_ = 0;
+	}
+
 	// Release the texture shader object.
 	if (shader_)
 	{
@@ -724,5 +866,20 @@ void GraphicsAPI::TurnZBufferOn()
 void GraphicsAPI::TurnZBufferOff()
 {
 	devicecontext_->OMSetDepthStencilState(depthDisabledStencilState_, 1);
+	return;
+}
+
+
+ID3D11DepthStencilView* GraphicsAPI::GetDepthStencilView()
+{
+	return depthstencilview_;
+}
+
+
+void GraphicsAPI::SetBackBufferRenderTarget()
+{
+	// Bind the render target view and depth stencil buffer to the output render pipeline.
+	devicecontext_->OMSetRenderTargets(1, &rendertargetview_, depthstencilview_);
+
 	return;
 }

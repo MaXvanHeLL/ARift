@@ -13,6 +13,8 @@
 #include "../include/Model.h"
 #include "../include/Shader.h"
 #include "../include/BitMap.h"
+#include "../include/EyeWindow.h"
+#include "../include/RenderTexture.h"
 
 class ARiftControl;
 // -------------------------------
@@ -35,6 +37,14 @@ private:
 	Shader* shader_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
+
+	// used for Eye Rendering
+	RenderTexture* renderTexture_;
+	EyeWindow* eyeWindowLeft_;
+
+	// used for Eye Rendering
+	bool RenderToTexture();
+	bool RenderScene();
          
 public:
 	GraphicsAPI();
@@ -53,6 +63,10 @@ public:
 	// used for 2D (Bitmaps) - 3D (Models) Rendering on Screen
 	void TurnZBufferOn();
 	void TurnZBufferOff();
+
+	// used for Oculus Eye Rendering
+	ID3D11DepthStencilView* GetDepthStencilView();
+	void SetBackBufferRenderTarget();
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
