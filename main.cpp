@@ -92,7 +92,14 @@ int main(int, char**)
 DWORD WINAPI directXHandling(LPVOID lpArg)
 {
 	ARiftControl* arift_c = (ARiftControl*)lpArg;
-	// arift_control->left_undistorted;
+
+	if (AR_HMD_ENABLED)
+	{
+		// install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
+		OculusHMD::initialization(dx11);
+		OculusHMD::instance()->configureStereoRendering();
+	}
+
 	// clear out the window class for use
 	ZeroMemory(&dx11->window_class_, sizeof(WNDCLASSEX));
 
@@ -113,26 +120,23 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		dx11->applicationName_,    // name of the window class
 		L"DirectX Render Scene",   // title of the window
 		WS_OVERLAPPEDWINDOW,    // window style
-		20,    // x-position of the window
-		20,    // y-position of the window
-		RIFT_RESOLUTION_WIDTH,    // width of the window
-		RIFT_RESOLUTION_HEIGHT,    // height of the window
+		0,    // x-position of the window
+		0,    // y-position of the window
+		OculusHMD::instance()->resolution_.w,  // width of the window
+		OculusHMD::instance()->resolution_.h,    // height of the window
 		NULL,    // we have no parent window, NULL
 		NULL,    // we aren't using menus, NULL
 		dx11->hinstance_,    // application handle
 		NULL);    // used with multiple windows, NULL
 
 	// *TODO*: change the last 2 float Params properly when we do real rendering!
-	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
+	dx11->InitD3D(OculusHMD::instance()->resolution_.w, OculusHMD::instance()->resolution_.h, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
 	SetFocus(dx11->window_); // set window priority
 
-
 	if (AR_HMD_ENABLED)
 	{
-		// install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
-		// OculusHMD::initialization(dx11);
-		// OculusHMD::instance()->configureStereoRendering();
+		ovrHmd_AttachToWindow(OculusHMD::instance()->hmd_, dx11->window_, NULL, NULL);
 	}
 
 
@@ -165,6 +169,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		// If the message is WM_QUIT, exit the while loop
 		if (msg.message == WM_QUIT)
 			break;
+
 
 		// Run "game" code here
 		frame_return = dx11->Frame();

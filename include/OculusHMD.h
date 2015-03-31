@@ -13,11 +13,12 @@ class OculusHMD
 	private:
 		static OculusHMD* instance_;
 		GraphicsAPI* graphicsAPI_;
-		ovrHmd hmd_;
-		ovrSizei resolution_;
 		bool running_ = false;
 
 	public:
+		ovrHmd hmd_;
+		ovrSizei resolution_;
+
 		OculusHMD();
 		virtual ~OculusHMD();
 
