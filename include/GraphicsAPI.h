@@ -17,6 +17,8 @@
 #include "../include/RenderTexture.h"
 #include "../include/OculusHMD.h"
 
+#define HMD_DISTORTION 0
+
 class ARiftControl;
 // -------------------------------
 
@@ -38,12 +40,6 @@ private:
 	Shader* shader_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
-
-	// used for Eye Rendering
-	RenderTexture* renderTextureLeft_;
-	EyeWindow* eyeWindowLeft_;
-	RenderTexture* renderTextureRight_;
-	EyeWindow* eyeWindowRight_;
 
 	// used for Eye Rendering
 	bool RenderToTexture(RenderTexture*);
@@ -95,6 +91,12 @@ public:
 	ID3D11DepthStencilState* depthstencilstate_;
 	ID3D11DepthStencilView* depthstencilview_;
 	ID3D11RasterizerState* rasterstate_;
+
+	// used for Eye Rendering
+	RenderTexture* renderTextureLeft_;
+	EyeWindow* eyeWindowLeft_;
+	RenderTexture* renderTextureRight_;
+	EyeWindow* eyeWindowRight_;
 };
 
 #endif // GraphicsAPI_H

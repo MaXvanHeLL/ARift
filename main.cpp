@@ -3,16 +3,17 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 // Include the OculusVR SDK
-#include "OVR_CAPI.h"
+// #define OVR_D3D_VERSION 11
+// #include "OVR_CAPI.h"
+// #include "OVR_CAPI_D3D.h"
 // ARift includes
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
 #include "include/GraphicsAPI.h"
 #include <iostream>
 #include <windows.h>
-#define OVR_D3D_VERSION 11
+
 #define AR_HMD_ENABLED 1
-#include "OVR_CAPI_D3D.h"
 
 using namespace cv;
 using namespace std;
@@ -31,7 +32,6 @@ GraphicsAPI* dx11 = NULL;
 
 int main(int, char**)
 {
-  // dx11 = new GraphicsAPI();
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
   ARiftControl cont;
@@ -97,7 +97,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	{
 		// install the Oculus Rift and GraphicsAPI Renderer and init Render Thread
 		OculusHMD::initialization(dx11);
-		OculusHMD::instance()->configureStereoRendering();
+		OculusHMD::instance()->calculateFOV();
 	}
 
 	// clear out the window class for use
@@ -130,15 +130,12 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		dx11->hinstance_,    // application handle
 		NULL);    // used with multiple windows, NULL
 
-	// *TODO*: change the last 2 float Params properly when we do real rendering!
 	dx11->InitD3D(OculusHMD::instance()->resolution_.w, OculusHMD::instance()->resolution_.h, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen
 	SetFocus(dx11->window_); // set window priority
 
 	if (AR_HMD_ENABLED)
-	{
-		ovrHmd_AttachToWindow(OculusHMD::instance()->hmd_, dx11->window_, NULL, NULL);
-	}
+		OculusHMD::instance()->configureStereoRendering();		
 
 	// Reading Videocard Information and writing to a File
 	ofstream myfile;
@@ -169,7 +166,6 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		// If the message is WM_QUIT, exit the while loop
 		if (msg.message == WM_QUIT)
 			break;
-
 
 		// Run "game" code here
 		frame_return = dx11->Frame();

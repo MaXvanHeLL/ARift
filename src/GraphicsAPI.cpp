@@ -453,10 +453,12 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
+	/*
 	std::cout << "Eye[0] Width : " << OculusHMD::instance()->eyeSize_[0].w << std::endl;
 	std::cout << "Eye[0] Heigth : " << OculusHMD::instance()->eyeSize_[0].h << std::endl;
 	std::cout << "Eye[1] Width : " << OculusHMD::instance()->eyeSize_[1].w << std::endl;
-	std::cout << "Eye[1] Height : " << OculusHMD::instance()->eyeSize_[1].w << std::endl;
+	std::cout << "Eye[1] Height : " << OculusHMD::instance()->eyeSize_[1].h << std::endl;
+	*/
 
 	// Create the debug window object.
 	eyeWindowLeft_ = new EyeWindow();
@@ -543,6 +545,9 @@ bool GraphicsAPI::Render()
 {
 	bool result;
 
+	if (HMD_DISTORTION)
+		OculusHMD::instance()->StartFrames();
+
 	// [Left Eye] The first pass of our render is to a texture now. 
 	result = RenderToTexture(renderTextureLeft_);
 	if (!result)
@@ -551,6 +556,7 @@ bool GraphicsAPI::Render()
 	}
 
 	// Clear the buffers to begin the scene.
+	// 
 	BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Render the scene as normal to the back buffer.
@@ -564,15 +570,15 @@ bool GraphicsAPI::Render()
 	*/
 	// -------------------------------------------------
 
-	// Turn off the Z buffer to begin all 2D rendering.
-	TurnZBufferOff();
-
-	// Render The Eye Window orthogonal to the screen
-	RenderEyeWindow(eyeWindowLeft_, renderTextureLeft_);
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	TurnZBufferOn();
-
+	if (!HMD_DISTORTION)
+	{
+		// Turn off the Z buffer to begin all 2D rendering.
+		TurnZBufferOff();
+		// Render The Eye Window orthogonal to the screen
+		RenderEyeWindow(eyeWindowLeft_, renderTextureLeft_);
+		// Turn the Z buffer back on now that all 2D rendering has completed.
+		TurnZBufferOn();
+	}
 
 	// [Right Eye]  ------------------------------------
 	result = RenderToTexture(renderTextureRight_);
@@ -581,14 +587,18 @@ bool GraphicsAPI::Render()
 		return false;
 	}
 
-	TurnZBufferOff();
-
-	RenderEyeWindow(eyeWindowRight_, renderTextureRight_);
-
-	TurnZBufferOn();
+	if (!HMD_DISTORTION)
+	{
+		TurnZBufferOff();
+		RenderEyeWindow(eyeWindowRight_, renderTextureRight_);
+		TurnZBufferOn();
+	}
 
 	// [End] Present the rendered scene to the screen.
-	EndScene();
+	if (HMD_DISTORTION)
+		OculusHMD::instance()->RenderDistortion();
+	else
+	  EndScene();
 
 	return true;
 }
