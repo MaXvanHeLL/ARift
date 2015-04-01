@@ -115,6 +115,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	// register the window class
 	RegisterClassEx(&dx11->window_class_);
 
+	// [Testing Purpose:] use 960 x 600 windowed for oculus view
 	// create the window and use the result as the handle
 	dx11->window_ = CreateWindowEx(NULL,
 		dx11->applicationName_,    // name of the window class
@@ -138,7 +139,6 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	{
 		ovrHmd_AttachToWindow(OculusHMD::instance()->hmd_, dx11->window_, NULL, NULL);
 	}
-
 
 	// Reading Videocard Information and writing to a File
 	ofstream myfile;

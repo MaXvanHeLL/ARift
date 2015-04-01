@@ -437,6 +437,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// ------------------- [ Setup Eye Rendering ] ----------------------------
+
 	// [Left] Create the render to texture object.
 	renderTextureLeft_ = new RenderTexture();
 	if (!renderTextureLeft_)
@@ -445,11 +446,18 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Initialize the render to texture object.
+	// result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
 	{
 		return false;
 	}
+
+	std::cout << "Eye[0] Width : " << OculusHMD::instance()->eyeSize_[0].w << std::endl;
+	std::cout << "Eye[0] Heigth : " << OculusHMD::instance()->eyeSize_[0].h << std::endl;
+	std::cout << "Eye[1] Width : " << OculusHMD::instance()->eyeSize_[1].w << std::endl;
+	std::cout << "Eye[1] Height : " << OculusHMD::instance()->eyeSize_[1].w << std::endl;
+
 	// Create the debug window object.
 	eyeWindowLeft_ = new EyeWindow();
 	if (!eyeWindowLeft_)
@@ -488,7 +496,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
-	result = eyeWindowRight_->Initialize(device_, screenWidth, screenHeight, 200, 200);
+	result = eyeWindowRight_->Initialize(device_, screenWidth, screenHeight, screenWidth / 2, screenHeight);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the debug window object.", L"Error", MB_OK);
@@ -533,7 +541,6 @@ bool GraphicsAPI::Frame()
 
 bool GraphicsAPI::Render()
 {
-	XMFLOAT4X4 viewMatrix, projectionMatrix, worldMatrix, orthoMatrix;
 	bool result;
 
 	// [Left Eye] The first pass of our render is to a texture now. 
@@ -548,15 +555,14 @@ bool GraphicsAPI::Render()
 
 	// Render the scene as normal to the back buffer.
 	// [Normal Rendering] ------------------------------
-	result = RenderScene();
+	// result = RenderScene();
+	/*
 	if (!result)
 	{
 		return false;
 	}
+	*/
 	// -------------------------------------------------
-
-	// Then after the rendering is complete we render the 2D debug window so we can see the render to texture
-	// as a 2D image at the 50x50 pixel location. 
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	TurnZBufferOff();
@@ -577,7 +583,7 @@ bool GraphicsAPI::Render()
 
 	TurnZBufferOff();
 
-	RenderEyeWindow(eyeWindowLeft_, renderTextureLeft_);
+	RenderEyeWindow(eyeWindowRight_, renderTextureRight_);
 
 	TurnZBufferOn();
 

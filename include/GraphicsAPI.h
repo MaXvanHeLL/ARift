@@ -15,6 +15,7 @@
 #include "../include/BitMap.h"
 #include "../include/EyeWindow.h"
 #include "../include/RenderTexture.h"
+#include "../include/OculusHMD.h"
 
 class ARiftControl;
 // -------------------------------

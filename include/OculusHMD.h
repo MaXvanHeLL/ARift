@@ -5,6 +5,9 @@
 // #include "IDSuEyeInputHandler.h"
 // #include "../../oculus/ovr_sdk_win_0.4.4/OculusSDK/LibOVR/Src/OVR_CAPI.h" // add oculus sdk to project libs afterwards!
 #include "OVR_CAPI.h"
+#include "Kernel/OVR_Math.h"
+
+using namespace OVR;
 
 class GraphicsAPI;
 
@@ -18,6 +21,7 @@ class OculusHMD
 	public:
 		ovrHmd hmd_;
 		ovrSizei resolution_;
+		Sizei eyeSize_[2];
 
 		OculusHMD();
 		virtual ~OculusHMD();
