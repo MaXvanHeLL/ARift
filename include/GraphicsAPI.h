@@ -17,7 +17,7 @@
 #include "../include/RenderTexture.h"
 #include "../include/OculusHMD.h"
 
-#define HMD_DISTORTION 0
+#define HMD_DISTORTION 1
 
 class ARiftControl;
 // -------------------------------
