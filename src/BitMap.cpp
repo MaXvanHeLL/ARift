@@ -110,11 +110,14 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 		return false;
 	}
 	
-	result = texture_->Update(deviceContext, arift_control);
-	if (!result)
+	if (AR_HMD_ENABLED)
 	{
-		std::cout << "Error: Could not Update Bitmap Object!" << std::endl;
-		return false;
+		result = texture_->Update(deviceContext, arift_control);
+		if (!result)
+		{
+			std::cout << "Error: Could not Update Bitmap Object!" << std::endl;
+			return false;
+		}
 	}
 
 	// Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.

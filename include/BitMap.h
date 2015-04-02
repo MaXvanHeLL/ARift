@@ -7,6 +7,7 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include "Texture.h"
+#include "GraphicsAPI.h"
 
 using namespace DirectX;
 

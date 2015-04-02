@@ -127,6 +127,9 @@ void OculusHMD::configureStereoRendering()
 	ovrHmd_GetEyePoses(hmd_, 0, useHmdToEyeViewOffset_, eyeRenderPose_, NULL);
 
 	ovrHmd_AttachToWindow(OculusHMD::instance()->hmd_, graphicsAPI_->window_, NULL, NULL);
+
+	// disable health and security warnings 
+	ovrHmd_DismissHSWDisplay(hmd_);
 }
 
 void OculusHMD::StartFrames()

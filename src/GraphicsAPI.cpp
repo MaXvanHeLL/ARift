@@ -1,5 +1,6 @@
 #include "../include/GraphicsAPI.h"
 #include "../include/ARiftControl.h"
+#include "../include/BitMap.h"
 #include <iostream>
 
 using namespace DirectX;
@@ -429,7 +430,11 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	
 	// Initialize the bitmap object.
   // result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", 256, 256);
-	result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
+	if (AR_HMD_ENABLED)
+		result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
+	else
+		result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", screenWidth, screenHeight);
+
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the bitmap object.", L"Error", MB_OK);
@@ -545,7 +550,7 @@ bool GraphicsAPI::Render()
 {
 	bool result;
 
-	if (HMD_DISTORTION)
+	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
 
 	// [Left Eye] The first pass of our render is to a texture now. 
@@ -595,7 +600,7 @@ bool GraphicsAPI::Render()
 	}
 
 	// [End] Present the rendered scene to the screen.
-	if (HMD_DISTORTION)
+	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->RenderDistortion();
 	else
 	  EndScene();
