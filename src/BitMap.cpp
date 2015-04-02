@@ -1,4 +1,5 @@
 #include "../include/BitMap.h"
+#include <iostream>
 
 
 BitMap::BitMap()
@@ -52,6 +53,39 @@ bool BitMap::Initialize(ID3D11Device* device, int screenWidth, int screenHeight,
 	return true;
 }
 
+bool BitMap::InitializeCameras(ID3D11Device* device, int screenWidth, int screenHeight, ARiftControl* arift_control, int bitmapWidth, int bitmapHeight)
+{
+	bool result;
+
+	// Store the screen size.
+	screenwidth_ = screenWidth;
+	screenheight_ = screenHeight;
+
+	// Store the size in pixels that this bitmap should be rendered at.
+	bitmapwidth_ = bitmapWidth;
+	bitmapheight_ = bitmapHeight;
+
+	// Initialize the previous rendering position to negative one.
+	previousposX_ = -1;
+	previousposY_ = -1;
+
+	// Initialize the vertex and index buffers.
+	result = InitializeBuffers(device);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Load the texture for this model.
+	result = LoadCameraStream(device, arift_control);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 
 void BitMap::Shutdown()
 {
@@ -65,15 +99,25 @@ void BitMap::Shutdown()
 }
 
 
-bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int positionY)
+bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int positionY, ARiftControl* arift_control)
 {
-	bool result;
+	bool result = 0;
 
 	// Re-build the dynamic vertex buffer for rendering to possibly a different location on the screen.
 	result = UpdateBuffers(deviceContext, positionX, positionY);
 	if (!result)
 	{
 		return false;
+	}
+	
+	if (AR_HMD_ENABLED)
+	{
+		result = texture_->Update(deviceContext, arift_control);
+		if (!result)
+		{
+			std::cout << "Error: Could not Update Bitmap Object!" << std::endl;
+			return false;
+		}
 	}
 
 	// Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -86,6 +130,18 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 int BitMap::GetIndexCount()
 {
 	return indexcount_;
+}
+
+
+int BitMap::GetPositionX()
+{
+	return previousposX_;
+}
+
+
+int BitMap::GetPositionY()
+{
+	return previousposY_;
 }
 
 
@@ -318,6 +374,27 @@ bool BitMap::LoadTexture(ID3D11Device* device, WCHAR* filename)
 
 	// Initialize the texture object.
 	result = texture_->Initialize(device, filename);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool BitMap::LoadCameraStream(ID3D11Device* device, ARiftControl* arift_control)
+{
+	bool result;
+
+	// Create the texture object.
+	texture_ = new Texture();
+	if (!texture_)
+	{
+		return false;
+	}
+
+	// Initialize the texture object.
+	result = texture_->InitCameraStream(device, arift_control);
 	if (!result)
 	{
 		return false;

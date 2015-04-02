@@ -12,14 +12,22 @@
 #include "../include/Camera.h"
 #include "../include/Model.h"
 #include "../include/Shader.h"
-#include "../include/BitMap.h"
+// #include "../include/BitMap.h"
+#include "../include/EyeWindow.h"
+#include "../include/RenderTexture.h"
+#include "../include/OculusHMD.h"
 
+#define AR_HMD_ENABLED 1
+#define HMD_DISTORTION 1
+
+class BitMap;
 class ARiftControl;
 // -------------------------------
 
 class GraphicsAPI
 {
 private:
+	ARiftControl* ariftcontrol_;
 	ID3D11Device* device_;
 	ID3D11DeviceContext* devicecontext_;
 	DirectX::XMFLOAT4X4 projectionmatrix_;
@@ -34,6 +42,11 @@ private:
 	Shader* shader_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
+
+	// used for Eye Rendering
+	bool RenderToTexture(RenderTexture*);
+	bool RenderScene();
+	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          
 public:
 	GraphicsAPI();
@@ -41,9 +54,9 @@ public:
 	
 	DWORD WINAPI run(LPVOID lpArg);
 	bool InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
-		float screenDepth, float screenNear); 
-	bool Frame(ARiftControl* arift_c);
-	bool Render(ARiftControl* arift_c);
+		float screenDepth, float screenNear, ARiftControl* arift_control); 
+	bool Frame();
+	bool Render();
 	void shutDownD3D();
 
 	void BeginScene(float, float, float, float);
@@ -52,6 +65,10 @@ public:
 	// used for 2D (Bitmaps) - 3D (Models) Rendering on Screen
 	void TurnZBufferOn();
 	void TurnZBufferOff();
+
+	// used for Oculus Eye Rendering
+	ID3D11DepthStencilView* GetDepthStencilView();
+	void SetBackBufferRenderTarget();
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
@@ -76,6 +93,12 @@ public:
 	ID3D11DepthStencilState* depthstencilstate_;
 	ID3D11DepthStencilView* depthstencilview_;
 	ID3D11RasterizerState* rasterstate_;
+
+	// used for Eye Rendering
+	RenderTexture* renderTextureLeft_;
+	EyeWindow* eyeWindowLeft_;
+	RenderTexture* renderTextureRight_;
+	EyeWindow* eyeWindowRight_;
 };
 
 #endif // GraphicsAPI_H

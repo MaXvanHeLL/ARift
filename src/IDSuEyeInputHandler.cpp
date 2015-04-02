@@ -15,6 +15,7 @@ IDSuEyeInputHandler::IDSuEyeInputHandler()
 	auto_sensor_shutter[1] = false;
 	auto_sensor_gain[0] = false;
 	auto_sensor_gain[1] = false;
+	cameraCaptureing_ = true;
 }
 
 IDSuEyeInputHandler::~IDSuEyeInputHandler()
@@ -39,8 +40,8 @@ bool IDSuEyeInputHandler::openCams()
     return false;
   }
 
-  nRet1 = is_SetColorMode(m_hcam[0], IS_CM_RGB8_PACKED);// TODO set memory format to agree with opencv
-  nRet2 = is_SetColorMode(m_hcam[1], IS_CM_RGB8_PACKED);
+  nRet1 = is_SetColorMode(m_hcam[0], IS_CM_RGBA8_PACKED);// TODO set memory format to agree with opencv
+  nRet2 = is_SetColorMode(m_hcam[1], IS_CM_RGBA8_PACKED);
   if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
     std::cout << "Error could specify color formats to IS_CM_BGR8_PACKED" << std::endl;
@@ -90,7 +91,7 @@ bool IDSuEyeInputHandler::addMemoryToCam(int cam)
 {
   char *new_mem_addr;
   int new_mem_id;
-  int ret1 = is_AllocImageMem(m_hcam[cam],width,height,24,&new_mem_addr,&new_mem_id);
+  int ret1 = is_AllocImageMem(m_hcam[cam], width, height, 32, &new_mem_addr,&new_mem_id); // 32 | 24 Bits (Alpha Channel)
   if(ret1 != IS_SUCCESS)
   {
     std::cout << "Error initializing camera memory code " <<ret1 << std::endl;
@@ -118,20 +119,34 @@ void IDSuEyeInputHandler::printMem(int cam)
 
 }
 
-void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
+void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer = NULL)
 {
+
+
   if(cam != 1 && cam != 2)
   {
     std::cout << "IDSuEyeInputHandler::retrieveFrame no cam with ID " << cam << std::endl;
   }
+	// added
+	size_t memory_bytes = 4 * width * height * depth / 8;
   char* last_img_mem = NULL;
   is_GetActSeqBuf(m_hcam[cam-1],0,NULL,&last_img_mem);
   is_LockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
-  char* driver_data = new char[3 * width * height * depth/8];
-  memcpy(driver_data,last_img_mem,3 * width * height * depth/8);
-  is_UnlockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
+	char* driver_data = new char[memory_bytes];
+	memcpy(driver_data, last_img_mem, memory_bytes);
 
-  Mat rgb(height,width,CV_8UC3,(void*)driver_data);
+	// copy Camera Memory into Buffer for Textures used by DirectX
+	if (cam_buffer && cameraCaptureing_)
+	{		
+		memcpy(cam_buffer, last_img_mem, memory_bytes);
+		// cameraCaptureing_ = false;
+		// std::cout << "Camera Image Freezed!" << std::endl;
+	}
+	//--------------------------------------------------------
+
+  is_UnlockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
+	
+  Mat rgb(height,width,CV_8UC4,(void*)driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
   if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )
   {
     frame = Mat::zeros(rgb.rows,rgb.cols,rgb.type());
@@ -143,6 +158,7 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
   delete[] driver_data;
   if(flip_status_cam[cam - 1] != NOFLIP)
     flip(frame,frame,flip_status_cam[cam - 1]);
+		
 }
 
 void IDSuEyeInputHandler::readFrame(cv::Mat& frame, int cam)

@@ -7,9 +7,11 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include "Texture.h"
+#include "GraphicsAPI.h"
 
 using namespace DirectX;
 
+class ARiftControl;
 class Texture;
 
 class BitMap
@@ -36,11 +38,14 @@ public:
 	~BitMap();
 
 	bool Initialize(ID3D11Device*, int, int, WCHAR*, int, int);
+	bool InitializeCameras(ID3D11Device*, int, int, ARiftControl*, int, int);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, int);
+	bool Render(ID3D11DeviceContext*, int, int, ARiftControl*);
 
 	int GetIndexCount();
-	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView* GetTexture(); 
+	int GetPositionX();
+	int GetPositionY();
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
@@ -49,6 +54,7 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 
 	bool LoadTexture(ID3D11Device*, WCHAR*);
+	bool LoadCameraStream(ID3D11Device*, ARiftControl*);
 	void ReleaseTexture();
 };
 

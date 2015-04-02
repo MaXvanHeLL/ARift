@@ -5,15 +5,19 @@
 // #include <DirectXTex\DirectXTex.h>
 // #include "../../DirectXTex//DDSTextureLoader/DDSTextureLoader.h"
 // #include "../../DirectXTex//DDSTextureLoader/DDSTextureLoader.cpp"
+
 #include <DirectXMath.h>
 #include <DDSTextureLoader\DDSTextureLoader.h>
+#include "D:\DirectXTK\Inc\WICTextureLoader.h"
 
+class ARiftControl;
 using namespace DirectX;
 
 class Texture
 {
 	private:
-		ID3D11ShaderResourceView* texture_;
+		ID3D11ShaderResourceView* shaderResource_;
+		ID3D11Texture2D* cameraTexture_;
 
 	public:
 		Texture();
@@ -21,6 +25,9 @@ class Texture
 		~Texture();
 
 		bool Initialize(ID3D11Device*, WCHAR*);
+		bool InitCameraStream(ID3D11Device*, ARiftControl*);
+		bool Update(ID3D11DeviceContext*, ARiftControl*);
+
 		void Shutdown();
 
 		ID3D11ShaderResourceView* GetTexture();

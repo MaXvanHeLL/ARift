@@ -1,10 +1,12 @@
 #ifndef OCULUSHMD_H
 #define OCULUSHMD_H
 #include <opencv2/core/core.hpp>
-// #include "CameraInputHandler.h"
-// #include "IDSuEyeInputHandler.h"
-// #include "../../oculus/ovr_sdk_win_0.4.4/OculusSDK/LibOVR/Src/OVR_CAPI.h" // add oculus sdk to project libs afterwards!
-#include "OVR_CAPI.h"
+// #define OVR_D3D_VERSION 11
+#include <OVR_CAPI.h>
+// #include "OVR_CAPI_D3D.h"
+#include "Kernel/OVR_Math.h"
+
+using namespace OVR;
 
 class GraphicsAPI;
 
@@ -12,24 +14,34 @@ class OculusHMD
 {
 	private:
 		static OculusHMD* instance_;
-		GraphicsAPI* directX_renderer_;
-		ovrHmd hmd_;
-		ovrSizei resolution_;
+		GraphicsAPI* graphicsAPI_;
 		bool running_ = false;
 
 	public:
+		ovrHmd hmd_;
+		ovrSizei resolution_;
+		Sizei eyeSize_[2];
+		ovrEyeRenderDesc eyeRenderDesc_[2];
+		ovrVector3f useHmdToEyeViewOffset_[2];
+		ovrPosef eyeRenderPose_[2];
+
 		OculusHMD();
 		virtual ~OculusHMD();
 
 		//** - Description: used for creating the Singleton Object once
 		// @return: void
 		// ----
-		static void initialization();
+		static void initialization(GraphicsAPI*);
 
 		//** - Description: As a Singleton class, this static function returns the object instance of OculusHMD
 		// @return: the OculusHMD* object instance
 		// ----
 		static OculusHMD* instance();
+
+		//** - Description: calculate FOV size
+		// @return: void
+		// ----
+		void calculateFOV();
 
 		//** - Description: Setting up the stereo rendering configuration for the HMD during initialization()
 		// @return: void
@@ -44,15 +56,9 @@ class OculusHMD
 		// ----
 		void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
 
-		//** - Description: Renders The Buffer to each of the HMD Screens
-		// @param1: y rotation
-		// @param2: x rotation
-		// @param3: z rotation
-		// @return: void
-		// ----
-		void render(cv::Mat, cv::Mat);
+		void StartFrames();
 
-		void setRenderer(GraphicsAPI* dx11);
+		bool RenderDistortion();
 };
 
 #endif // OCULUSHMD_H
