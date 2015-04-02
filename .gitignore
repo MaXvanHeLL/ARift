@@ -9,6 +9,9 @@
 *.vcxproj
 *.vcxproj.*
 *.props
+Calibrate_OpenCV
+DirectXTK
+calib
 
 # User-specific files
 *.suo
