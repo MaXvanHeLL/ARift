@@ -2,14 +2,9 @@
 #define _TEXTURE_H_
 
 #include <d3d11.h>
-// #include <DirectXTex\DirectXTex.h>
-// #include "../../DirectXTex//DDSTextureLoader/DDSTextureLoader.h"
-// #include "../../DirectXTex//DDSTextureLoader/DDSTextureLoader.cpp"
 
 #include <DirectXMath.h>
-#include <DDSTextureLoader\DDSTextureLoader.h>
-#include "D:\DirectXTK\Inc\WICTextureLoader.h"
-
+#include <DDSTextureLoader.h>
 class ARiftControl;
 using namespace DirectX;
 

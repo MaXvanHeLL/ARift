@@ -23,7 +23,6 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 	HRESULT result;
 
 	// Load the texture in.
-	// result = D3DX11CreateShaderResourceViewFromFile(device, filename, NULL, NULL, &m_texture, NULL);
 	result = CreateDDSTextureFromFile(device, filename, nullptr, &shaderResource_);
 	if (FAILED(result))
 	{
@@ -47,12 +46,12 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	// Sleep(500);
 	
 	tdesc.ArraySize = 1;
-	tdesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	tdesc.Usage = D3D11_USAGE_DYNAMIC;
+	tdesc.BindFlags =      D3D11_BIND_SHADER_RESOURCE;
+	tdesc.Usage =          D3D11_USAGE_DYNAMIC;
 	tdesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	tdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	tdesc.Format =         DXGI_FORMAT_R8G8B8A8_UNORM;
 	tdesc.Height = CAMERA_HEIGHT;
-	tdesc.Width = CAMERA_WIDTH;
+	tdesc.Width =  CAMERA_WIDTH;
 	tdesc.MipLevels = 1;
 	tdesc.MiscFlags = 0;
 	tdesc.SampleDesc.Count = 1;
@@ -80,7 +79,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	else
 		std::cout << "Sucess" << std::endl;
 		
-  //  Create the shader-resource view
+  // Create the shader-resource view
 	srDesc.Format = tdesc.Format;
 	srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srDesc.Texture2D.MostDetailedMip = 0;

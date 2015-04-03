@@ -33,7 +33,8 @@ OculusHMD::OculusHMD()
 		}
 		else
 		{
-			// do error stuff here
+      std::cout << "ERROR: OculusHMD constructor could not create HMD" << std::endl;
+			// TODO: manage error handling
 		}
 		running_ = true;
 	}

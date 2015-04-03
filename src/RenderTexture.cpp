@@ -30,14 +30,14 @@ bool RenderTexture::Initialize(ID3D11Device* device, int textureWidth, int textu
 	ZeroMemory(&textureDesc, sizeof(textureDesc));
 
 	// Setup the render target texture description.
-	textureDesc.Width = textureWidth;
+	textureDesc.Width =  textureWidth;
 	textureDesc.Height = textureHeight;
 	textureDesc.MipLevels = 1;
 	textureDesc.ArraySize = 1;
-	textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	textureDesc.Format =           DXGI_FORMAT_R32G32B32A32_FLOAT;
 	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.Usage =            D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags =        D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 	textureDesc.CPUAccessFlags = 0;
 	textureDesc.MiscFlags = 0;
 

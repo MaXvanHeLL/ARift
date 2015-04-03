@@ -40,12 +40,12 @@ GraphicsAPI::~GraphicsAPI()
 }
 
 bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
-	float screenDepth, float screenNear, ARiftControl* arift_control)
+	                        float screenDepth, float screenNear, ARiftControl* arift_control)
 {
 
 	ariftcontrol_ = arift_control;
 
-	screenwidth_ = screenWidth;
+	screenwidth_ =  screenWidth;
 	screenheight_ = screenHeight;
 
 	HRESULT result;
@@ -128,8 +128,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// We now have the numerator and denominator for the refresh rate.The last thing we will retrieve using the adapter is the name of the video card and the amount of memory on the video card.
-		// Get the adapter (video card) description.
-		result = adapter->GetDesc(&adapterDesc);
+	// Get the adapter (video card) description.
+	result = adapter->GetDesc(&adapterDesc);
 	if (FAILED(result))
 	{
 		return false;
@@ -215,7 +215,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Create the swap chain, Direct3D device, and Direct3D device context.
 	// D3D11_CREATE_DEVICE_DEBUG
 	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, &featureLevel, 1,
-		D3D11_SDK_VERSION, &swapChainDesc, &swapchain_, &device_, NULL, &devicecontext_);
+		                                     D3D11_SDK_VERSION, &swapChainDesc, &swapchain_, &device_, NULL, &devicecontext_);
 	if (FAILED(result))
 	{
 		return false;
@@ -268,23 +268,23 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Set up the description of the stencil state.
 	depthStencilDesc.DepthEnable = true;
 	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthStencilDesc.DepthFunc =      D3D11_COMPARISON_LESS;
 
 	depthStencilDesc.StencilEnable = true;
 	depthStencilDesc.StencilReadMask = 0xFF;
 	depthStencilDesc.StencilWriteMask = 0xFF;
 
 	// Stencil operations if pixel is front-facing.
-	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFailOp =      D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDesc.FrontFace.StencilPassOp =      D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc =        D3D11_COMPARISON_ALWAYS;
 
 	// Stencil operations if pixel is back-facing.
-	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFailOp =      D3D11_STENCIL_OP_KEEP;
 	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthStencilDesc.BackFace.StencilPassOp =      D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc =        D3D11_COMPARISON_ALWAYS;
 
 	// Create the depth stencil state.
 	result = device_->CreateDepthStencilState(&depthStencilDesc, &depthstencilstate_);
@@ -300,7 +300,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
 
 	// Set up the depth stencil view description.
-	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.Format =        DXGI_FORMAT_D24_UNORM_S8_UINT;
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
@@ -374,18 +374,18 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// that DepthEnable is set to false, all other parameters are the same as the other depth stencil state.
 	depthDisabledStencilDesc.DepthEnable = false;
 	depthDisabledStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	depthDisabledStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	depthDisabledStencilDesc.DepthFunc =      D3D11_COMPARISON_LESS;
 	depthDisabledStencilDesc.StencilEnable = true;
 	depthDisabledStencilDesc.StencilReadMask = 0xFF;
-	depthDisabledStencilDesc.StencilWriteMask = 0xFF;
-	depthDisabledStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+  depthDisabledStencilDesc.StencilWriteMask = 0xFF;
+	depthDisabledStencilDesc.FrontFace.StencilFailOp =      D3D11_STENCIL_OP_KEEP;
 	depthDisabledStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	depthDisabledStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthDisabledStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	depthDisabledStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	depthDisabledStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	depthDisabledStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	depthDisabledStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	depthDisabledStencilDesc.FrontFace.StencilPassOp =      D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.FrontFace.StencilFunc =        D3D11_COMPARISON_ALWAYS;
+	depthDisabledStencilDesc.BackFace.StencilFailOp =       D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilDepthFailOp =  D3D11_STENCIL_OP_DECR;
+	depthDisabledStencilDesc.BackFace.StencilPassOp =       D3D11_STENCIL_OP_KEEP;
+	depthDisabledStencilDesc.BackFace.StencilFunc =         D3D11_COMPARISON_ALWAYS;
 
 	// Create the state using the device.
 	result = device_->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState_);
@@ -429,7 +429,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 	
 	// Initialize the bitmap object.
-  // result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", 256, 256);
 	if (AR_HMD_ENABLED)
 		result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
 	else
@@ -451,7 +450,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Initialize the render to texture object.
-	// result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
 	{

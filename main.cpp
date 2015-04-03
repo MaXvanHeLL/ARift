@@ -2,10 +2,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
-// Include the OculusVR SDK
-// #define OVR_D3D_VERSION 11
-// #include "OVR_CAPI.h"
-// #include "OVR_CAPI_D3D.h"
 // ARift includes
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
@@ -21,7 +17,7 @@ void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 // not used currently
-const bool FULL_SCREEN = true;
+const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;

@@ -18,8 +18,7 @@
 #include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
-#define HMD_DISTORTION 1
-
+#define HMD_DISTORTION 0
 class BitMap;
 class ARiftControl;
 // -------------------------------
@@ -54,7 +53,7 @@ public:
 	
 	DWORD WINAPI run(LPVOID lpArg);
 	bool InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
-		float screenDepth, float screenNear, ARiftControl* arift_control); 
+		           float screenDepth, float screenNear, ARiftControl* arift_control); 
 	bool Frame();
 	bool Render();
 	void shutDownD3D();

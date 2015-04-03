@@ -190,9 +190,9 @@ bool BitMap::InitializeBuffers(ID3D11Device* device)
 	}
 
 	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * vertexcount_;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.Usage =          D3D11_USAGE_DYNAMIC;
+	vertexBufferDesc.ByteWidth =      sizeof(VertexType) * vertexcount_;
+	vertexBufferDesc.BindFlags =      D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
@@ -210,7 +210,7 @@ bool BitMap::InitializeBuffers(ID3D11Device* device)
 	}
 
 	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.Usage =     D3D11_USAGE_DEFAULT;
 	indexBufferDesc.ByteWidth = sizeof(unsigned long) * indexcount_;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;

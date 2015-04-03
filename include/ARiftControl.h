@@ -51,8 +51,6 @@ class ARiftControl
 		char* cameraBufferRight_;
 		HANDLE cameraMutexLeft_;
 		HANDLE cameraMutexRight_;
-		// Mutex cameraMutexLeft_;
-		// Mutex cameraMutexRight_;
 		// --------------------------------
     cv::Mat left_camera_mat;
     cv::Mat right_camera_mat;
