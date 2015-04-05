@@ -1,5 +1,5 @@
-#ifndef CAMERAINPUTHANDLER_H
-#define CAMERAINPUTHANDLER_H
+#ifndef OPENCVCAMERAINPUTHANDLER_H
+#define OPENCVCAMERAINPUTHANDLER_H
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
@@ -7,12 +7,12 @@
 
 enum FlipStatus {NOFLIP = -2, BOTH = -1, VERTICAL = 0, HORIZONTAL = 1};
 
-class CameraInputHandler
+class OpenCVCameraInputHandler
 {
   public:
-    CameraInputHandler();
-    CameraInputHandler(int cam1, int cam2);
-    virtual ~CameraInputHandler();
+    OpenCVCameraInputHandler();
+    OpenCVCameraInputHandler(int cam1, int cam2);
+    virtual ~OpenCVCameraInputHandler();
 
     bool openCams(int cam1,int cam2);
     virtual bool openCams();

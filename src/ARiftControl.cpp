@@ -1,10 +1,11 @@
-#include "../include/CameraInputHandler.h"
 #include "../include/IDSuEyeInputHandler.h"
 #include "../include/ARiftControl.h"
 #include "../include/Helpers.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 
 #define GetCurrentDir _getcwd
@@ -15,20 +16,20 @@ ARiftControl::ARiftControl()
 {
   //ctor [Debug]
 
-	String picture1_string = "data/test_picture1.jpg";
-	String picture2_string = "data/picture_2.bmp";
+	//String picture1_string = "data/test_picture1.jpg";
+	//String picture2_string = "data/picture_2.bmp";
 
-	picture_1_ = imread(picture1_string, CV_LOAD_IMAGE_COLOR);   // Read the file
-	picture_2_ = imread(picture2_string, CV_LOAD_IMAGE_COLOR);
+	//picture_1_ = imread(picture1_string, CV_LOAD_IMAGE_COLOR);   // Read the file
+	//picture_2_ = imread(picture2_string, CV_LOAD_IMAGE_COLOR);
 
-	if (!picture_1_.data)	// Check for invalid input
-	{
-		std::cout << "Could not open or find the image: " << picture1_string << std::endl;
-	}
-	if (!picture_2_.data)	// Check for invalid input
-	{
-		std::cout << "Could not open or find the image: " << picture2_string << std::endl;
-	}
+	//if (!picture_1_.data)	// Check for invalid input
+	//{
+	//	std::cout << "Could not open or find the image: " << picture1_string << std::endl;
+	//}
+	//if (!picture_2_.data)	// Check for invalid input
+	//{
+	//	std::cout << "Could not open or find the image: " << picture2_string << std::endl;
+	//}
 }
 
 ARiftControl::~ARiftControl()
@@ -51,8 +52,8 @@ void ARiftControl::init()
   base_save_name = getTimeString();
   cam_input = new IDSuEyeInputHandler();
   cam_input->openCams(CAM1,CAM2);
-  cam_input->readFrame(left_pic,CAM1);
-  cam_input->readFrame(right_pic,CAM2);
+  cam_input->retrieveFrame(left_pic, CAM1);
+  cam_input->retrieveFrame(right_pic, CAM2);
   if(left_pic.empty() || right_pic.empty())
     std::cout << "Warning empty image(s) "<< std::endl;
 
@@ -62,35 +63,32 @@ void ARiftControl::init()
   left_camera_mat = Mat::zeros(3,3,CV_64FC1);
   right_camera_mat = Mat::zeros(3,3,CV_64FC1);
 
-  left_camera_mat.at<double>(0,0) = 429; // fx
-  left_camera_mat.at<double>(1,1) = 431; // fy
-  left_camera_mat.at<double>(2,2) = 1;
-  left_camera_mat.at<double>(0,2) = 359; // cx
-  left_camera_mat.at<double>(1,2) = 209; // cy
-  left_distortion = (Mat_<double>(4,1) << -0.305 , 0.094, 0.001, -0.0022 ); //kc
+  //left_camera_mat.at<double>(0,0) = 429; // fx
+  //left_camera_mat.at<double>(1,1) = 431; // fy
+  //left_camera_mat.at<double>(2,2) = 1;
+  //left_camera_mat.at<double>(0,2) = 359; // cx
+  //left_camera_mat.at<double>(1,2) = 209; // cy
+  //left_distortion = (Mat_<double>(4,1) << -0.305 , 0.094, 0.001, -0.0022 ); //kc
 
-  right_camera_mat.at<double>(0,0) = 430; // fx
-  right_camera_mat.at<double>(1,1) = 433; // fy
-  right_camera_mat.at<double>(2,2) = 1;
-  right_camera_mat.at<double>(0,2) = 399; // cx
-  right_camera_mat.at<double>(1,2) = 233; // cy
-  right_distortion = (Mat_<double>(4,1) <<  -0.291, 0.076, 0.0, -0.0024 ); //kc
-  std::cout << "Computing undistortion maps " << std::endl;
-  initUndistortRectifyMap(left_camera_mat, left_distortion, Mat(),
-      getOptimalNewCameraMatrix(left_camera_mat, left_distortion, left_pic.size(), 1, left_pic.size(), 0),
-      left_pic.size(), CV_16SC2, left_map1, left_map2);
+  //right_camera_mat.at<double>(0,0) = 430; // fx
+  //right_camera_mat.at<double>(1,1) = 433; // fy
+  //right_camera_mat.at<double>(2,2) = 1;
+  //right_camera_mat.at<double>(0,2) = 399; // cx
+  //right_camera_mat.at<double>(1,2) = 233; // cy
+  //right_distortion = (Mat_<double>(4,1) <<  -0.291, 0.076, 0.0, -0.0024 ); //kc
+  //std::cout << "Computing undistortion maps " << std::endl;
+  //initUndistortRectifyMap(left_camera_mat, left_distortion, Mat(),
+  //    getOptimalNewCameraMatrix(left_camera_mat, left_distortion, left_pic.size(), 1, left_pic.size(), 0),
+  //    left_pic.size(), CV_16SC2, left_map1, left_map2);
 
-  initUndistortRectifyMap(right_camera_mat, right_distortion, Mat(),
-      getOptimalNewCameraMatrix(right_camera_mat, right_distortion, right_pic.size(), 1, right_pic.size(), 0),
-      right_pic.size(), CV_16SC2, right_map1, right_map2);
+  //initUndistortRectifyMap(right_camera_mat, right_distortion, Mat(),
+  //    getOptimalNewCameraMatrix(right_camera_mat, right_distortion, right_pic.size(), 1, right_pic.size(), 0),
+  //    right_pic.size(), CV_16SC2, right_map1, right_map2);
 
 }
 
 bool ARiftControl::getImages()
 {
-
-  cam_input->grabFrames();
-//    cam_input->retrieveFrames(left_pic, right_pic, CAM1, CAM2);
   cam_input->retrieveFrame(left_pic, CAM1);
 
   cam_input->retrieveFrame(right_pic, CAM2);
@@ -165,18 +163,18 @@ void ARiftControl::hanldeFlip()
   imshow("both",full_view);
   char key_2 = waitKey(0);
   if(key_2 == 'l')
-    if(cam_input->flip_status_cam[0] == NOFLIP)
-      cam_input->flip_status_cam[0] = HORIZONTAL;
+    if(cam_input->flip_status_cam_[0] == NOFLIP)
+      cam_input->flip_status_cam_[0] = HORIZONTAL;
     else
-      cam_input->flip_status_cam[0] = (FlipStatus)(cam_input->flip_status_cam[0] - 1);
+      cam_input->flip_status_cam_[0] = (FlipStatus)(cam_input->flip_status_cam_[0] - 1);
   else if(key_2 == 'r')
-    if(cam_input->flip_status_cam[1] == NOFLIP)
-      cam_input->flip_status_cam[1] = HORIZONTAL;
+    if(cam_input->flip_status_cam_[1] == NOFLIP)
+      cam_input->flip_status_cam_[1] = HORIZONTAL;
     else
-      cam_input->flip_status_cam[1] = (FlipStatus)(cam_input->flip_status_cam[1] - 1);
+      cam_input->flip_status_cam_[1] = (FlipStatus)(cam_input->flip_status_cam_[1] - 1);
 
-  std::cout << " Flip status l: " << cam_input->flip_status_cam[0];
-  std::cout << ", r:" << cam_input->flip_status_cam[1] << std::endl;
+  std::cout << " Flip status l: " << cam_input->flip_status_cam_[0];
+  std::cout << ", r:" << cam_input->flip_status_cam_[1] << std::endl;
 }
 
 void ARiftControl::handleSave()

@@ -62,10 +62,10 @@ int main(int, char**)
 
 			if (cont.getImages())
 			{
-				cont.createDisplay();
+				//cont.createDisplay();
 				// imshow("both", cont.full_view);
 
-				cont.undistortImages();
+				// cont.undistortImages();
 				// imshow("undist", cont.full_view_undist);
 
 				 // cv::Mat camera_mat = cv::Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CV_8UC4, cont.cameraBufferLeft_);

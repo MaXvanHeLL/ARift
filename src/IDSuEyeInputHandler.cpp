@@ -11,10 +11,10 @@ using namespace cv;
 
 IDSuEyeInputHandler::IDSuEyeInputHandler()
 {
-	auto_sensor_shutter[0] = false;
-	auto_sensor_shutter[1] = false;
-	auto_sensor_gain[0] = false;
-	auto_sensor_gain[1] = false;
+	auto_sensor_shutter_[0] = false;
+	auto_sensor_shutter_[1] = false;
+	auto_sensor_gain_[0] = false;
+	auto_sensor_gain_[1] = false;
 	cameraCaptureing_ = false;
   cameraBufferLeft_ = new unsigned char[CAMERA_BUFFER_LENGTH];
   cameraBufferRight_ = new unsigned char[CAMERA_BUFFER_LENGTH];
@@ -24,52 +24,54 @@ IDSuEyeInputHandler::IDSuEyeInputHandler()
   {
     std::cout << "Create Mutex error!" << std::endl;
   }
+  flip_status_cam_[0] = NOFLIP;
+  flip_status_cam_[1] = BOTH;
 }
 
 IDSuEyeInputHandler::~IDSuEyeInputHandler()
 {
-  is_ExitCamera(m_hcam[0]);
-  is_ExitCamera(m_hcam[1]);
+  is_ExitCamera(hcam_[0]);
+  is_ExitCamera(hcam_[1]);
 }
 
-bool IDSuEyeInputHandler::openCams()
+bool IDSuEyeInputHandler::openCams(int left_cam,int right_cam)
 {
   std::cout << "IDSuEyeInputHandler: openCams() " << std::endl;
-  m_hcam[0] = m_cam1;
-  m_hcam[1] = m_cam2;
-  int nRet1 = is_InitCamera(&m_hcam[0], NULL);
-  int nRet2 = is_InitCamera(&m_hcam[1], NULL);
+  hcam_[0] = left_cam;
+  hcam_[1] = right_cam;
+  int nRet1 = is_InitCamera(&hcam_[0], NULL);
+  int nRet2 = is_InitCamera(&hcam_[1], NULL);
   if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
     if (nRet1 != IS_SUCCESS)
-      std::cout << "Error could not open cam " << m_cam1 << " code " << nRet1 << std::endl;
+      std::cout << "IDSuEyeInputHandler: Error could not open cam " << cam1_ << " code " << nRet1 << std::endl;
     if (nRet2 != IS_SUCCESS)
-      std::cout << "Error could not open cam " << m_cam2 << " code " << nRet2 << std::endl;
+      std::cout << "IDSuEyeInputHandler: Error could not open cam " << cam2_ << " code " << nRet2 << std::endl;
     return false;
   }
 
-  nRet1 = is_SetColorMode(m_hcam[0], IS_CM_RGBA8_PACKED);// TODO set memory format to agree with opencv
-  nRet2 = is_SetColorMode(m_hcam[1], IS_CM_RGBA8_PACKED);
+  nRet1 = is_SetColorMode(hcam_[0], IS_CM_RGBA8_PACKED);// TODO set memory format to agree with opencv
+  nRet2 = is_SetColorMode(hcam_[1], IS_CM_RGBA8_PACKED);
   if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
-    std::cout << "Error could specify color formats to IS_CM_BGR8_PACKED" << std::endl;
+    std::cout << "IDSuEyeInputHandler: Error could specify color formats to IS_CM_BGR8_PACKED" << std::endl;
     return false;
   }
-  is_SetDisplayMode(m_hcam[0], IS_SET_DM_DIB); // no image display by the driver
-  is_SetDisplayMode(m_hcam[1], IS_SET_DM_DIB);
+  is_SetDisplayMode(hcam_[0], IS_SET_DM_DIB); // no image display by the driver
+  is_SetDisplayMode(hcam_[1], IS_SET_DM_DIB);
   initMemory();
 
-  is_SetExternalTrigger(m_hcam[0], IS_SET_TRIGGER_SOFTWARE);
-  is_SetExternalTrigger(m_hcam[1], IS_SET_TRIGGER_SOFTWARE);
-  std::cout << "Starting capture " << std::endl;
-  nRet1 = is_CaptureVideo(m_hcam[0], IS_WAIT); // start capture and wait for first image to be in memory
-  nRet2 = is_CaptureVideo(m_hcam[1], IS_WAIT);
+  is_SetExternalTrigger(hcam_[0], IS_SET_TRIGGER_SOFTWARE);
+  is_SetExternalTrigger(hcam_[1], IS_SET_TRIGGER_SOFTWARE);
+  std::cout << "IDSuEyeInputHandler: Starting capture " << std::endl;
+  nRet1 = is_CaptureVideo(hcam_[0], IS_WAIT); // start capture and wait for first image to be in memory
+  nRet2 = is_CaptureVideo(hcam_[1], IS_WAIT);
   if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
     if (nRet1 != IS_SUCCESS)
-      std::cout << "Error could not capture video on cam " << m_cam1 << " code " << nRet1 << std::endl;
+      std::cout << "IDSuEyeInputHandler: Error could not capture video on cam " << cam1_ << " code " << nRet1 << std::endl;
     if (nRet2 != IS_SUCCESS)
-      std::cout << "Error could not capture video on cam " << m_cam2 << " code " << nRet2 << std::endl;
+      std::cout << "IDSuEyeInputHandler: Error could not capture video on cam " << cam2_ << " code " << nRet2 << std::endl;
     return false;
   }
   switchAutoSensorGain(1);
@@ -96,30 +98,30 @@ bool IDSuEyeInputHandler::addMemoryToCam(int cam)
 {
   char *new_mem_addr;
   int new_mem_id;
-  int ret1 = is_AllocImageMem(m_hcam[cam], width, height, 32, &new_mem_addr,&new_mem_id); // 32 | 24 Bits (Alpha Channel)
+  int ret1 = is_AllocImageMem(hcam_[cam], CAMERA_WIDTH, CAMERA_HEIGHT, CAMERA_DEPTH*CAMERA_CHANNELS, &new_mem_addr, &new_mem_id); // 32 | 24 Bits (Alpha Channel)
   if(ret1 != IS_SUCCESS)
   {
-    std::cout << "Error initializing camera memory code " <<ret1 << std::endl;
+    std::cout << "IDSuEyeInputHandler: Error initializing camera memory code " <<ret1 << std::endl;
     return false;
   }
-  m_cam_img_mem[cam].push_back(std::make_pair(new_mem_addr,new_mem_id));
-  is_AddToSequence(m_hcam[cam],m_cam_img_mem[cam].back().first,m_cam_img_mem[cam].back().second);
-  is_SetImageMem(m_hcam[cam],m_cam_img_mem[cam].back().first,m_cam_img_mem[cam].back().second);
+  cam_img_mem_[cam].push_back(std::make_pair(new_mem_addr,new_mem_id));
+  is_AddToSequence(hcam_[cam], cam_img_mem_[cam].back().first, cam_img_mem_[cam].back().second);
+  is_SetImageMem(hcam_[cam], cam_img_mem_[cam].back().first, cam_img_mem_[cam].back().second);
   return true;
 }
 
 void IDSuEyeInputHandler::printMem(int cam)
 {
-  std::cout << "Mem stored for cam " << cam << ": " << m_cam_img_mem[cam].size() << std::endl;
-  for(unsigned int mems = 0; mems < m_cam_img_mem[cam].size(); mems++)
+  std::cout << "IDSuEyeInputHandler: Mem stored for cam " << cam << ": " << cam_img_mem_[cam].size() << std::endl;
+  for (unsigned int mems = 0; mems < cam_img_mem_[cam].size(); mems++)
   {
     std::cout << "m_cam_img_mem[" << cam << "][" << mems<< "] ";
-    if(m_cam_img_mem[cam][mems].first == NULL)
+    if (cam_img_mem_[cam][mems].first == NULL)
       std::cout << "NULL, ";
     else
-      std::cout << std::hex << (int)m_cam_img_mem[cam][mems].first << ", ";
+      std::cout << std::hex << (int)cam_img_mem_[cam][mems].first << ", ";
 
-    std::cout << std::hex << m_cam_img_mem[cam][mems].second << " " << std::endl;
+    std::cout << std::hex << cam_img_mem_[cam][mems].second << " " << std::endl;
   }
 
 }
@@ -132,11 +134,11 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
   {
     std::cout << "IDSuEyeInputHandler::retrieveFrame no cam with ID " << cam << std::endl;
   }
-	// added
-	size_t memory_bytes = 4 * width * height * depth / 8;
+
+  size_t memory_bytes = CAMERA_BUFFER_LENGTH;
   char* last_img_mem = NULL;
-  is_GetActSeqBuf(m_hcam[cam-1],0,NULL,&last_img_mem);
-  is_LockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
+  is_GetActSeqBuf(hcam_[cam-1],0,NULL,&last_img_mem);
+  is_LockSeqBuf(hcam_[cam - 1], IS_IGNORE_PARAMETER, last_img_mem);
 	char* driver_data = new char[memory_bytes];
 	memcpy(driver_data, last_img_mem, memory_bytes);
   
@@ -153,9 +155,9 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
     ReleaseMutex(cameraMutexRight_);
   }
 
-  is_UnlockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
+  is_UnlockSeqBuf(hcam_[cam - 1], IS_IGNORE_PARAMETER, last_img_mem);
 	
-  Mat rgb(height,width,CV_8UC4,(void*)driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
+  Mat rgb(CAMERA_HEIGHT,CAMERA_WIDTH,CV_8UC4,(void*)driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
   if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )
   {
     frame = Mat::zeros(rgb.rows,rgb.cols,rgb.type());
@@ -165,8 +167,8 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
   mixChannels(&rgb, 1, &frame, 1, from_to,3);
   rgb.release();
   delete[] driver_data;
-  if(flip_status_cam[cam - 1] != NOFLIP)
-    flip(frame,frame,flip_status_cam[cam - 1]);
+  if(flip_status_cam_[cam - 1] != NOFLIP)
+    flip(frame,frame,flip_status_cam_[cam - 1]);
 		
 }
 
@@ -183,14 +185,14 @@ bool IDSuEyeInputHandler::switchAutoSensorShutter(int cam)
   }
 
   double enable;
-  if(auto_sensor_shutter[cam-1])
+  if(auto_sensor_shutter_[cam-1])
     enable = 0;
   else
     enable = 1;
 
-  is_SetAutoParameter(m_hcam[cam-1],IS_SET_ENABLE_AUTO_SENSOR_SHUTTER,&enable,0);
-  auto_sensor_shutter[cam-1] = !auto_sensor_shutter[cam-1];
-  return auto_sensor_shutter[cam-1];
+  is_SetAutoParameter(hcam_[cam-1],IS_SET_ENABLE_AUTO_SENSOR_SHUTTER,&enable,0);
+  auto_sensor_shutter_[cam-1] = !auto_sensor_shutter_[cam-1];
+  return auto_sensor_shutter_[cam-1];
 }
 
 bool IDSuEyeInputHandler::switchAutoSensorGain(int cam)
@@ -200,14 +202,14 @@ bool IDSuEyeInputHandler::switchAutoSensorGain(int cam)
     std::cout << "IDSuEyeInputHandler::setAutoSensorGain(int cam, bool status) no cam with ID " << cam << std::endl;
   }
   double enable;
-  if(auto_sensor_gain[cam-1])
+  if(auto_sensor_gain_[cam-1])
     enable = 0;
   else
     enable = 1;
 
 
-  is_SetAutoParameter(m_hcam[cam-1],IS_SET_ENABLE_AUTO_SENSOR_GAIN,&enable,0);
-  auto_sensor_gain[cam-1] = !auto_sensor_gain[cam-1];
-  return auto_sensor_gain[cam-1];
+  is_SetAutoParameter(hcam_[cam - 1], IS_SET_ENABLE_AUTO_SENSOR_GAIN, &enable, 0);
+  auto_sensor_gain_[cam-1] = !auto_sensor_gain_[cam-1];
+  return auto_sensor_gain_[cam-1];
 }
 

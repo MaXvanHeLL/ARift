@@ -1,29 +1,29 @@
-#include "../include/CameraInputHandler.h"
+#include "../include/OpenCVCameraInputHandler.h"
 #include <iostream>
 
-CameraInputHandler::CameraInputHandler() : m_cam1(0),m_cam2(1)
+OpenCVCameraInputHandler::OpenCVCameraInputHandler() : m_cam1(0), m_cam2(1)
 {
 	flip_status_cam[0] = NOFLIP;
 	flip_status_cam[1] = BOTH;
 }
 
-CameraInputHandler::CameraInputHandler(int cam1, int cam2) : m_cam1(cam1), m_cam2(cam2)
+OpenCVCameraInputHandler::OpenCVCameraInputHandler(int cam1, int cam2) : m_cam1(cam1), m_cam2(cam2)
 {
 	flip_status_cam[0] = NOFLIP;
 	flip_status_cam[1] = BOTH;
 }
 
-bool CameraInputHandler::openCams(int cam1,int cam2)
+bool OpenCVCameraInputHandler::openCams(int cam1,int cam2)
 {
-  std::cout << "CameraInputHandler: openCams(int cam1,int cam2)" << std::endl;
+  std::cout << "OpenCVCameraInputHandler: openCams(int cam1,int cam2)" << std::endl;
   m_cam1 = cam1;
   m_cam2 = cam2;
   return openCams();
 }
 
-bool CameraInputHandler::openCams()
+bool OpenCVCameraInputHandler::openCams()
 {
-  std::cout << "CameraInputHandler: openCams()" << std::endl;
+  std::cout << "OpenCVCameraInputHandler: openCams()" << std::endl;
   m_cap1.open(m_cam1);
   m_cap2.open(m_cam2);
   if(!m_cap1.isOpened() || !m_cap2.isOpened())
@@ -53,17 +53,17 @@ bool CameraInputHandler::openCams()
   return true;
 }
 
-CameraInputHandler::~CameraInputHandler()
+OpenCVCameraInputHandler::~OpenCVCameraInputHandler()
 {
   //dtor
 }
 
-bool CameraInputHandler::grabFrames()
+bool OpenCVCameraInputHandler::grabFrames()
 {
   return ( m_cap1.grab() & m_cap2.grab() );
 }
 
-void CameraInputHandler::retrieveFrame(cv::Mat& frame, int cam)
+void OpenCVCameraInputHandler::retrieveFrame(cv::Mat& frame, int cam)
 {
   if(m_cam1 == cam)
     m_cap1.retrieve(frame);
@@ -79,13 +79,13 @@ void CameraInputHandler::retrieveFrame(cv::Mat& frame, int cam)
     std::cout << "retrieved empty frame" << std::endl;
 }
 
-void CameraInputHandler::retrieveFrames(cv::Mat& frame1, cv::Mat& frame2, int cam1, int cam2)
+void OpenCVCameraInputHandler::retrieveFrames(cv::Mat& frame1, cv::Mat& frame2, int cam1, int cam2)
 {
   retrieveFrame(frame1,cam1);
   retrieveFrame(frame2,cam2);
 }
 
-void CameraInputHandler::readFrame(cv::Mat& frame, int cam)
+void OpenCVCameraInputHandler::readFrame(cv::Mat& frame, int cam)
 {
   if(m_cam1 == cam)
     m_cap1.read(frame);

@@ -1,7 +1,6 @@
 #ifndef ARIFTCONTROL_H
 #define ARIFTCONTROL_H
 #include <opencv2/core/core.hpp>
-#include "CameraInputHandler.h"
 #include "IDSuEyeInputHandler.h"
 #include <direct.h>
 
@@ -53,7 +52,7 @@ class ARiftControl
     cv::Mat right_map1;
     cv::Mat right_map2;
     int wait_time = 30;
-    CameraInputHandler *cam_input = NULL;
+    IDSuEyeInputHandler *cam_input = NULL;
   protected:
   private:
     bool running = false;
