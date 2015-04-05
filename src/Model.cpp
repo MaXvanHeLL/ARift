@@ -23,17 +23,13 @@ bool Model::Initialize(ID3D11Device* device, WCHAR* textureFilename)
 
 	// Initialize the vertex and index buffer that hold the geometry for the triangle.
 	result = InitializeBuffers(device);
-	if (!result)
-	{
-		return false;
-	}
+  if (!result) 
+    return false;
 
 	// Load the texture for this model.
 	result = LoadTexture(device, textureFilename);
-	if (!result)
-	{
-		return false;
-	}
+  if (!result) 
+    return false;
 
 	return true;
 }

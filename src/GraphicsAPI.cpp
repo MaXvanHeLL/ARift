@@ -73,93 +73,71 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	vsync_enabled_ = vsync;
 	// Create a DirectX graphics interface factory.
 	result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory);
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) 
+    return false;
 
 	// Use the factory to create an adapter for the primary graphics interface (video card).
 	result = factory->EnumAdapters(0, &adapter);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Enumerate the primary adapter output (monitor).
 	result = adapter->EnumOutputs(0, &adapterOutput);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Get the number of modes that fit the DXGI_FORMAT_R8G8B8A8_UNORM display format for the adapter output (monitor).
 	result = adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, NULL);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Create a list to hold all the possible display modes for this monitor/video card combination.
 	displayModeList = new DXGI_MODE_DESC[numModes];
-	if (!displayModeList)
-	{
-		return false;
-	}
+  if (!displayModeList) 
+    return false;
 
 	// Now fill the display mode list structures.
 	result = adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Now go through all the display modes and find the one that matches the screen width and height.
 	// When a match is found store the numerator and denominator of the refresh rate for that monitor.
 	for (i = 0; i<numModes; i++)
 	{
-		if (displayModeList[i].Width == (unsigned int)screenWidth)
-		{
-			if (displayModeList[i].Height == (unsigned int)screenHeight)
-			{
-				numerator = displayModeList[i].RefreshRate.Numerator;
-				denominator = displayModeList[i].RefreshRate.Denominator;
-			}
-		}
+		if (displayModeList[i].Width == (unsigned int)screenWidth &&
+		    displayModeList[i].Height == (unsigned int)screenHeight)
+      {
+        numerator = displayModeList[i].RefreshRate.Numerator;
+        denominator = displayModeList[i].RefreshRate.Denominator;
+      }
 	}
 
 	// We now have the numerator and denominator for the refresh rate.The last thing we will retrieve using the adapter is the name of the video card and the amount of memory on the video card.
 	// Get the adapter (video card) description.
 	result = adapter->GetDesc(&adapterDesc);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Store the dedicated video card memory in megabytes.
 	videocardmemory_ = (int)(adapterDesc.DedicatedVideoMemory / 1024 / 1024);
 
 	// Convert the name of the video card to a character array and store it.
 	error = wcstombs_s(&stringLength, videocarddescription_, 128, adapterDesc.Description, 128);
-	if (error != 0)
-	{
-		return false;
-	}
+  if (error != 0) 
+    return false;
 
 	// Release the display mode list.
-	delete[] displayModeList;
-	displayModeList = 0;
+	delete[] displayModeList; displayModeList = 0;
 
 	// Release the adapter output.
-	adapterOutput->Release();
-	adapterOutput = 0;
+	adapterOutput->Release(); adapterOutput = 0;
 
 	// Release the adapter.
-	adapter->Release();
-	adapter = 0;
+	adapter->Release(); adapter = 0;
 
 	// Release the factory.
-	factory->Release();
-	factory = 0;
+	factory->Release(); factory = 0;
 
 	// Initialize the swap chain description.
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
@@ -192,14 +170,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	swapChainDesc.SampleDesc.Quality = 0;
 
 	// Set to full screen or windowed mode.
-	if (fullscreen)
-	{
-		swapChainDesc.Windowed = false;
-	}
-	else
-	{
-		swapChainDesc.Windowed = true;
-	}
+  swapChainDesc.Windowed = !fullscreen;
 
 	// Set the scan line ordering and scaling to unspecified.
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
@@ -216,24 +187,18 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// D3D11_CREATE_DEVICE_DEBUG
 	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, &featureLevel, 1,
 		                                     D3D11_SDK_VERSION, &swapChainDesc, &swapchain_, &device_, NULL, &devicecontext_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+	if (FAILED(result)) 
+    return false;
 
 	// Get the pointer to the back buffer.
 	result = swapchain_->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Create the render target view with the back buffer pointer.
 	result = device_->CreateRenderTargetView(backBufferPtr, NULL, &rendertargetview_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Release pointer to the back buffer as we no longer need it.
 	backBufferPtr->Release();
@@ -257,10 +222,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Create the texture for the depth buffer using the filled out description.
 	result = device_->CreateTexture2D(&depthBufferDesc, NULL, &depthstencilbuffer_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Initialize the description of the stencil state.
 	ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
@@ -288,10 +251,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Create the depth stencil state.
 	result = device_->CreateDepthStencilState(&depthStencilDesc, &depthstencilstate_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Set the depth stencil state.
 	devicecontext_->OMSetDepthStencilState(depthstencilstate_, 1);
@@ -306,10 +267,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Create the depth stencil view.
 	result = device_->CreateDepthStencilView(depthstencilbuffer_, &depthStencilViewDesc, &depthstencilview_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Bind the render target view and depth stencil buffer to the output render pipeline.
 	devicecontext_->OMSetRenderTargets(1, &rendertargetview_, depthstencilview_);
@@ -328,10 +287,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Create the rasterizer state from the description we just filled out.
 	result = device_->CreateRasterizerState(&rasterDesc, &rasterstate_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Now set the rasterizer state.
 	devicecontext_->RSSetState(rasterstate_);
@@ -352,17 +309,14 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	screenAspect = (float)screenWidth / (float)screenHeight;
 
 	// Create the projection matrix for 3D rendering.
-	// projectionmatrix_ = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 	XMMATRIX projectionMatrix_XmMat = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 	XMStoreFloat4x4(&projectionmatrix_, projectionMatrix_XmMat);
 
 	// Initialize the world matrix to the identity matrix.
-	// worldmatrix_ = XMMatrixIdentity();
 	XMMATRIX worldMatrix_XmMat = XMMatrixIdentity();
 	XMStoreFloat4x4(&worldmatrix_, worldMatrix_XmMat);
 
 	// Create an orthographic projection matrix for 2D rendering.
-	// orthomatrix_ = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 	XMMATRIX orthoMatrix_XmMat = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, screenNear, screenDepth);
 	XMStoreFloat4x4(&orthomatrix_, orthoMatrix_XmMat);
 
@@ -389,17 +343,13 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Create the state using the device.
 	result = device_->CreateDepthStencilState(&depthDisabledStencilDesc, &depthDisabledStencilState_);
-	if (FAILED(result))
-	{
-		return false;
-	}
+  if (FAILED(result)) 
+    return false;
 
 	// Create the camera object.
 	camera_ = new Camera();
-	if (!camera_)
-	{
-		return false;
-	}
+	if (!camera_) 
+    return false;
 
 	// Set the initial position of the camera.
 	camera_->SetPosition(0.0f, 0.0f, -10.0f);
@@ -407,10 +357,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	
 	// Create the model object.
 	model_ = new Model();
-	if (!model_)
-	{
-		return false;
-	}
+  if (!model_) 
+    return false;
 
 	// Initialize the model object.
 	// TODO: create the Data Folder
@@ -423,10 +371,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
-	if (!bitmap_)
-	{
-		return false;
-	}
+  if (!bitmap_) 
+    return false;
 	
 	// Initialize the bitmap object.
 	if (AR_HMD_ENABLED)
@@ -445,16 +391,12 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// [Left] Create the render to texture object.
 	renderTextureLeft_ = new RenderTexture();
 	if (!renderTextureLeft_)
-	{
 		return false;
-	}
 
 	// Initialize the render to texture object.
 	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
-	{
 		return false;
-	}
 
 	/*
 	std::cout << "Eye[0] Width : " << OculusHMD::instance()->eyeSize_[0].w << std::endl;
@@ -466,9 +408,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Create the debug window object.
 	eyeWindowLeft_ = new EyeWindow();
 	if (!eyeWindowLeft_)
-	{
 		return false;
-	}
 
 	// Initialize the debug window object.
 	// Here we create and initialize a new debug window object. Notice I have made the window size 100x100. 
@@ -484,22 +424,17 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// [Right]
 	renderTextureRight_ = new RenderTexture();
 	if (!renderTextureRight_)
-	{
 		return false;
-	}
 
 	// Initialize the render to texture object.
 	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
-	{
 		return false;
-	}
+	
 	// Create the debug window object.
 	eyeWindowRight_ = new EyeWindow();
 	if (!eyeWindowRight_)
-	{
 		return false;
-	}
 
 	result = eyeWindowRight_->Initialize(device_, screenWidth, screenHeight, screenWidth / 2, screenHeight);
 	if (!result)
@@ -646,11 +581,12 @@ bool GraphicsAPI::RenderScene()
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
 
+  // TODO: ask Max if this works as intended, as far as i know it wouldn't
 	// update the rotation variable each frame
-	rotation += (float)XM_PI * 0.005f;
-	if (rotation > 360.0f)
+	rotation += (float)XM_PI * 0.005f; // <-- radiants
+	if (rotation > 360.0f) // <-- degrees ?
 	{
-	rotation -= 360.0f;
+	  rotation -= 360.0f;
 	}
 
 	// XMMATRIX rotationMatrix = XMMatrixRotationY(rotation);

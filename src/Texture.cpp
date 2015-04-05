@@ -36,10 +36,10 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control)
 {
 	D3D11_TEXTURE2D_DESC tdesc;
+  D3D11_SUBRESOURCE_DATA srInitData;
+  D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
 	ZeroMemory(&tdesc, sizeof(tdesc));
-	D3D11_SUBRESOURCE_DATA srInitData;
 	ZeroMemory(&srInitData, sizeof(srInitData));
-	D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
 	ZeroMemory(&srDesc, sizeof(srDesc));
 
 	// NOTE: Just for dirty Synchronisation. If Camera Stream works, doing better solution for this..
@@ -74,7 +74,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	if (FAILED(device->CreateTexture2D(&tdesc, &srInitData, &cameraTexture_)))
 	{
 		std::cout << "Failed" << std::endl;
-		return(false);
+		return (false);
 	}
 	else
 		std::cout << "Sucess" << std::endl;
@@ -85,7 +85,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	srDesc.Texture2D.MostDetailedMip = 0;
 	srDesc.Texture2D.MipLevels = 1;
 
-	if (SUCCEEDED(device->CreateShaderResourceView(cameraTexture_, &srDesc, &shaderResource_)));
+	if (SUCCEEDED(device->CreateShaderResourceView(cameraTexture_, &srDesc, &shaderResource_)))
 	{
 		return true;
 	}
@@ -100,7 +100,6 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, ARiftControl* arift_con
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	WaitForSingleObject(arift_control->cameraMutexLeft_, INFINITE);
 	unsigned char* cameraBuffer = arift_control->cameraBufferLeft_;
-	ReleaseMutex(arift_control->cameraMutexLeft_);
 
 	if (FAILED(devicecontext->Map(cameraTexture_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
 	{
@@ -114,8 +113,9 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, ARiftControl* arift_con
 		mappedData += mappedResource.RowPitch;
 		cameraBuffer += CAMERA_WIDTH * 4;
 	}
-
+  // TODO: ask max why for loop is used  
 	// memcpy(mappedResource.pData, arift_control->cameraBufferLeft_, CAMERA_BUFFER_LENGTH);
+  ReleaseMutex(arift_control->cameraMutexLeft_);
 	devicecontext->Unmap(cameraTexture_, 0);
 	return true;
 }

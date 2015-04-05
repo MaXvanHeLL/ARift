@@ -24,7 +24,7 @@ class IDSuEyeInputHandler : public CameraInputHandler
   private:
     bool auto_sensor_shutter[2];
 		bool cameraCaptureing_;
-	bool auto_sensor_gain[2];
+	  bool auto_sensor_gain[2];
     HIDS m_hcam[2];
     std::vector<std::pair<char*,int > > m_cam_img_mem[2];
 

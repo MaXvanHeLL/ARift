@@ -96,7 +96,7 @@ void OculusHMD::calculateFOV()
 		for (int eye = 0; eye<2; eye++)
 		{
 			eyeSize_[eye] = ovrHmd_GetFovTextureSize(hmd_, (ovrEyeType)eye,
-			hmd_->DefaultEyeFov[eye], 1.0f);
+			                                         hmd_->DefaultEyeFov[eye], 1.0f);
 		}
 	}
 }

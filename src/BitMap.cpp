@@ -72,16 +72,12 @@ bool BitMap::InitializeCameras(ID3D11Device* device, int screenWidth, int screen
 	// Initialize the vertex and index buffers.
 	result = InitializeBuffers(device);
 	if (!result)
-	{
 		return false;
-	}
 
 	// Load the texture for this model.
 	result = LoadCameraStream(device, arift_control);
 	if (!result)
-	{
-		return false;
-	}
+	  return false;
 
 	return true;
 }
@@ -205,9 +201,7 @@ bool BitMap::InitializeBuffers(ID3D11Device* device)
 	// Now create the vertex buffer.
 	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &vertexbuffer_);
 	if (FAILED(result))
-	{
 		return false;
-	}
 
 	// Set up the description of the static index buffer.
 	indexBufferDesc.Usage =     D3D11_USAGE_DEFAULT;
@@ -225,9 +219,7 @@ bool BitMap::InitializeBuffers(ID3D11Device* device)
 	// Create the index buffer.
 	result = device->CreateBuffer(&indexBufferDesc, &indexData, &indexbuffer_);
 	if (FAILED(result))
-	{
 		return false;
-	}
 
 	// Release the arrays now that the vertex and index buffers have been created and loaded.
 	delete[] vertices;
