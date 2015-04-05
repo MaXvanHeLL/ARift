@@ -5,7 +5,7 @@
 
 #include <DirectXMath.h>
 #include <DDSTextureLoader.h>
-class ARiftControl;
+class IDSuEyeInputHandler;
 using namespace DirectX;
 
 class Texture
@@ -20,8 +20,8 @@ class Texture
 		~Texture();
 
 		bool Initialize(ID3D11Device*, WCHAR*);
-		bool InitCameraStream(ID3D11Device*, ARiftControl*);
-		bool Update(ID3D11DeviceContext*, ARiftControl*);
+    bool InitCameraStream(ID3D11Device*, IDSuEyeInputHandler*);
+    bool Update(ID3D11DeviceContext*, IDSuEyeInputHandler*);
 
 		void Shutdown();
 

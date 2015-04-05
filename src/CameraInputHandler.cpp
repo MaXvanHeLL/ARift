@@ -4,13 +4,13 @@
 CameraInputHandler::CameraInputHandler() : m_cam1(0),m_cam2(1)
 {
 	flip_status_cam[0] = NOFLIP;
-	flip_status_cam[0] = BOTH;
+	flip_status_cam[1] = BOTH;
 }
 
 CameraInputHandler::CameraInputHandler(int cam1, int cam2) : m_cam1(cam1), m_cam2(cam2)
 {
 	flip_status_cam[0] = NOFLIP;
-	flip_status_cam[0] = BOTH;
+	flip_status_cam[1] = BOTH;
 }
 
 bool CameraInputHandler::openCams(int cam1,int cam2)
@@ -63,7 +63,7 @@ bool CameraInputHandler::grabFrames()
   return ( m_cap1.grab() & m_cap2.grab() );
 }
 
-void CameraInputHandler::retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer = NULL)
+void CameraInputHandler::retrieveFrame(cv::Mat& frame, int cam)
 {
   if(m_cam1 == cam)
     m_cap1.retrieve(frame);

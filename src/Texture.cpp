@@ -1,5 +1,5 @@
 #include "../include/Texture.h"
-#include "../include/ARiftcontrol.h"
+#include "../include/IDSuEyeInputHandler.h"
 #include <iostream>
 #include <fstream>
 
@@ -33,7 +33,7 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 	return true;
 }
 
-bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control)
+bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_input)
 {
 	D3D11_TEXTURE2D_DESC tdesc;
   D3D11_SUBRESOURCE_DATA srInitData;
@@ -59,10 +59,10 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 
 	// NOTE: "cameraBufferLeft_" contains RGBA8 Data. ColorMode of Camera set to IS_CM_RGBA8_PACKED
 	std::cout << "Render Thread: waiting for mutex" << std::endl;
-	WaitForSingleObject(arift_control->cameraMutexLeft_, INFINITE); // lock
+  WaitForSingleObject(cam_input->cameraMutexLeft_, INFINITE); // lock
 	std::cout << "Render Thread: mutex acquired" << std::endl;
-	srInitData.pSysMem = arift_control->cameraBufferLeft_;
-	ReleaseMutex(arift_control->cameraMutexLeft_); // unlock
+  srInitData.pSysMem = cam_input->cameraBufferLeft_;
+  ReleaseMutex(cam_input->cameraMutexLeft_); // unlock
 	srInitData.SysMemPitch = CAMERA_WIDTH * 4;
 
 	// works 
@@ -94,12 +94,12 @@ bool Texture::InitCameraStream(ID3D11Device* device, ARiftControl* arift_control
 	return false;
 }
 
-bool Texture::Update(ID3D11DeviceContext* devicecontext, ARiftControl* arift_control)
+bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* cam_input)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	WaitForSingleObject(arift_control->cameraMutexLeft_, INFINITE);
-	unsigned char* cameraBuffer = arift_control->cameraBufferLeft_;
+  WaitForSingleObject(cam_input->cameraMutexLeft_, INFINITE);
+  unsigned char* cameraBuffer = cam_input->cameraBufferLeft_;
 
 	if (FAILED(devicecontext->Map(cameraTexture_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
 	{
@@ -115,7 +115,7 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, ARiftControl* arift_con
 	}
   // TODO: ask max why for loop is used  
 	// memcpy(mappedResource.pData, arift_control->cameraBufferLeft_, CAMERA_BUFFER_LENGTH);
-  ReleaseMutex(arift_control->cameraMutexLeft_);
+  ReleaseMutex(cam_input->cameraMutexLeft_);
 	devicecontext->Unmap(cameraTexture_, 0);
 	return true;
 }

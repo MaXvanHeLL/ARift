@@ -1,4 +1,5 @@
 #include "../include/BitMap.h"
+#include "../include/ARiftControl.h"
 #include <iostream>
 
 
@@ -108,7 +109,7 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 	
 	if (AR_HMD_ENABLED)
 	{
-		result = texture_->Update(deviceContext, arift_control);
+		result = texture_->Update(deviceContext, (IDSuEyeInputHandler*)(arift_control->cam_input));
 		if (!result)
 		{
 			std::cout << "Error: Could not Update Bitmap Object!" << std::endl;
@@ -386,7 +387,7 @@ bool BitMap::LoadCameraStream(ID3D11Device* device, ARiftControl* arift_control)
 	}
 
 	// Initialize the texture object.
-	result = texture_->InitCameraStream(device, arift_control);
+  result = texture_->InitCameraStream(device, (IDSuEyeInputHandler*)(arift_control->cam_input));
 	if (!result)
 	{
 		return false;

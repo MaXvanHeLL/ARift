@@ -9,11 +9,7 @@
 #define CAM2 2
 #define RIFT_RESOLUTION_WIDTH 1280
 #define RIFT_RESOLUTION_HEIGHT 800
-#define CAMERA_CHANNELS 4
-#define CAMERA_WIDTH 752
-#define CAMERA_HEIGHT 480
-#define CAMERA_DEPTH 8
-#define CAMERA_BUFFER_LENGTH (CAMERA_CHANNELS * CAMERA_WIDTH * CAMERA_HEIGHT  * CAMERA_DEPTH / 8)
+
 
 class ARiftControl
 {
@@ -47,10 +43,6 @@ class ARiftControl
 		// [Stuff for other DirectX Thread]
 		cv::Mat picture_1_;
 		cv::Mat picture_2_;
-		unsigned char* cameraBufferLeft_;
-		char* cameraBufferRight_;
-		HANDLE cameraMutexLeft_;
-		HANDLE cameraMutexRight_;
 		// --------------------------------
     cv::Mat left_camera_mat;
     cv::Mat right_camera_mat;
@@ -61,11 +53,11 @@ class ARiftControl
     cv::Mat right_map1;
     cv::Mat right_map2;
     int wait_time = 30;
+    CameraInputHandler *cam_input = NULL;
   protected:
   private:
     bool running = false;
     int write_counter = 0;
-    CameraInputHandler *cam_input = NULL;
 };
 
 #endif // ARIFTCONTROL_H

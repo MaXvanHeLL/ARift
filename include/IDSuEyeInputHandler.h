@@ -5,6 +5,12 @@
 #include <vector>
 #include <utility>
 
+#define CAMERA_CHANNELS 4
+#define CAMERA_WIDTH 752
+#define CAMERA_HEIGHT 480
+#define CAMERA_DEPTH 8
+#define CAMERA_BUFFER_LENGTH (CAMERA_CHANNELS * CAMERA_WIDTH * CAMERA_HEIGHT  * CAMERA_DEPTH / 8)
+
 class IDSuEyeInputHandler : public CameraInputHandler
 {
   public:
@@ -13,13 +19,19 @@ class IDSuEyeInputHandler : public CameraInputHandler
 
     bool openCams();
     bool grabFrames() {return true;};
-    void retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer);
+    void retrieveFrame(cv::Mat& frame, int cam);
 		void readFrame(cv::Mat& frame, int cam);
+
+    // Members
     int width = 752; // strange I know
     int height = 480;
     int depth = 8;
     bool switchAutoSensorShutter(int cam);
     bool switchAutoSensorGain(int cam);
+    unsigned char* cameraBufferLeft_;
+    unsigned char* cameraBufferRight_;
+    HANDLE cameraMutexLeft_;
+    HANDLE cameraMutexRight_;
   protected:
   private:
     bool auto_sensor_shutter[2];

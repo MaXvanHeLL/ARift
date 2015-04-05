@@ -15,7 +15,15 @@ IDSuEyeInputHandler::IDSuEyeInputHandler()
 	auto_sensor_shutter[1] = false;
 	auto_sensor_gain[0] = false;
 	auto_sensor_gain[1] = false;
-	cameraCaptureing_ = true;
+	cameraCaptureing_ = false;
+  cameraBufferLeft_ = new unsigned char[CAMERA_BUFFER_LENGTH];
+  cameraBufferRight_ = new unsigned char[CAMERA_BUFFER_LENGTH];
+  cameraMutexLeft_ = CreateMutex(NULL, FALSE, L"Camera Left Mutex");
+  cameraMutexRight_ = CreateMutex(NULL, FALSE, L"Camera Right Mutex");
+  if (cameraMutexLeft_ == NULL || cameraMutexRight_ == NULL)
+  {
+    std::cout << "Create Mutex error!" << std::endl;
+  }
 }
 
 IDSuEyeInputHandler::~IDSuEyeInputHandler()
@@ -68,11 +76,8 @@ bool IDSuEyeInputHandler::openCams()
   switchAutoSensorGain(2);
   switchAutoSensorShutter(1);
   switchAutoSensorShutter(2);
-  // DEBUG
-  double fps = 0;
-  is_GetFramesPerSecond(m_hcam[0],&fps);
-  std::cout << "fps: " << fps << std::endl;
-  // \Debug
+
+  cameraCaptureing_ = true;
   return true;
 }
 
@@ -119,7 +124,7 @@ void IDSuEyeInputHandler::printMem(int cam)
 
 }
 
-void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam, unsigned char* cam_buffer = NULL)
+void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
 {
 
 
@@ -134,15 +139,19 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam, unsigned char* 
   is_LockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
 	char* driver_data = new char[memory_bytes];
 	memcpy(driver_data, last_img_mem, memory_bytes);
-
-	// copy Camera Memory into Buffer for Textures used by DirectX
-	if (cam_buffer && cameraCaptureing_)
-	{		
-		memcpy(cam_buffer, last_img_mem, memory_bytes);
-		// cameraCaptureing_ = false;
-		// std::cout << "Camera Image Freezed!" << std::endl;
-	}
-	//--------------------------------------------------------
+  
+  if (cam == 1)
+  { 
+    WaitForSingleObject(cameraMutexLeft_, INFINITE);
+    memcpy(cameraBufferLeft_, last_img_mem, memory_bytes);
+    ReleaseMutex(cameraMutexLeft_);
+  } 
+  else 
+  {
+    WaitForSingleObject(cameraMutexRight_, INFINITE);
+    memcpy(cameraBufferRight_, last_img_mem, memory_bytes);
+    ReleaseMutex(cameraMutexRight_);
+  }
 
   is_UnlockSeqBuf(m_hcam[cam-1],IS_IGNORE_PARAMETER,last_img_mem);
 	
