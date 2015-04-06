@@ -44,7 +44,7 @@ private:
 
 	// used for Eye Rendering
 	bool RenderToTexture(RenderTexture*);
-	bool RenderScene();
+	bool RenderScene(int cam_id);
 	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          
 public:

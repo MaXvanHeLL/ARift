@@ -21,7 +21,8 @@ class IDSuEyeInputHandler
     virtual ~IDSuEyeInputHandler();
 
     bool openCams(int left_cam, int right_cam);
-   // bool grabFrames() {return true;};
+    bool grabFrames();
+    bool grabFrame(int cam);
     void retrieveFrame(cv::Mat& frame, int cam);
 		void readFrame(cv::Mat& frame, int cam);
     bool switchAutoSensorShutter(int cam);

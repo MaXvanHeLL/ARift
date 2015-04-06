@@ -37,6 +37,8 @@ IDSuEyeInputHandler::~IDSuEyeInputHandler()
 bool IDSuEyeInputHandler::openCams(int left_cam,int right_cam)
 {
   std::cout << "IDSuEyeInputHandler: openCams() " << std::endl;
+  cam1_ = left_cam;
+  cam2_ = right_cam;
   hcam_[0] = left_cam;
   hcam_[1] = right_cam;
   int nRet1 = is_InitCamera(&hcam_[0], NULL);
@@ -125,39 +127,53 @@ void IDSuEyeInputHandler::printMem(int cam)
   }
 
 }
-
-void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
+bool IDSuEyeInputHandler::grabFrames()
 {
+  bool result1 = grabFrame(cam1_);
+  bool result2 = grabFrame(cam2_);
+  return (result2 && result1);
+}
 
-
-  if(cam != 1 && cam != 2)
-  {
-    std::cout << "IDSuEyeInputHandler::retrieveFrame no cam with ID " << cam << std::endl;
-  }
-
-  size_t memory_bytes = CAMERA_BUFFER_LENGTH;
+bool IDSuEyeInputHandler::grabFrame(int cam)
+{
   char* last_img_mem = NULL;
-  is_GetActSeqBuf(hcam_[cam-1],0,NULL,&last_img_mem);
+  char* driver_data = new char[CAMERA_BUFFER_LENGTH];
+  is_GetActSeqBuf(hcam_[cam - 1],0,NULL,&last_img_mem);
   is_LockSeqBuf(hcam_[cam - 1], IS_IGNORE_PARAMETER, last_img_mem);
-	char* driver_data = new char[memory_bytes];
-	memcpy(driver_data, last_img_mem, memory_bytes);
-  
+  memcpy(driver_data, last_img_mem, CAMERA_BUFFER_LENGTH);
+  is_UnlockSeqBuf(hcam_[cam - 1], IS_IGNORE_PARAMETER, last_img_mem);
+
   if (cam == 1)
   { 
     WaitForSingleObject(cameraMutexLeft_, INFINITE);
-    memcpy(cameraBufferLeft_, last_img_mem, memory_bytes);
+    memcpy(cameraBufferLeft_, driver_data, CAMERA_BUFFER_LENGTH);
     ReleaseMutex(cameraMutexLeft_);
   } 
   else 
   {
     WaitForSingleObject(cameraMutexRight_, INFINITE);
-    memcpy(cameraBufferRight_, last_img_mem, memory_bytes);
+    memcpy(cameraBufferRight_, driver_data, CAMERA_BUFFER_LENGTH);
     ReleaseMutex(cameraMutexRight_);
   }
+  delete[] driver_data;
+  return true;
+}
 
-  is_UnlockSeqBuf(hcam_[cam - 1], IS_IGNORE_PARAMETER, last_img_mem);
-	
-  Mat rgb(CAMERA_HEIGHT,CAMERA_WIDTH,CV_8UC4,(void*)driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
+void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
+{
+  if(cam != cam1_ && cam != cam2_)
+  {
+    std::cout << "IDSuEyeInputHandler::retrieveFrame no cam with ID " << cam << std::endl;
+  }
+
+  grabFrame(cam);
+  void* driver_data;
+  if (cam == 1)
+    driver_data = (void*)cameraBufferLeft_;
+  else
+    driver_data = (void*)cameraBufferRight_;
+
+  Mat rgb(CAMERA_HEIGHT,CAMERA_WIDTH,CV_8UC4,driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
   if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )
   {
     frame = Mat::zeros(rgb.rows,rgb.cols,rgb.type());
@@ -166,7 +182,7 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
   int from_to[] = { 0,2, 1,1, 2,0};
   mixChannels(&rgb, 1, &frame, 1, from_to,3);
   rgb.release();
-  delete[] driver_data;
+  
   if(flip_status_cam_[cam - 1] != NOFLIP)
     flip(frame,frame,flip_status_cam_[cam - 1]);
 		

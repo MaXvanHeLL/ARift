@@ -21,7 +21,7 @@ class Texture
 
 		bool Initialize(ID3D11Device*, WCHAR*);
     bool InitCameraStream(ID3D11Device*, IDSuEyeInputHandler*);
-    bool Update(ID3D11DeviceContext*, IDSuEyeInputHandler*);
+    bool Update(ID3D11DeviceContext*, IDSuEyeInputHandler*,int);
 
 		void Shutdown();
 

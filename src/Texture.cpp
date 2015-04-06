@@ -58,9 +58,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 	tdesc.SampleDesc.Quality = 0;
 
 	// NOTE: "cameraBufferLeft_" contains RGBA8 Data. ColorMode of Camera set to IS_CM_RGBA8_PACKED
-	std::cout << "Render Thread: waiting for mutex" << std::endl;
   WaitForSingleObject(cam_input->cameraMutexLeft_, INFINITE); // lock
-	std::cout << "Render Thread: mutex acquired" << std::endl;
   srInitData.pSysMem = cam_input->cameraBufferLeft_;
   ReleaseMutex(cam_input->cameraMutexLeft_); // unlock
 	srInitData.SysMemPitch = CAMERA_WIDTH * 4;
@@ -94,12 +92,22 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 	return false;
 }
 
-bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* cam_input)
+bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* cam_input, int cam_id)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-  WaitForSingleObject(cam_input->cameraMutexLeft_, INFINITE);
-  unsigned char* cameraBuffer = cam_input->cameraBufferLeft_;
+  unsigned char* cameraBuffer = NULL;
+  if (cam_id == 1)
+  { 
+    WaitForSingleObject(cam_input->cameraMutexLeft_, INFINITE);
+    cameraBuffer = cam_input->cameraBufferLeft_;
+  }
+  else
+  {
+    WaitForSingleObject(cam_input->cameraMutexRight_, INFINITE);
+    cameraBuffer = cam_input->cameraBufferRight_;
+  }
+  
 
 	if (FAILED(devicecontext->Map(cameraTexture_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
 	{
@@ -115,8 +123,11 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* ca
 	}
   // TODO: ask max why for loop is used  
 	// memcpy(mappedResource.pData, arift_control->cameraBufferLeft_, CAMERA_BUFFER_LENGTH);
-  ReleaseMutex(cam_input->cameraMutexLeft_);
-	devicecontext->Unmap(cameraTexture_, 0);
+  if (cam_id == 1)
+    ReleaseMutex(cam_input->cameraMutexLeft_);
+  else
+    ReleaseMutex(cam_input->cameraMutexRight_);
+  devicecontext->Unmap(cameraTexture_, 0);
 	return true;
 }
 

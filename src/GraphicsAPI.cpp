@@ -394,7 +394,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
+	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight, 1);
 	if (!result)
 		return false;
 
@@ -427,7 +427,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
+	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight, 2);
 	if (!result)
 		return false;
 	
@@ -552,7 +552,7 @@ bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture)
 	renderTexture->ClearRenderTarget(devicecontext_, GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Render the scene now and it will draw to the render to texture instead of the back buffer.
-	result = RenderScene();
+	result = RenderScene(renderTexture->cam_id_);
 	if (!result)
 	{
 		return false;
@@ -565,7 +565,7 @@ bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture)
 }
 
 
-bool GraphicsAPI::RenderScene()
+bool GraphicsAPI::RenderScene(int cam_id)
 {
 	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
@@ -601,7 +601,7 @@ bool GraphicsAPI::RenderScene()
 	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_);
+	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_,cam_id);
 	if (!result)
 	{
 		return false;

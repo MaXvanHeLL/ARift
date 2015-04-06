@@ -10,6 +10,7 @@ class RenderTexture
 		RenderTexture(const RenderTexture&);
 		~RenderTexture();
 
+    bool Initialize(ID3D11Device*, int, int,int);
 		bool Initialize(ID3D11Device*, int, int);
 		void Shutdown();
 
@@ -18,8 +19,9 @@ class RenderTexture
 		ID3D11ShaderResourceView* GetShaderResourceView();
 
 		ID3D11Texture2D* renderTargetTexture_;
-
+    int cam_id_;
 	private:
+
 		ID3D11ShaderResourceView* shaderResourceView_;
 		ID3D11RenderTargetView* renderTargetView_;
 };

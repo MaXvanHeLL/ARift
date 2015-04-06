@@ -60,7 +60,7 @@ int main(int, char**)
 		  // OculusHMD::instance()->trackMotion(test1, test2, test3);
 			// *****************************************************************
 
-			if (cont.getImages())
+			//if (cont.getImages())
 			{
 				//cont.createDisplay();
 				// imshow("both", cont.full_view);
@@ -72,8 +72,8 @@ int main(int, char**)
 				 // imshow("camera_freeze", camera_mat);
 			}
 			// main control loop
-			char key = waitKey(20);
-			cont.handleKey(key);
+			//char key = waitKey(20);
+			//cont.handleKey(key);
 		}
 	}
 	if (AR_HMD_ENABLED)
@@ -162,6 +162,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 			break;
 
 		// Run "game" code here
+    arift_c->cam_input->grabFrames();
 		frame_return = dx11->Frame();
 	}
 	// return this part of the WM_QUIT message to Windows
