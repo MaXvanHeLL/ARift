@@ -146,13 +146,23 @@ bool IDSuEyeInputHandler::grabFrame(int cam)
   if (cam == 1)
   { 
     WaitForSingleObject(cameraMutexLeft_, INFINITE);
+    // no flip needed
     memcpy(cameraBufferLeft_, driver_data, CAMERA_BUFFER_LENGTH);
     ReleaseMutex(cameraMutexLeft_);
   } 
   else 
   {
     WaitForSingleObject(cameraMutexRight_, INFINITE);
-    memcpy(cameraBufferRight_, driver_data, CAMERA_BUFFER_LENGTH);
+    // flip image
+    unsigned char *buffer = cameraBufferRight_;
+    char *driver_buffer = driver_data + CAMERA_BUFFER_LENGTH;
+    int byte_per_pixel = (CAMERA_CHANNELS * CAMERA_DEPTH) / 8;
+    for (int pixel_id = 0; pixel_id < CAMERA_WIDTH * CAMERA_HEIGHT; pixel_id++)
+    {
+      memcpy(buffer, driver_buffer, byte_per_pixel);
+      buffer += byte_per_pixel;
+      driver_buffer -= byte_per_pixel;
+    }
     ReleaseMutex(cameraMutexRight_);
   }
   delete[] driver_data;
