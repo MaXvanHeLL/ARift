@@ -26,7 +26,7 @@ std::string getTimeString()
 
 //  std::string time_str = ctime(&raw_time);
   std::string time_str = std::string(buffer);
-  std::cout << "Time str " << time_str;
+  //std::cout << "Time str " << time_str;
   time_str = time_str.erase(time_str.length()-1,1);
   findAndReplaceAll(time_str,std::string(" "),std::string("_"));
   findAndReplaceAll(time_str,std::string(":"),std::string("-"));

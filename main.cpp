@@ -39,14 +39,6 @@ int main(int, char**)
 	// start the Render Thread
   handle_render_thread = CreateThread(NULL, 0,
 	  directXHandling, &cont, 0, NULL);
-
-	// namedWindow("camera_freeze", 1);
-  // namedWindow("undist",1);
-  // namedWindow("both", CV_WINDOW_FULLSCREEN);
-  // cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
-//    cvNamedWindow("both", CV_WINDOW_NORMAL);
-//    cvSetWindowProperty("both", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
-  // waitKey(0);
   
   std::cout << "Starting Camera loop" << std::endl;
   cont.start();
@@ -59,25 +51,9 @@ int main(int, char**)
 			// float test1; float test2; float test3;
 		  // OculusHMD::instance()->trackMotion(test1, test2, test3);
 			// *****************************************************************
-
-			//if (cont.getImages())
-			{
-				//cont.createDisplay();
-				// imshow("both", cont.full_view);
-
-				// cont.undistortImages();
-				// imshow("undist", cont.full_view_undist);
-
-				 // cv::Mat camera_mat = cv::Mat(CAMERA_HEIGHT, CAMERA_WIDTH, CV_8UC4, cont.cameraBufferLeft_);
-				 // imshow("camera_freeze", camera_mat);
-			}
-			// main control loop
-			//char key = waitKey(20);
-			//cont.handleKey(key);
 		}
 	}
-	if (AR_HMD_ENABLED)
-		delete OculusHMD::instance();
+
 
   return 0;
 }
@@ -165,6 +141,10 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
     arift_c->cam_input->grabFrames();
 		frame_return = dx11->Frame();
 	}
+  delete dx11;
+  arift_c->stop();
+  if (AR_HMD_ENABLED)
+    delete OculusHMD::instance();
 	// return this part of the WM_QUIT message to Windows
 	return msg.wParam;
 }

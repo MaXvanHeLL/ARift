@@ -394,7 +394,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight, 1);
+	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
 		return false;
 
@@ -427,7 +427,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight, 2);
+	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
 	if (!result)
 		return false;
 	
@@ -487,7 +487,7 @@ bool GraphicsAPI::Render()
 		OculusHMD::instance()->StartFrames();
 
 	// [Left Eye] The first pass of our render is to a texture now. 
-	result = RenderToTexture(renderTextureLeft_);
+	result = RenderToTexture(renderTextureLeft_, 1);
 	if (!result)
 	{
 		return false;
@@ -519,7 +519,7 @@ bool GraphicsAPI::Render()
 	}
 
 	// [Right Eye]  ------------------------------------
-	result = RenderToTexture(renderTextureRight_);
+	result = RenderToTexture(renderTextureRight_,2);
 	if (!result)
 	{
 		return false;
@@ -542,7 +542,7 @@ bool GraphicsAPI::Render()
 }
 
 
-bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture)
+bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture, int cam_id)
 {
 	bool result;
 
@@ -552,7 +552,7 @@ bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture)
 	renderTexture->ClearRenderTarget(devicecontext_, GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Render the scene now and it will draw to the render to texture instead of the back buffer.
-	result = RenderScene(renderTexture->cam_id_);
+	result = RenderScene(cam_id);
 	if (!result)
 	{
 		return false;

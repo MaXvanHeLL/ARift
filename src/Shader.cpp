@@ -59,8 +59,8 @@ bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMFLOAT4
 bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
 {
 
-	std::cout << vsFilename << std::endl;
-	std::cout << psFilename << std::endl;
+	std::cout << "Vertex Shader file: " << vsFilename << std::endl;
+  std::cout << "Pixel  Shader file: " << psFilename << std::endl;
 
 	HRESULT result;
 	ID3D10Blob* errorMessage;

@@ -43,7 +43,7 @@ private:
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
 	// used for Eye Rendering
-	bool RenderToTexture(RenderTexture*);
+	bool RenderToTexture(RenderTexture*,int);
 	bool RenderScene(int cam_id);
 	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          

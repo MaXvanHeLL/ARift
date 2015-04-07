@@ -177,24 +177,24 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
   }
 
   grabFrame(cam);
-  void* driver_data;
-  if (cam == 1)
-    driver_data = (void*)cameraBufferLeft_;
-  else
-    driver_data = (void*)cameraBufferRight_;
+  //void* driver_data;
+  //if (cam == 1)
+  //  driver_data = (void*)cameraBufferLeft_;
+  //else
+  //  driver_data = (void*)cameraBufferRight_;
 
-  Mat rgb(CAMERA_HEIGHT,CAMERA_WIDTH,CV_8UC4,driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
-  if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )
-  {
-    frame = Mat::zeros(rgb.rows,rgb.cols,rgb.type());
-  }
-  // change format from rgb to bgr
-  int from_to[] = { 0,2, 1,1, 2,0};
-  mixChannels(&rgb, 1, &frame, 1, from_to,3);
-  rgb.release();
-  
-  if(flip_status_cam_[cam - 1] != NOFLIP)
-    flip(frame,frame,flip_status_cam_[cam - 1]);
+  //Mat rgb(CAMERA_HEIGHT,CAMERA_WIDTH,CV_8UC4,driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
+  //if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )
+  //{
+  //  frame = Mat::zeros(rgb.rows,rgb.cols,rgb.type());
+  //}
+  //// change format from rgb to bgr
+  //int from_to[] = { 0,2, 1,1, 2,0};
+  //mixChannels(&rgb, 1, &frame, 1, from_to,3);
+  //rgb.release();
+  //
+  //if(flip_status_cam_[cam - 1] != NOFLIP)
+  //  flip(frame,frame,flip_status_cam_[cam - 1]);
 		
 }
 

@@ -16,11 +16,7 @@ RenderTexture::RenderTexture(const RenderTexture& other)
 RenderTexture::~RenderTexture()
 {}
 
-bool RenderTexture::Initialize(ID3D11Device* device, int textureWidth, int textureHeight, int cam_id)
-{
-  cam_id_ = cam_id;
-  return Initialize(device, textureWidth, textureHeight);
-}
+
 // The Initialize function takes as input the width and height you want to make this render to texture.
 // Important: Remember that if you are rendering your screen you should keep the aspect ratio of this render
 // to texture the same as the aspect ratio of the screen or there will be some size distortion. 

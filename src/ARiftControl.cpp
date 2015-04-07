@@ -13,24 +13,7 @@
 using namespace cv;
 
 ARiftControl::ARiftControl()
-{
-  //ctor [Debug]
-
-	//String picture1_string = "data/test_picture1.jpg";
-	//String picture2_string = "data/picture_2.bmp";
-
-	//picture_1_ = imread(picture1_string, CV_LOAD_IMAGE_COLOR);   // Read the file
-	//picture_2_ = imread(picture2_string, CV_LOAD_IMAGE_COLOR);
-
-	//if (!picture_1_.data)	// Check for invalid input
-	//{
-	//	std::cout << "Could not open or find the image: " << picture1_string << std::endl;
-	//}
-	//if (!picture_2_.data)	// Check for invalid input
-	//{
-	//	std::cout << "Could not open or find the image: " << picture2_string << std::endl;
-	//}
-}
+{}
 
 ARiftControl::~ARiftControl()
 {
@@ -62,28 +45,6 @@ void ARiftControl::init()
 
   left_camera_mat = Mat::zeros(3,3,CV_64FC1);
   right_camera_mat = Mat::zeros(3,3,CV_64FC1);
-
-  //left_camera_mat.at<double>(0,0) = 429; // fx
-  //left_camera_mat.at<double>(1,1) = 431; // fy
-  //left_camera_mat.at<double>(2,2) = 1;
-  //left_camera_mat.at<double>(0,2) = 359; // cx
-  //left_camera_mat.at<double>(1,2) = 209; // cy
-  //left_distortion = (Mat_<double>(4,1) << -0.305 , 0.094, 0.001, -0.0022 ); //kc
-
-  //right_camera_mat.at<double>(0,0) = 430; // fx
-  //right_camera_mat.at<double>(1,1) = 433; // fy
-  //right_camera_mat.at<double>(2,2) = 1;
-  //right_camera_mat.at<double>(0,2) = 399; // cx
-  //right_camera_mat.at<double>(1,2) = 233; // cy
-  //right_distortion = (Mat_<double>(4,1) <<  -0.291, 0.076, 0.0, -0.0024 ); //kc
-  //std::cout << "Computing undistortion maps " << std::endl;
-  //initUndistortRectifyMap(left_camera_mat, left_distortion, Mat(),
-  //    getOptimalNewCameraMatrix(left_camera_mat, left_distortion, left_pic.size(), 1, left_pic.size(), 0),
-  //    left_pic.size(), CV_16SC2, left_map1, left_map2);
-
-  //initUndistortRectifyMap(right_camera_mat, right_distortion, Mat(),
-  //    getOptimalNewCameraMatrix(right_camera_mat, right_distortion, right_pic.size(), 1, right_pic.size(), 0),
-  //    right_pic.size(), CV_16SC2, right_map1, right_map2);
 
 }
 
