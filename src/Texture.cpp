@@ -107,7 +107,6 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* ca
     WaitForSingleObject(cam_input->cameraMutexRight_, INFINITE);
     cameraBuffer = cam_input->cameraBufferRight_;
   }
-  
 
 	if (FAILED(devicecontext->Map(cameraTexture_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource)))
 	{

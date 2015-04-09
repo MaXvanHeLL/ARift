@@ -7,6 +7,7 @@ Shader::Shader()
 	pixelshader_ = 0;
 	layout_ = 0;
 	matrixbuffer_ = 0;
+  undistortionBuffer_ = 0;
 	samplestate_ = 0;
 }
 
@@ -21,7 +22,7 @@ bool Shader::Initialize(ID3D11Device* device, HWND hwnd)
 	bool result;
 
 	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"src/VertexShader.vs", L"src/PixelShader.ps");
+  result = InitializeShader(device, hwnd, L"src/VertexShader.vs", L"src/PixelShader.ps", L"src/UndistortionShader.ps");
 	if (!result)
 	{
 		return false;
@@ -56,26 +57,29 @@ bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMFLOAT4
 	return true;
 }
 
-bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
+bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename, WCHAR* undistShaderFilename)
 {
 
 	std::cout << "Vertex Shader file: " << vsFilename << std::endl;
   std::cout << "Pixel  Shader file: " << psFilename << std::endl;
+  std::cout << "Pixel  Shader file: " << undistShaderFilename << std::endl;
 
 	HRESULT result;
 	ID3D10Blob* errorMessage;
 	ID3D10Blob* vertexShaderBuffer;
 	ID3D10Blob* pixelShaderBuffer;
+  ID3D10Blob* undistortionShaderBuffer;
 	D3D11_INPUT_ELEMENT_DESC polygonLayout[2];
 	unsigned int numElements;
 	D3D11_BUFFER_DESC matrixBufferDesc;
-
+  D3D11_BUFFER_DESC undistortionBufferDesc;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Initialize the pointers this function will use to null.
 	errorMessage = 0;
 	vertexShaderBuffer = 0;
 	pixelShaderBuffer = 0;
+  undistortionShaderBuffer = 0;
 
 	// Compile the vertex shader code.
 	result = D3DCompileFromFile(vsFilename, NULL, NULL, "TextureVertexShader", "vs_5_0",
@@ -117,6 +121,26 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename
 		return false;
 	}
 
+  // Compile undistortion shader code
+  result = D3DCompileFromFile(undistShaderFilename, NULL, NULL, "UndistortionShader", "ps_5_0",
+    D3D10_SHADER_ENABLE_STRICTNESS, 0, &undistortionShaderBuffer, &errorMessage);
+
+  if (FAILED(result))
+  {
+    // If the shader failed to compile it should have written something to the error message.
+    if (errorMessage)
+    {
+      OutputShaderErrorMessage(errorMessage, hwnd, undistShaderFilename);
+    }
+    // If there was  nothing in the error message then it simply could not find the file itself.
+    else
+    {
+      MessageBox(hwnd, undistShaderFilename, L"Missing Shader File", MB_OK);
+    }
+
+    return false;
+  }
+
 	// Create the vertex shader from the buffer.
 	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), 
 		vertexShaderBuffer->GetBufferSize(), NULL, &vertexshader_);
@@ -128,6 +152,12 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename
 		pixelShaderBuffer->GetBufferSize(), NULL, &pixelshader_);
 	if (FAILED(result))
 		return false;
+
+  // Create the pixel shader from the buffer.
+  result = device->CreatePixelShader(undistortionShaderBuffer->GetBufferPointer(),
+    undistortionShaderBuffer->GetBufferSize(), NULL, &undistortionShader_);
+  if (FAILED(result))
+    return false;
 
 	// Now setup the layout of the data that goes into the shader.
 	// This setup needs to match the VertexType stucture in the ModelClass and in the shader.
@@ -163,6 +193,9 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename
 	pixelShaderBuffer->Release();
 	pixelShaderBuffer = 0;
 
+  undistortionShaderBuffer->Release();
+  undistortionShaderBuffer = 0;
+
 	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
 	matrixBufferDesc.Usage =          D3D11_USAGE_DYNAMIC;
 	matrixBufferDesc.ByteWidth =      sizeof(MatrixBufferType);
@@ -175,6 +208,19 @@ bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename
 	result = device->CreateBuffer(&matrixBufferDesc, NULL, &matrixbuffer_);
 	if (FAILED(result))
 		return false;
+
+  // Setup the description of the dynamic undistortion constant buffer that is in the undistortion shader.
+  undistortionBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+  undistortionBufferDesc.ByteWidth = sizeof(UndistortionBuffer);
+  undistortionBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+  undistortionBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+  undistortionBufferDesc.MiscFlags = 0;
+  undistortionBufferDesc.StructureByteStride = 0;
+
+  // Create the constant buffer pointer so we can access the undistortion shader constant buffer from within this class.
+  result = device->CreateBuffer(&undistortionBufferDesc, NULL, &undistortionBuffer_);
+  if (FAILED(result))
+    return false;
 
 	// Create a texture sampler state description.
 	samplerDesc.Filter =   D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -235,6 +281,13 @@ void Shader::ShutdownShader()
 		vertexshader_->Release();
 		vertexshader_ = 0;
 	}
+
+  // Release the undistortion shader.
+  if (undistortionShader_)
+  {
+    undistortionShader_->Release();
+    undistortionShader_ = 0;
+  }
 
 	return;
 }
@@ -326,6 +379,33 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMFLOAT4X4 
 	return true;
 }
 
+bool Shader::SetUndistortionParameters(ID3D11DeviceContext* deviceContext, UndistortionBuffer undistBuffer)
+{
+  HRESULT result;
+  D3D11_MAPPED_SUBRESOURCE mappedResource;
+  UndistortionBuffer* dataPtr;
+  unsigned int bufferNumber;
+  // Lock the constant buffer so it can be written to.
+  result = deviceContext->Map(undistortionBuffer_, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+  if (FAILED(result))
+  {
+    return false;
+  }
+  // Get a pointer to the data in the constant buffer.
+  dataPtr = (UndistortionBuffer*)mappedResource.pData;
+  memcpy(dataPtr, &undistBuffer, sizeof(UndistortionBuffer));
+
+  // Unlock the constant buffer.
+  deviceContext->Unmap(undistortionBuffer_, 0);
+
+  // Set the position of the constant buffer in the vertex shader.
+  bufferNumber = 0;
+
+  // Finanly set the constant buffer in the vertex shader with the updated values.
+  deviceContext->PSSetConstantBuffers(bufferNumber, 1, &undistortionBuffer_);
+
+  return true;
+}
 
 void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 {
@@ -335,7 +415,6 @@ void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
 	// Set the vertex and pixel shaders that will be used to render this triangle.
 	deviceContext->VSSetShader(vertexshader_, NULL, 0);
 	deviceContext->PSSetShader(pixelshader_, NULL, 0);
-
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &samplestate_);
 
