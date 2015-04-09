@@ -15,23 +15,30 @@ void findAndReplaceAll(std::string& s,const std::string to_replace,const std::st
   }
 }
 
-std::string getTimeString()
+std::string getTimeString(const char* format)
 {
   time_t raw_time;
   struct tm timeinfo;
   char buffer[20];
   time(&raw_time);
   localtime_s(&timeinfo, &raw_time);
-  strftime(buffer, 20, "%Y-%m-%d_%H-%M-%S", &timeinfo);
+  strftime(buffer, 20, format, &timeinfo);
 
-//  std::string time_str = ctime(&raw_time);
+  //  std::string time_str = ctime(&raw_time);
   std::string time_str = std::string(buffer);
   //std::cout << "Time str " << time_str;
-  time_str = time_str.erase(time_str.length()-1,1);
-  findAndReplaceAll(time_str,std::string(" "),std::string("_"));
-  findAndReplaceAll(time_str,std::string(":"),std::string("-"));
+  //time_str = time_str.erase(time_str.length()-1,1);
+  findAndReplaceAll(time_str, std::string(" "), std::string("_"));
+  findAndReplaceAll(time_str, std::string(":"), std::string("-"));
   return time_str;
 }
+
+std::string getTimeString()
+{
+  return getTimeString("%Y-%m-%d_%H-%M-%S");
+}
+
+
 
 /**
 * Rotate an image

@@ -6,6 +6,7 @@
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
 #include "include/GraphicsAPI.h"
+#include "include\Helpers.h"
 #include <iostream>
 #include <windows.h>
 
@@ -16,6 +17,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg);
 void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+#define SHOW_FPS true
 // not used currently
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -122,6 +124,9 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 
 	// wait for the next message in the queue, store the result in 'msg'
 	// Enter the infinite message loop
+  std::string past;
+  unsigned int frame_count = 0;
+  int fps = 0;
 	while (TRUE)
 	{
 		// Check to see if any messages are waiting in the queue
@@ -138,8 +143,19 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 			break;
 
 		// Run "game" code here
+    std::string now = getTimeString("%S");
+    if (SHOW_FPS  && past.compare(now) != 0)
+    {
+      std::cout << "Time: " << getTimeString() << " fps: " << fps << " frame count:" << frame_count << std::endl;
+      fps = 0;
+    }
+    past = now;
+    frame_count++;
+    fps++;
+
     arift_c->cam_input->grabFrames();
 		frame_return = dx11->Frame();
+    
 	}
   delete dx11;
   arift_c->stop();
