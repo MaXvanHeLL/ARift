@@ -13,7 +13,40 @@
 using namespace cv;
 
 ARiftControl::ARiftControl()
-{}
+{
+  // Write read in from file for this
+  left_cam_params_.Nxc = 0.0f;
+  left_cam_params_.Nyc = 0.0f;
+  left_cam_params_.z = -400.0f/3.5f;
+  left_cam_params_.p6 = 0.0f;
+  left_cam_params_.p5 = 16.264f;
+  left_cam_params_.p4 = 109.7055f;
+  left_cam_params_.p3 = 289.2309f;
+  left_cam_params_.p2 = 372.8583f;
+  left_cam_params_.p1 = 654.9667f;
+  left_cam_params_.p0 = 717.4737f;
+  left_cam_params_.c = 0.9999f;
+  left_cam_params_.d = -0.00019449f;
+  left_cam_params_.e = -0.00030843f;
+  left_cam_params_.xc = 214.4453f;
+  left_cam_params_.yc = 353.3091f;
+
+  right_cam_params_.Nxc = 0.0f;
+  right_cam_params_.Nyc = 0.0f;
+  right_cam_params_.z = -400.0f / 3.5f;
+  right_cam_params_.p6 = 50.2189f;
+  right_cam_params_.p5 = 313.8636f;
+  right_cam_params_.p4 = 759.1147f;
+  right_cam_params_.p3 = 864.7065f;
+  right_cam_params_.p2 = 420.4562f;
+  right_cam_params_.p1 = 438.6404f;
+  right_cam_params_.p0 = 628.5998f;
+  right_cam_params_.c = 0.9993f;
+  right_cam_params_.d =  0.000046388f;
+  right_cam_params_.e = -0.000052631f;
+  right_cam_params_.xc = 238.1835f;
+  right_cam_params_.yc = 391.6032f;
+}
 
 ARiftControl::~ARiftControl()
 {

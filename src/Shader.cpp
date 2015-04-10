@@ -40,7 +40,7 @@ void Shader::Shutdown()
 }
 
 bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMFLOAT4X4 worldMatrix,
-	XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix, ID3D11ShaderResourceView* texture)
+  XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix, ID3D11ShaderResourceView* texture, UndistortionBuffer* undistBuffer)
 {
 	bool result;
 
@@ -50,11 +50,22 @@ bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMFLOAT4
 	{
 		return false;
 	}
-
+  if (undistBuffer != NULL)
+  {
+    result = SetUndistortionParameters(deviceContext, undistBuffer);
+    if (!result)
+      return false;
+  }
 	// Now render the prepared buffers with the shader.
-	RenderShader(deviceContext, indexCount);
+  RenderShader(deviceContext, indexCount, (undistBuffer != NULL));
 
 	return true;
+}
+
+bool Shader::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMFLOAT4X4 worldMatrix,
+  XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix, ID3D11ShaderResourceView* texture)
+{
+  return Render(deviceContext, indexCount, worldMatrix, viewMatrix, projectionMatrix, texture, NULL);
 }
 
 bool Shader::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename, WCHAR* undistShaderFilename)
@@ -379,7 +390,7 @@ bool Shader::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMFLOAT4X4 
 	return true;
 }
 
-bool Shader::SetUndistortionParameters(ID3D11DeviceContext* deviceContext, UndistortionBuffer undistBuffer)
+bool Shader::SetUndistortionParameters(ID3D11DeviceContext* deviceContext, UndistortionBuffer* undistBuffer)
 {
   HRESULT result;
   D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -393,7 +404,7 @@ bool Shader::SetUndistortionParameters(ID3D11DeviceContext* deviceContext, Undis
   }
   // Get a pointer to the data in the constant buffer.
   dataPtr = (UndistortionBuffer*)mappedResource.pData;
-  memcpy(dataPtr, &undistBuffer, sizeof(UndistortionBuffer));
+  memcpy(dataPtr, undistBuffer, sizeof(UndistortionBuffer));
 
   // Unlock the constant buffer.
   deviceContext->Unmap(undistortionBuffer_, 0);
@@ -407,14 +418,17 @@ bool Shader::SetUndistortionParameters(ID3D11DeviceContext* deviceContext, Undis
   return true;
 }
 
-void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount)
+void Shader::RenderShader(ID3D11DeviceContext* deviceContext, int indexCount, bool undistort)
 {
 	// Set the vertex input layout.
 	deviceContext->IASetInputLayout(layout_);
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
 	deviceContext->VSSetShader(vertexshader_, NULL, 0);
-	deviceContext->PSSetShader(pixelshader_, NULL, 0);
+  if (undistort)
+    deviceContext->PSSetShader(undistortionShader_, NULL, 0);
+  else
+    deviceContext->PSSetShader(pixelshader_, NULL, 0);
 	// Set the sampler state in the pixel shader.
 	deviceContext->PSSetSamplers(0, 1, &samplestate_);
 

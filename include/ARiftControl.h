@@ -2,6 +2,7 @@
 #define ARIFTCONTROL_H
 #include <opencv2/core/core.hpp>
 #include "IDSuEyeInputHandler.h"
+#include "../include/Shader.h"
 #include <direct.h>
 
 #define CAM1 1
@@ -53,6 +54,8 @@ class ARiftControl
     cv::Mat right_map2;
     int wait_time = 30;
     IDSuEyeInputHandler *cam_input = NULL;
+    Shader::UndistortionBuffer left_cam_params_;
+    Shader::UndistortionBuffer right_cam_params_;
   protected:
   private:
     bool running = false;

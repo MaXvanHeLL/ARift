@@ -32,14 +32,23 @@ class Shader
 	public:
     struct UndistortionBuffer
     {
-      float xc;
-      float yc;
+      float Nxc;
+      float Nyc;
       float z;
 
-      float p0; float p1; float p2; float p3; float p4; float p5; float p6;
+      float p0; 
+      float p1; float p2; float p3; 
+      float p4; float p5; float p6;
       float c; float d; float e;
 
-      float padding0; float padding1; float padding2;
+      float xc;
+      float yc;
+      float width;
+      float height;
+      
+      float padding0;
+      float padding1;
+      float padding2;
     };
 
 		Shader();
@@ -48,7 +57,8 @@ class Shader
 
 		bool Initialize(ID3D11Device*, HWND);
 		void Shutdown();
-		bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*);
+    bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*, UndistortionBuffer*);
+    bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*);
 
 	private:
 		bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*,WCHAR*);
@@ -56,8 +66,8 @@ class Shader
 		void OutputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
 
 		bool SetShaderParameters(ID3D11DeviceContext*, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*);
-    bool SetUndistortionParameters(ID3D11DeviceContext*, UndistortionBuffer);
-		void RenderShader(ID3D11DeviceContext*, int);
+    bool SetUndistortionParameters(ID3D11DeviceContext*, UndistortionBuffer*);
+		void RenderShader(ID3D11DeviceContext*, int, bool);
 };
 
 #endif

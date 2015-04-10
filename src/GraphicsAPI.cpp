@@ -453,13 +453,14 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Initialize the shader object.
+  std::cout << "Compiling Shaders" << std::endl;
 	result = shader_->Initialize(device_, hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the shader object.", L"Error", MB_OK);
 		return false;
 	}
-
+  std::cout << "Compiling Shaders done" << std::endl;
 	return true;
 }
 
@@ -607,9 +608,23 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		return false;
 	}
 
-	// Render the bitmap with the texture shader.
-	result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, bitmap_->GetTexture());
-	if (!result)
+	
+  Shader::UndistortionBuffer* undistBuffer = NULL;
+  if (cam_id == 1)
+  { 
+    undistBuffer = &(ariftcontrol_->left_cam_params_);
+  }
+  else
+  {
+    undistBuffer = &(ariftcontrol_->right_cam_params_);
+  }
+  undistBuffer->width = (float)screenwidth_/2.0f;
+  undistBuffer->height = (float)screenheight_;
+  // Render the bitmap with the texture shader.
+  result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+    bitmap_->GetTexture(), undistBuffer);
+
+  if (!result)
 	{
 		return false;
 	}

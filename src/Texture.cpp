@@ -60,7 +60,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 	// NOTE: "cameraBufferLeft_" contains RGBA8 Data. ColorMode of Camera set to IS_CM_RGBA8_PACKED
   WaitForSingleObject(cam_input->cameraMutexLeft_, INFINITE); // lock
   srInitData.pSysMem = cam_input->cameraBufferLeft_;
-  ReleaseMutex(cam_input->cameraMutexLeft_); // unlock
+  
 	srInitData.SysMemPitch = CAMERA_WIDTH * 4;
 
 	// works 
@@ -76,7 +76,8 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 	}
 	else
 		std::cout << "Sucess" << std::endl;
-		
+	
+  ReleaseMutex(cam_input->cameraMutexLeft_); // unlock
   // Create the shader-resource view
 	srDesc.Format = tdesc.Format;
 	srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
