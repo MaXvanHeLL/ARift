@@ -46,8 +46,8 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
 {
   float4 textureColor;
   float2 mappedPoint;
-  float x;
-  float y;
+  float col; // x; 
+  float row; // y; 
   float norm;
   float theta;
   float theta2;
@@ -58,9 +58,9 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   // mappedPoint.x = input.tex.x + Nxc / width;
   // mappedPoint.y = input.tex.y + Nyc / height;
 
-  y = (input.tex.x - 0.5)*width + Nxc;
-  x = (input.tex.y - 0.5)*height + Nyc;
-  norm = sqrt(x*x + y*y);
+  row = (input.tex.x - 0.5)*width + Nxc;
+  col = (input.tex.y - 0.5)*height + Nyc;
+  norm = sqrt(row*row + col*col);
   if (norm < eps)
   {
     norm = eps;
@@ -70,12 +70,12 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   theta4 = theta2*theta2;
   //    p0 + p1*theta + p2*theta^2 + p3*theta^3 + p4*theta^4 + p5*theta^5 + p6*theta^6
   rho = p0 + p1*theta + p2*theta2 + p3*theta2*theta + p4*theta4 + p5*theta4*theta + p6*theta4*theta2;
-  x = (x / norm)*rho;
-  y = (y / norm)*rho;
-  x = x*c + y*d + xc;
-  y = x*e + y   + yc;
-  mappedPoint.y = x / width;
-  mappedPoint.x = y / height ;
+  col = (col / norm)*rho;
+  row = (row / norm)*rho;
+  col = col*c + row*d + xc;
+  row = col*e + row + yc;
+  mappedPoint.y = col / width;
+  mappedPoint.x = row / height;
   textureColor = shaderTexture.Sample(SampleType, mappedPoint);
 
   // no wrap

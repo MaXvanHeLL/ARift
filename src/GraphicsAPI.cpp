@@ -634,16 +634,16 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 	//// ******************************** || 3D RENDERING || *********************************
 
-	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	//model_->Render(devicecontext_);
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	model_->Render(devicecontext_);
 
-	//// Render the model using the texture shader.
-	//result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-	//	model_->GetTexture());
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Render the model using the texture shader.
+	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		model_->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
