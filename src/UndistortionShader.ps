@@ -54,48 +54,55 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   float theta4;
   float rho;
   float eps = pow(0.1f, 13);
-  //x = (input.position.x / input.position.w - 0.5f) *height - Nxc;
-  //y = (input.position.y / input.position.w - 0.5f) *width - Nyc;
-  x = input.position.x / input.position.w - Nxc;
-  y = input.position.y / input.position.w - Nyc;
-  norm = sqrt(x*x + y*y);
-  if (norm < eps)
-  {
-    norm = eps;
-  }
-  theta = atan(z / norm);
-  theta2 = theta*theta;
-  theta4 = theta2*theta2;
-  //    p0 + p1*theta + p2*theta^2 + p3*theta^3 + p4*theta^4 + p5*theta^5 + p6*theta^6
-  rho = p0 + p1*theta + p2*theta2 + p3*theta2*theta + p4*theta4 + p5*theta4*theta + p6*theta4*theta2;
-  x = (x / norm)*rho;
-  x = (y / norm)*rho;
-  x = x*c + y*d + xc;
-  y = x*e + y   + yc;
-  mappedPoint.x = x / height + 0.5f;
-  mappedPoint.y = y / width  + 0.5f;
-  if (mappedPoint.x < 0.0f || mappedPoint.x > 1.0f)
-  {
-    textureColor = float4(1.0f, 0.0f, 0.0f, 1.0f);// R
-  }
-  else if (mappedPoint.y < 0.0f || mappedPoint.y > 1.0f)
-  {
-    textureColor = float4(0.0f, 1.0f, 0.0f, 1.0f); //G
-  }
-  else
-  {
-    textureColor = shaderTexture.Sample(SampleType, mappedPoint);
-  }
+  // Translation only
+  mappedPoint.x = input.tex.x + Nxc / width;
+  mappedPoint.y = input.tex.y + Nyc / height;
+
+  // TODO correct undistortion and remove translation code above
+  //x = (input.tex.x - 0.5)*height;
+  //y = (input.tex.y - 0.5)*width;
+  //x =  x - Nyc;
+  //y =  y - Nxc;
+  //norm = sqrt(x*x + y*y);
+  //if (norm < eps)
+  //{
+  //  norm = eps;
+  //}
+  //theta = atan(z / norm);
+  //theta2 = theta*theta;
+  //theta4 = theta2*theta2;
+  ////    p0 + p1*theta + p2*theta^2 + p3*theta^3 + p4*theta^4 + p5*theta^5 + p6*theta^6
+  //rho = p0 + p1*theta + p2*theta2 + p3*theta2*theta + p4*theta4 + p5*theta4*theta + p6*theta4*theta2;
+  //x = (x / norm)*rho;
+  //x = (y / norm)*rho;
+  //x = x*c + y*d + xc;
+  //y = x*e + y   + yc;
+  //mappedPoint.x = x / height;//  + 0.5f;
+  //mappedPoint.y = y / width;// + 0.5f;
+  textureColor = shaderTexture.Sample(SampleType, mappedPoint);
+
+  if ((mappedPoint.x < 0.0f || mappedPoint.x > 1.0f) || (mappedPoint.y < 0.0f || mappedPoint.y > 1.0f))
+    textureColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+  //if (mappedPoint.x < 0.0f)
+  //  textureColor.r =  0.25;
+  //if (mappedPoint.y < 0.0f)
+  //  textureColor.g =  0.25;
+
+  //if (mappedPoint.y > 1.0f)
+  //  textureColor.g = 1.0;
+  //if (mappedPoint.x > 1.0f)
+  //  textureColor.r = 1.0;
+
   // Sample the pixel color from the texture using the sampler at this texture coordinate location.
   //textureColor = shaderTexture.Sample(SampleType, input.tex);
   //DEBUG
-  //if (input.tex.x < 0.25 || input.tex.y < 0.25)
+  //if (x < 0.25 || y < 0.25)
   //{
-  //  textureColor = float4(input.tex.x, input.tex.y, 0.0f, 1.0f);
+  //  textureColor = float4(x, y, 0.0f, 1.0f);
   //}
-  //else if ((input.tex.x > 0.75 || input.tex.y > 0.75))
+  // else if (x > 0.75 || y > 0.75)
   //{
-  //  textureColor = float4(0.0f, input.tex.y, input.tex.x, 1.0f);
+  //  textureColor = float4(x, y, 0.0f, 1.0f);
   //}
   return textureColor;
 }

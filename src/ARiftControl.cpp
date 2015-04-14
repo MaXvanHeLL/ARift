@@ -15,9 +15,9 @@ using namespace cv;
 ARiftControl::ARiftControl()
 {
   // Write read in from file for this
-  left_cam_params_.Nxc = 0.0f;
-  left_cam_params_.Nyc = 0.0f;
-  left_cam_params_.z = -400.0f/3.5f;
+  left_cam_params_.Nxc = -69.0f;
+  left_cam_params_.Nyc = -20.0f; 
+  left_cam_params_.z = -250.0f;
   left_cam_params_.p6 = 0.0f;
   left_cam_params_.p5 = 16.264f;
   left_cam_params_.p4 = 109.7055f;
@@ -31,9 +31,9 @@ ARiftControl::ARiftControl()
   left_cam_params_.xc = 214.4453f;
   left_cam_params_.yc = 353.3091f;
 
-  right_cam_params_.Nxc = 0.0f;
-  right_cam_params_.Nyc = 0.0f;
-  right_cam_params_.z = -400.0f / 3.5f;
+  right_cam_params_.Nxc = 69.0f; 
+  right_cam_params_.Nyc = 20.0f;
+  right_cam_params_.z = -250.0f;
   right_cam_params_.p6 = 50.2189f;
   right_cam_params_.p5 = 313.8636f;
   right_cam_params_.p4 = 759.1147f;
@@ -121,30 +121,85 @@ void ARiftControl::undistortImages()
 
 void ARiftControl::handleKey(char key)
 {
+  //std::cout << "ARiftControl::handleKey recived char: " << key << std::endl;
+
   switch (key)
   {
-    case 'q': // quit
-    case 'Q': // quit
     case 27:  // quit by escape key
-      {
-        running = false;
-        break;
-      }
-    case 'f': // flip
-      {
-        hanldeFlip();
-        break;
-      }
-    case 's': // save
-      {
-        handleSave();
-        break;
-      }
+    {
+      //running = false;
+      break;
+    }
+    case 'w':
+    {
+      left_cam_params_.Nyc += 1;
+      right_cam_params_.Nyc -= 1;
+      break;
+    }
     case 'a':
-      {
-        handleCameraAutoFeatures();
-        break;
-      }
+    {
+      left_cam_params_.Nxc -= 1;
+      right_cam_params_.Nxc += 1;
+      break;
+    }
+    case 's':
+    {
+      left_cam_params_.Nyc -= 1;
+      right_cam_params_.Nyc += 1;
+      break;
+    }
+    case 'd':
+    {
+      left_cam_params_.Nxc += 1;
+      right_cam_params_.Nxc -= 1;
+      break;
+    }
+
+    case 'W':
+    {
+      left_cam_params_.Nyc += 1;
+      right_cam_params_.Nyc += 1;
+      break;
+    }
+    case 'A':
+    {
+      left_cam_params_.Nxc -= 1;
+      right_cam_params_.Nxc -= 1;
+      break;
+    }
+    case 'S':
+    {
+      left_cam_params_.Nyc -= 1;
+      right_cam_params_.Nyc -= 1;
+      break;
+    }
+    case 'D':
+    {
+      left_cam_params_.Nxc += 1;
+      right_cam_params_.Nxc += 1;
+      break;
+    }
+    case 'p':
+    {
+      std::cout << "(x, y) left:  (" << left_cam_params_.Nxc  << ", " << left_cam_params_.Nyc << std::endl;
+      std::cout << "(x, y) right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << std::endl;
+      break;
+    }
+    //case 'f': // flip
+    //  {
+    //    hanldeFlip();
+    //    break;
+    //  }
+    //case 's': // save
+    //  {
+    //    handleSave();
+    //    break;
+    //  }
+    //case 'a':
+    //  {
+    //    handleCameraAutoFeatures();
+    //    break;
+    //  }
     default:
       break;
   }
@@ -152,23 +207,6 @@ void ARiftControl::handleKey(char key)
 
 void ARiftControl::hanldeFlip()
 {
-  putText(full_view,"CHOOSE IMAGE TO FLIP l/r",Point(0,RIFT_RESOLUTION_HEIGHT/2),FONT_HERSHEY_SIMPLEX,1,Scalar(0,255,0),2);
-  putText(full_view,"CHOOSE IMAGE TO FLIP l/r",Point(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT/2),FONT_HERSHEY_SIMPLEX,1,Scalar(0,255,0),2);
-  imshow("both",full_view);
-  char key_2 = waitKey(0);
-  if(key_2 == 'l')
-    if(cam_input->flip_status_cam_[0] == NOFLIP)
-      cam_input->flip_status_cam_[0] = HORIZONTAL;
-    else
-      cam_input->flip_status_cam_[0] = (FlipStatus)(cam_input->flip_status_cam_[0] - 1);
-  else if(key_2 == 'r')
-    if(cam_input->flip_status_cam_[1] == NOFLIP)
-      cam_input->flip_status_cam_[1] = HORIZONTAL;
-    else
-      cam_input->flip_status_cam_[1] = (FlipStatus)(cam_input->flip_status_cam_[1] - 1);
-
-  std::cout << " Flip status l: " << cam_input->flip_status_cam_[0];
-  std::cout << ", r:" << cam_input->flip_status_cam_[1] << std::endl;
 }
 
 void ARiftControl::handleSave()

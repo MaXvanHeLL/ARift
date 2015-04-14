@@ -17,7 +17,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg);
 void render(ARiftControl* arift_c);
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-#define SHOW_FPS true
+#define SHOW_FPS false
 // not used currently
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -55,7 +55,6 @@ int main(int, char**)
 			// *****************************************************************
 		}
 	}
-
 
   return 0;
 }
@@ -142,7 +141,13 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 		if (msg.message == WM_QUIT)
 			break;
 
+    if (msg.message == WM_CHAR)
+    {
+      //std::cout << "recieved message WM_CHAR : " << msg.wParam << std::endl;
+      arift_c->handleKey((char)msg.wParam);
+    }
 		// Run "game" code here
+    // get fps
     std::string now = getTimeString("%S");
     if (SHOW_FPS  && past.compare(now) != 0)
     {
@@ -170,7 +175,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	// sort through and find what code to run for the message given
 	switch (message)
 	{
-			// this message is read when the window is closed
+    case WM_CHAR:
+    {
+      if (char(wParam) != 27)
+        break;
+    }
+		// this message is read when the window is closed
 		case WM_DESTROY:
 		{
 			// close the application entirely

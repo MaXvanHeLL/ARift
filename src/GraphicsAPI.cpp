@@ -632,18 +632,18 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	TurnZBufferOn();
 
-	// ******************************** || 3D RENDERING || *********************************
+	//// ******************************** || 3D RENDERING || *********************************
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	model_->Render(devicecontext_);
+	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	//model_->Render(devicecontext_);
 
-	// Render the model using the texture shader.
-	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		model_->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
+	//// Render the model using the texture shader.
+	//result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+	//	model_->GetTexture());
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
 	return true;
 }
