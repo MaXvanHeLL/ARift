@@ -15,8 +15,8 @@ using namespace cv;
 ARiftControl::ARiftControl()
 {
   // Write read in from file for this
-  left_cam_params_.Nxc = -69.0f;
-  left_cam_params_.Nyc = -20.0f; 
+  left_cam_params_.Nxc = -39.0f;
+  left_cam_params_.Nyc = 90.0f; 
   left_cam_params_.z = -250.0f;
   left_cam_params_.p6 = 0.0f;
   left_cam_params_.p5 = 16.264f;
@@ -31,8 +31,8 @@ ARiftControl::ARiftControl()
   left_cam_params_.xc = 214.4453f;
   left_cam_params_.yc = 353.3091f;
 
-  right_cam_params_.Nxc = 69.0f; 
-  right_cam_params_.Nyc = 20.0f;
+  right_cam_params_.Nxc = 79.0f; 
+  right_cam_params_.Nyc = 94.0f;
   right_cam_params_.z = -250.0f;
   right_cam_params_.p6 = 50.2189f;
   right_cam_params_.p5 = 313.8636f;
@@ -122,7 +122,7 @@ void ARiftControl::undistortImages()
 void ARiftControl::handleKey(char key)
 {
   //std::cout << "ARiftControl::handleKey recived char: " << key << std::endl;
-
+  float step = 0.2f;
   switch (key)
   {
     case 27:  // quit by escape key
@@ -132,57 +132,57 @@ void ARiftControl::handleKey(char key)
     }
     case 'w':
     {
-      left_cam_params_.Nyc += 1;
-      right_cam_params_.Nyc -= 1;
+      left_cam_params_.Nyc += step;
+      right_cam_params_.Nyc -= step;
       break;
     }
     case 'a':
     {
-      left_cam_params_.Nxc -= 1;
-      right_cam_params_.Nxc += 1;
+      left_cam_params_.Nxc -= step;
+      right_cam_params_.Nxc += step;
       break;
     }
     case 's':
     {
-      left_cam_params_.Nyc -= 1;
-      right_cam_params_.Nyc += 1;
+      left_cam_params_.Nyc -= step;
+      right_cam_params_.Nyc += step;
       break;
     }
     case 'd':
     {
-      left_cam_params_.Nxc += 1;
-      right_cam_params_.Nxc -= 1;
+      left_cam_params_.Nxc += step;
+      right_cam_params_.Nxc -= step;
       break;
     }
 
     case 'W':
     {
-      left_cam_params_.Nyc += 1;
-      right_cam_params_.Nyc += 1;
+      left_cam_params_.Nyc += step;
+      right_cam_params_.Nyc += step;
       break;
     }
     case 'A':
     {
-      left_cam_params_.Nxc -= 1;
-      right_cam_params_.Nxc -= 1;
+      left_cam_params_.Nxc -= step;
+      right_cam_params_.Nxc -= step;
       break;
     }
     case 'S':
     {
-      left_cam_params_.Nyc -= 1;
-      right_cam_params_.Nyc -= 1;
+      left_cam_params_.Nyc -= step;
+      right_cam_params_.Nyc -= step;
       break;
     }
     case 'D':
     {
-      left_cam_params_.Nxc += 1;
-      right_cam_params_.Nxc += 1;
+      left_cam_params_.Nxc += step;
+      right_cam_params_.Nxc += step;
       break;
     }
     case 'p':
     {
-      std::cout << "(x, y) left:  (" << left_cam_params_.Nxc  << ", " << left_cam_params_.Nyc << std::endl;
-      std::cout << "(x, y) right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << std::endl;
+      std::cout << "(x, y) left:  (" << left_cam_params_.Nxc  << ", " << left_cam_params_.Nyc << " ) ";
+      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << " ) " << std::endl;
       break;
     }
     //case 'f': // flip
