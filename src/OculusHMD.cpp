@@ -98,6 +98,10 @@ void OculusHMD::calculateFOV()
 			eyeSize_[eye] = ovrHmd_GetFovTextureSize(hmd_, (ovrEyeType)eye,
 			                                         hmd_->DefaultEyeFov[eye], 1.0f);
 		}
+		std::cout << "OculusHMD::calculateFOV() | TextureHeight LeftEye: " << eyeSize_[0].h << std::endl;
+		std::cout << "OculusHMD::calculateFOV() | TextureWidth LeftEye: " << eyeSize_[0].w << std::endl;
+		std::cout << "OculusHMD::calculateFOV() | TextureHeight RightEye: " << eyeSize_[1].h << std::endl;
+		std::cout << "OculusHMD::calculateFOV() | TextureWidth RightEye: " << eyeSize_[1].w << std::endl;
 	}
 }
 
@@ -145,6 +149,8 @@ bool OculusHMD::RenderDistortion()
 	Sizei size;
 	size.w = RIFT_RESOLUTION_WIDTH; 
 	size.h = RIFT_RESOLUTION_HEIGHT;
+	// size.w = eyeSize_[0].w; // used for Oculus 3D Vision
+	// size.h = eyeSize_[0].h; // used for Oculus 3D Vision
 
 	ovrRecti eyeRenderViewport[2];
 	eyeRenderViewport[0].Pos = Vector2i(0, 0);

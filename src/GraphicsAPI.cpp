@@ -2,6 +2,7 @@
 #include "../include/ARiftControl.h"
 #include "../include/BitMap.h"
 #include <iostream>
+#include <cmath>
 
 using namespace DirectX;
 
@@ -143,9 +144,13 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 	// Set to a single back buffer.
 	swapChainDesc.BufferCount = 1;
+
 	// Set the width and height of the back buffer.
 	swapChainDesc.BufferDesc.Width = screenWidth;
 	swapChainDesc.BufferDesc.Height = screenHeight;
+	// swapChainDesc.BufferDesc.Width = OculusHMD::instance()->eyeSize_[0].w; // used for Oculus 3D View
+	// swapChainDesc.BufferDesc.Height = OculusHMD::instance()->eyeSize_[0].h; // used for Oculus 3D View
+
 	// Set regular 32-bit surface for the back buffer.
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
@@ -209,7 +214,10 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Set up the description of the depth buffer.
 	depthBufferDesc.Width = screenWidth;
-	depthBufferDesc.Height = screenHeight;
+  depthBufferDesc.Height = screenHeight;
+	// depthBufferDesc.Width = OculusHMD::instance()->eyeSize_[0].w; // used for Oculus 3D View
+	// depthBufferDesc.Height = OculusHMD::instance()->eyeSize_[1].h; // used for Oculus 3D View
+
 	depthBufferDesc.MipLevels = 1;
 	depthBufferDesc.ArraySize = 1;
 	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -296,6 +304,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Setup the viewport for rendering.
 	viewport.Width = (float)screenWidth;
 	viewport.Height = (float)screenHeight;
+
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
@@ -352,7 +361,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
 	// Set the initial position of the camera.
-	camera_->SetPosition(0.0f, 0.0f, -10.0f);
+	camera_->SetPosition(0.0f, 0.0f, -14.0f);
 
 	
 	// Create the model object.
@@ -395,6 +404,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Initialize the render to texture object.
 	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
+	// result = renderTextureLeft_->Initialize(device_, OculusHMD::instance()->eyeSize_[0].w, OculusHMD::instance()->eyeSize_[0].h); // used for Oculus 3D View
 	if (!result)
 		return false;
 
@@ -427,7 +437,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-	result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
+  result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
+	// result = renderTextureRight_->Initialize(device_, OculusHMD::instance()->eyeSize_[1].w, OculusHMD::instance()->eyeSize_[1].h);
 	if (!result)
 		return false;
 	
@@ -553,6 +564,7 @@ bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture, int cam_id)
 	renderTexture->ClearRenderTarget(devicecontext_, GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Render the scene now and it will draw to the render to texture instead of the back buffer.
+
 	result = RenderScene(cam_id);
 	if (!result)
 	{
@@ -638,8 +650,31 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	model_->Render(devicecontext_);
 
 	// Render the model using the texture shader.
-	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		model_->GetTexture());
+	if (cam_id == 1)
+	{		
+		result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+			model_->GetTexture());
+	}
+	else
+	{
+		float cameraTranslation = 0.0f;
+		if (HMD_DISTORTION)
+			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 10.0);
+		else
+			cameraTranslation = fabsf(camera_->GetPosition().z * 3.0 / 15.0);
+
+		float oldCameraXPos = camera_->GetPosition().x;
+
+		camera_->SetPosition(cameraTranslation, camera_->GetPosition().y, camera_->GetPosition().z);
+		camera_->Render();
+		camera_->GetViewMatrix(viewMatrix);
+		
+		result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+			model_->GetTexture());
+
+		camera_->SetPosition(oldCameraXPos, camera_->GetPosition().y, camera_->GetPosition().z);
+	}
+
 	if (!result)
 	{
 		return false;
@@ -853,6 +888,7 @@ void GraphicsAPI::BeginScene(float red, float green, float blue, float alpha)
 	return;
 }
 
+
 void GraphicsAPI::EndScene()
 {
 	// Present the back buffer to the screen since rendering is complete.
@@ -869,6 +905,7 @@ void GraphicsAPI::EndScene()
 
 	return;
 }
+
 
 ID3D11Device* GraphicsAPI::GetDevice()
 {
