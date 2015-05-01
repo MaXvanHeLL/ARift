@@ -33,6 +33,8 @@ GraphicsAPI::GraphicsAPI()
 	eyeWindowLeft_ = 0;
 	renderTextureRight_ = 0;
 	eyeWindowRight_ = 0;
+
+	modelRotation_ = 0.0f;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -480,6 +482,11 @@ bool GraphicsAPI::Frame()
 {
 	bool result;
 
+	// rotation
+	modelRotation_ += (float)XM_PI * 0.01f;
+	if (modelRotation_ > 360.0f)
+		modelRotation_ -= 360.0f;
+
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -582,9 +589,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 {
 	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
-	// rotation
-	static float rotation = 0.0f;
-
+	
 	// Generate the view matrix based on the camera's position.
 	camera_->Render();
 
@@ -593,18 +598,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	GetWorldMatrix(worldMatrix);
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
-
-  // TODO: ask Max if this works as intended, as far as i know it wouldn't
-	// update the rotation variable each frame
-	rotation += (float)XM_PI * 0.005f; // <-- radiants
-	if (rotation > 360.0f) // <-- degrees ?
-	{
-	  rotation -= 360.0f;
-	}
-
-	// XMMATRIX rotationMatrix = XMMatrixRotationY(rotation);
-	// XMStoreFloat4x4(&worldMatrix, rotationMatrix);
-	
 
 	// ******************************** || 2D RENDERING || *********************************
 
@@ -648,6 +641,10 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	model_->Render(devicecontext_);
+
+	// rotation
+	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
+	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
 	// Render the model using the texture shader.
 	if (cam_id == 1)
