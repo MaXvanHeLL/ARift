@@ -1,11 +1,15 @@
 #include "../include/Model.h"
 #include <iostream>
+#include <fstream>
+
+using namespace std;
 
 Model::Model()
 {
 	vertexbuffer_ = 0;
 	indexbuffer_ = 0;
 	texture_ = 0;
+	modeltype_ = 0;
 }
 
 
@@ -17,9 +21,16 @@ Model::~Model()
 {}
 
 
-bool Model::Initialize(ID3D11Device* device, WCHAR* textureFilename)
+bool Model::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename)
 {
 	bool result;
+
+	// Load in the model data,
+	result = LoadModel(modelFilename);
+	if (!result)
+	{
+		return false;
+	}
 
 	// Initialize the vertex and index buffer that hold the geometry for the triangle.
 	result = InitializeBuffers(device);
@@ -41,6 +52,9 @@ void Model::Shutdown()
 
 	// Release the vertex and index buffers.
 	ShutdownBuffers();
+
+	// Release the model data.
+	ReleaseModel();
 
 	return;
 }
@@ -75,12 +89,6 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	D3D11_SUBRESOURCE_DATA vertexData, indexData;
 	HRESULT result;
 
-	// Set the number of vertices in the vertex array.
-	vertexcount_ = 3;
-
-	// Set the number of indices in the index array.
-	indexcount_ = 3;
-
 	// Create the vertex array.
 	vertices = new VertexType[vertexcount_];
 	if (!vertices)
@@ -95,6 +103,17 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 		return false;
 	}
 
+	// Load the vertex array and index array with data.
+	for (int i = 0; i < vertexcount_; i++)
+	{
+		vertices[i].position = XMFLOAT3(modeltype_[i].x, modeltype_[i].y, modeltype_[i].z);
+		vertices[i].texture = XMFLOAT2(modeltype_[i].tu, modeltype_[i].tv);
+		// vertices[i].normal = XMFLOAT3(modeltype_[i].nx, modeltype_[i].ny, modeltype_[i].nz);
+
+		indices[i] = i;
+	}
+
+	/*
 	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  // Bottom left.
 	vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
 
@@ -108,6 +127,7 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	indices[0] = 0;  // Bottom left.
 	indices[1] = 1;  // Top middle.
 	indices[2] = 2;  // Bottom right.
+	*/
 
 	/*
 	indices[3] = 0;
@@ -188,6 +208,67 @@ bool Model::LoadTexture(ID3D11Device* device, WCHAR* filename)
 }
 
 
+bool Model::LoadModel(char* filename)
+{
+	ifstream fin;
+	char input;
+	int i;
+
+
+	// Open the model file.
+	fin.open(filename);
+
+	// If it could not open the file then exit.
+	if (fin.fail())
+	{
+		return false;
+	}
+
+	// Read up to the value of vertex count.
+	fin.get(input);
+	while (input != ':')
+	{
+		fin.get(input);
+	}
+
+	// Read in the vertex count.
+	fin >> vertexcount_;
+
+	// Set the number of indices to be the same as the vertex count.
+	indexcount_ = vertexcount_;
+
+	// Create the model using the vertex count that was read in.
+	modeltype_ = new ModelType[vertexcount_];
+	if (!modeltype_)
+	{
+		return false;
+	}
+
+	// Read up to the beginning of the data.
+	fin.get(input);
+	while (input != ':')
+	{
+		fin.get(input);
+	}
+	fin.get(input);
+	fin.get(input);
+
+	// Read in the vertex data.
+	for (i = 0; i<vertexcount_; i++)
+	{
+		fin >> modeltype_[i].x >> modeltype_[i].y >> modeltype_[i].z;
+		fin >> modeltype_[i].tu >> modeltype_[i].tv;
+	  fin >> modeltype_[i].nx >> modeltype_[i].ny >> modeltype_[i].nz;
+	}
+
+	// Close the model file.
+	fin.close();
+
+	return true;
+}
+
+
+
 void Model::ShutdownBuffers()
 {
 	// Release the index buffer.
@@ -239,6 +320,18 @@ void Model::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	return;
+}
+
+
+void Model::ReleaseModel()
+{
+	if (modeltype_)
+	{
+		delete[] modeltype_;
+		modeltype_ = 0;
+	}
 
 	return;
 }

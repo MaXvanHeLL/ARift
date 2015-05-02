@@ -23,12 +23,22 @@ class Model
 			XMFLOAT2 texture;
 		};
 
+		struct ModelType
+		{
+			float x, y, z;
+			float tu, tv;
+			float nx, ny, nz;
+		};
+
+		ModelType* modeltype_;
+
+
 	public:
 		Model();
 		Model(const Model&);
 		~Model();
 
-		bool Initialize(ID3D11Device*, WCHAR*);
+		bool Initialize(ID3D11Device*, char*, WCHAR*);
 		void Shutdown();
 		// called from GraphicsAPI::Render()
 		void Render(ID3D11DeviceContext*);
@@ -41,6 +51,10 @@ class Model
 
 	private:
 		bool InitializeBuffers(ID3D11Device*);
+
+		bool LoadModel(char*);
+		void ReleaseModel();
+
 		void ShutdownBuffers();
 		void RenderBuffers(ID3D11DeviceContext*);
 

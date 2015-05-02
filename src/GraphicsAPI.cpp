@@ -363,7 +363,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
 	// Set the initial position of the camera.
-	camera_->SetPosition(0.0f, 0.0f, -14.0f);
+	camera_->SetPosition(0.0f, 0.0f, -20.0f);
 
 	
 	// Create the model object.
@@ -372,8 +372,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
 	// Initialize the model object.
-	// TODO: create the Data Folder
-	result = model_->Initialize(device_, L"data/texture.dds");
+	// result = model_->Initialize(device_, L"data/texture.dds");
+	result = model_->Initialize(device_, "data/Cube.txt", L"data/texture.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -658,7 +658,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		if (HMD_DISTORTION)
 			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 10.0);
 		else
-			cameraTranslation = fabsf(camera_->GetPosition().z * 3.0 / 15.0);
+			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 15.0);
 
 		float oldCameraXPos = camera_->GetPosition().x;
 
