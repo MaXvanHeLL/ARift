@@ -80,9 +80,9 @@ void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 			pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
 
 			// for debug purposes only
-			cout << "yaw: " << RadToDegree(yaw) << endl;
-			cout << "pitch: " << RadToDegree(eyepitch) << endl;
-			cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
+			// cout << "yaw: " << RadToDegree(yaw) << endl;
+			// cout << "pitch: " << RadToDegree(eyepitch) << endl;
+			// cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
 		}
 	}
 }

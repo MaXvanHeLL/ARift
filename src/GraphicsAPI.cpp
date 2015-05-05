@@ -502,6 +502,28 @@ bool GraphicsAPI::Render()
 {
 	bool result;
 
+	static float cameraRotation = 0.0;
+	cameraRotation -= 1.0f;
+
+	if (cameraRotation > 360.0)
+		cameraRotation = 0.0;
+
+	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
+
+	std::cout << "current Camera Pitch: " << currentCameraRotation.x << std::endl;
+	std::cout << "current Camera Yaw: " << currentCameraRotation.y << std::endl;
+	std::cout << "current Camera Roll: " << currentCameraRotation.z << std::endl;
+
+	float oculusMotionX, oculusMotionY, oculusMotionZ;
+	OculusHMD::instance()->trackMotion(oculusMotionX, oculusMotionY, oculusMotionZ);
+
+	std::cout << "Oculus Motion X: " << oculusMotionX << std::endl;
+	std::cout << "Oculus Motion Y: " << oculusMotionY << std::endl;
+	std::cout << "Oculus Motion Z: " << oculusMotionZ << std::endl;
+
+	// camera_->SetRotation(0.0f, cameraRotation, 0.0f);
+	camera_->SetPosition(0.0f, 0.0f, cameraRotation);
+
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
 
@@ -594,6 +616,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	camera_->Render();
 
 	// Get the world, view, and projection matrices from the camera and d3d objects.
+
 	camera_->GetViewMatrix(viewMatrix);
 	GetWorldMatrix(worldMatrix);
 	GetProjectionMatrix(projectionMatrix);
@@ -602,8 +625,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// ******************************** || 2D RENDERING || *********************************
 
 	// Turn off the Z buffer to begin all 2D rendering.
-	// TODO: change that later depending on the real scene!
-
 	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -612,7 +633,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	{
 		return false;
 	}
-
 	
   Shader::UndistortionBuffer* undistBuffer = NULL;
   if (cam_id == 1)
@@ -656,9 +676,9 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	{
 		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
-			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 10.0);
+			cameraTranslation = fabsf(camera_->GetPosition().z * 4.6 / 10.0);
 		else
-			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 15.0);
+			cameraTranslation = fabsf(camera_->GetPosition().z * 3.6 / 15.0);
 
 		float oldCameraXPos = camera_->GetPosition().x;
 
@@ -670,6 +690,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
 			model_->GetTexture());
 
 		camera_->SetPosition(oldCameraXPos, camera_->GetPosition().y, camera_->GetPosition().z);
+		camera_->Render();
+		camera_->GetViewMatrix(viewMatrix);
 	}
 
 	if (!result)
