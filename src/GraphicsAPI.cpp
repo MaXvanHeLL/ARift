@@ -503,7 +503,7 @@ bool GraphicsAPI::Render()
 	bool result;
 
 	static float cameraRotation = 0.0;
-	cameraRotation -= 1.0f;
+	cameraRotation += 0.5f;
 
 	if (cameraRotation > 360.0)
 		cameraRotation = 0.0;
@@ -521,8 +521,8 @@ bool GraphicsAPI::Render()
 	std::cout << "Oculus Motion Y: " << oculusMotionY << std::endl;
 	std::cout << "Oculus Motion Z: " << oculusMotionZ << std::endl;
 
-	// camera_->SetRotation(0.0f, cameraRotation, 0.0f);
-	camera_->SetPosition(0.0f, 0.0f, cameraRotation);
+	camera_->SetRotation(0.0f, 0.0f, -cameraRotation);
+	camera_->SetRotation(cameraRotation, cameraRotation, cameraRotation);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -611,7 +611,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 {
 	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;
-	
+
 	// Generate the view matrix based on the camera's position.
 	camera_->Render();
 
@@ -621,6 +621,25 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	GetWorldMatrix(worldMatrix);
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
+
+	std::cout << "+++++++++++++++++++++++++++++++++++++++++++++ [" << cam_id << "] " << std::endl;
+	std::cout << "[Init] View Matrix with Cam: " << cam_id << std::endl;
+	std::cout << viewMatrix._11;
+	std::cout << viewMatrix._12;
+	std::cout << viewMatrix._13;
+	std::cout << viewMatrix._14 << std::endl;
+	std::cout << viewMatrix._21;
+	std::cout << viewMatrix._22;
+	std::cout << viewMatrix._23;
+	std::cout << viewMatrix._24 << std::endl;
+	std::cout << viewMatrix._31;
+	std::cout << viewMatrix._32;
+	std::cout << viewMatrix._33;
+	std::cout << viewMatrix._34 << std::endl;
+	std::cout << viewMatrix._41;
+	std::cout << viewMatrix._42;
+	std::cout << viewMatrix._43;
+	std::cout << viewMatrix._44 << std::endl;
 
 	// ******************************** || 2D RENDERING || *********************************
 
@@ -645,9 +664,18 @@ bool GraphicsAPI::RenderScene(int cam_id)
   }
   undistBuffer->width = (float)screenwidth_/2.0f;
   undistBuffer->height = (float)screenheight_;
+
   // Render the bitmap with the texture shader.
-  result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+	XMFLOAT3 oldRotation = camera_->GetRotation();
+	camera_->SetRotation(0.0f, 0.0f, 0.0f);
+	camera_->Render();
+	XMFLOAT4X4 cameraStreamMatrix;
+	camera_->GetViewMatrix(cameraStreamMatrix);
+
+	result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, cameraStreamMatrix, orthoMatrix,
     bitmap_->GetTexture(), undistBuffer);
+
+	camera_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
 
   if (!result)
 	{
@@ -682,6 +710,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 		float oldCameraXPos = camera_->GetPosition().x;
 
+		// Camera Translation
 		camera_->SetPosition(cameraTranslation, camera_->GetPosition().y, camera_->GetPosition().z);
 		camera_->Render();
 		camera_->GetViewMatrix(viewMatrix);
@@ -689,11 +718,13 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 			model_->GetTexture());
 
+		// translate Camera back to origin
 		camera_->SetPosition(oldCameraXPos, camera_->GetPosition().y, camera_->GetPosition().z);
 		camera_->Render();
 		camera_->GetViewMatrix(viewMatrix);
 	}
 
+	std::cout << "--------------------------" << cam_id << std::endl;
 	if (!result)
 	{
 		return false;
@@ -731,9 +762,17 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 		return false;
 	}
 
+	XMFLOAT3 oldRotation = camera_->GetRotation();
+	camera_->SetRotation(0.0f, 0.0f, 0.0f);
+	camera_->Render();
+	XMFLOAT4X4 cameraStreamMatrix;
+	camera_->GetViewMatrix(cameraStreamMatrix);
+	
 	// Render the debug window using the texture shader.
-	result = shader_->Render(devicecontext_, eyeWindow->GetIndexCount(), worldMatrix, viewMatrix,
+	result = shader_->Render(devicecontext_, eyeWindow->GetIndexCount(), worldMatrix, cameraStreamMatrix,
 		orthoMatrix, renderTexture->GetShaderResourceView());
+
+	camera_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
 	if (!result)
 	{
 		return false;
