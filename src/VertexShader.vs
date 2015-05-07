@@ -1,3 +1,8 @@
+// Fisheye Undistortion Shader
+// Written as part of ARift
+// in HLSL for DirectX 11
+// Created by Markus Höll
+// latest change 07. 05. 2015
 /////////////
 // GLOBALS //
 /////////////

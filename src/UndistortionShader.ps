@@ -1,3 +1,11 @@
+// Fisheye Undistortion Shader
+// Written as part of ARift
+// in HLSL for DirectX 11
+// Created by Nikolaus Heran
+// latest change 07. 05. 2015
+// Inspired by OCamCalib: Omnidirectional Camera Calibration Toolbox for Matlab
+// 			   https://sites.google.com/site/scarabotix/ocamcalib-toolbox
+////////////////////////////////////////////////////////////////////////////////
 /////////////
 // GLOBALS //
 /////////////
@@ -55,8 +63,8 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   float rho;
   float eps = pow(0.1f, 13);
   // Translation only
-  // mappedPoint.x = input.tex.x + Nxc / width;
-  // mappedPoint.y = input.tex.y + Nyc / height;
+  //mappedPoint.x = input.tex.x + Nxc / width;
+  //mappedPoint.y = input.tex.y + Nyc / height;
 
   row = (input.tex.x - 0.5)*width + Nxc;
   col = (input.tex.y - 0.5)*height + Nyc;
