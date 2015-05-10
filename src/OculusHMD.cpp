@@ -30,9 +30,12 @@ OculusHMD::OculusHMD()
 			// setup for sensors and motion tracking
 			ovrHmd_ConfigureTracking(hmd_, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection |
 				ovrTrackingCap_Position, 0);
+
+			initPitch_ = 0.0f;
 		}
 		else
 		{
+			initPitch_ = 0.0f;
       std::cout << "ERROR: OculusHMD constructor could not create HMD" << std::endl;
 			// TODO: manage error handling
 		}
@@ -78,10 +81,10 @@ void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 		{
 			OVR::Posef pose = tracking_state.HeadPose.ThePose;
 			pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
-
 			// for debug purposes only
-			// cout << "yaw: " << RadToDegree(yaw) << endl;
-			// cout << "pitch: " << RadToDegree(eyepitch) << endl;
+			yaw = RadToDegree(yaw);
+			eyepitch = RadToDegree(eyepitch);
+			eyeroll = RadToDegree(eyeroll);
 			// cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
 		}
 	}

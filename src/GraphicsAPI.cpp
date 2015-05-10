@@ -502,27 +502,22 @@ bool GraphicsAPI::Render()
 {
 	bool result;
 
-	static float cameraRotation = 0.0;
-	cameraRotation += 0.5f;
-
-	if (cameraRotation > 360.0)
-		cameraRotation = 0.0;
-
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
 
-	std::cout << "current Camera Pitch: " << currentCameraRotation.x << std::endl;
+	// std::cout << "current Camera Pitch: " << currentCameraRotation.x << std::endl;
 	std::cout << "current Camera Yaw: " << currentCameraRotation.y << std::endl;
-	std::cout << "current Camera Roll: " << currentCameraRotation.z << std::endl;
+	// std::cout << "current Camera Roll: " << currentCameraRotation.z << std::endl;
 
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
-	OculusHMD::instance()->trackMotion(oculusMotionX, oculusMotionY, oculusMotionZ);
+	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 
-	std::cout << "Oculus Motion X: " << oculusMotionX << std::endl;
-	std::cout << "Oculus Motion Y: " << oculusMotionY << std::endl;
 	std::cout << "Oculus Motion Z: " << oculusMotionZ << std::endl;
+  // std::cout << "Oculus Motion Y: " << oculusMotionY << std::endl;
+	// std::cout << "Oculus Motion Z: " << oculusMotionZ << std::endl;
 
-	camera_->SetRotation(0.0f, 0.0f, -cameraRotation);
-	camera_->SetRotation(cameraRotation, cameraRotation, cameraRotation);
+	// camera_->SetRotation(-oculusMotionX, -oculusMotionY, -oculusMotionZ);
+	camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
+	// camera_->SetRotation(cameraRotation, cameraRotation, cameraRotation);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -622,25 +617,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
 
-	std::cout << "+++++++++++++++++++++++++++++++++++++++++++++ [" << cam_id << "] " << std::endl;
-	std::cout << "[Init] View Matrix with Cam: " << cam_id << std::endl;
-	std::cout << viewMatrix._11;
-	std::cout << viewMatrix._12;
-	std::cout << viewMatrix._13;
-	std::cout << viewMatrix._14 << std::endl;
-	std::cout << viewMatrix._21;
-	std::cout << viewMatrix._22;
-	std::cout << viewMatrix._23;
-	std::cout << viewMatrix._24 << std::endl;
-	std::cout << viewMatrix._31;
-	std::cout << viewMatrix._32;
-	std::cout << viewMatrix._33;
-	std::cout << viewMatrix._34 << std::endl;
-	std::cout << viewMatrix._41;
-	std::cout << viewMatrix._42;
-	std::cout << viewMatrix._43;
-	std::cout << viewMatrix._44 << std::endl;
-
 	// ******************************** || 2D RENDERING || *********************************
 
 	// Turn off the Z buffer to begin all 2D rendering.
@@ -693,6 +669,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// rotation
 	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
+	std::cout << "--------------------------" << cam_id << std::endl;
 
 	// Render the model using the texture shader.
 	if (cam_id == 1)
@@ -704,14 +681,14 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	{
 		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
-			cameraTranslation = fabsf(camera_->GetPosition().z * 4.6 / 10.0);
+			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 10.0);
 		else
 			cameraTranslation = fabsf(camera_->GetPosition().z * 3.6 / 15.0);
 
-		float oldCameraXPos = camera_->GetPosition().x;
+		XMFLOAT3 oldCameraPos = camera_->GetPosition();
 
 		// Camera Translation
-		camera_->SetPosition(cameraTranslation, camera_->GetPosition().y, camera_->GetPosition().z);
+		camera_->SetPosition(cameraTranslation, oldCameraPos.y, oldCameraPos.z);
 		camera_->Render();
 		camera_->GetViewMatrix(viewMatrix);
 		
@@ -719,9 +696,9 @@ bool GraphicsAPI::RenderScene(int cam_id)
 			model_->GetTexture());
 
 		// translate Camera back to origin
-		camera_->SetPosition(oldCameraXPos, camera_->GetPosition().y, camera_->GetPosition().z);
-		camera_->Render();
-		camera_->GetViewMatrix(viewMatrix);
+		camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
+		// camera_->Render();
+		// camera_->GetViewMatrix(viewMatrix);
 	}
 
 	std::cout << "--------------------------" << cam_id << std::endl;
