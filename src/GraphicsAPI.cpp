@@ -501,23 +501,28 @@ bool GraphicsAPI::Frame()
 bool GraphicsAPI::Render()
 {
 	bool result;
+	static float cameraDistance = -50.0f;
+
+	cameraDistance += 0.3f;
+	if (cameraDistance > -5.0f)
+		cameraDistance = -50.f;
 
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
-
-	// std::cout << "current Camera Pitch: " << currentCameraRotation.x << std::endl;
-	std::cout << "current Camera Yaw: " << currentCameraRotation.y << std::endl;
-	// std::cout << "current Camera Roll: " << currentCameraRotation.z << std::endl;
 
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 
-	std::cout << "Oculus Motion Z: " << oculusMotionZ << std::endl;
-  // std::cout << "Oculus Motion Y: " << oculusMotionY << std::endl;
-	// std::cout << "Oculus Motion Z: " << oculusMotionZ << std::endl;
-
-	// camera_->SetRotation(-oculusMotionX, -oculusMotionY, -oculusMotionZ);
+	camera_->SetPosition(0.0f, 0.0f, cameraDistance);
 	camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
-	// camera_->SetRotation(cameraRotation, cameraRotation, cameraRotation);
+	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
+	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
+	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
+	// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);ix_
+	// XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(oculusMotionY, oculusMotionX, oculusMotionZ);
+	// XMMATRIX rotationMatrix = XMMatrixRotationY(oculusMotionY);
+	// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
+	// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
+	// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -530,7 +535,6 @@ bool GraphicsAPI::Render()
 	}
 
 	// Clear the buffers to begin the scene.
-	// 
 	BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Render the scene as normal to the back buffer.
@@ -669,7 +673,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// rotation
 	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
-	std::cout << "--------------------------" << cam_id << std::endl;
 
 	// Render the model using the texture shader.
 	if (cam_id == 1)
@@ -679,24 +682,59 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	}
 	else
 	{
+		// 3.6
 		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
-			cameraTranslation = fabsf(camera_->GetPosition().z * 4.8 / 10.0);
+		{
+			// cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
+			// oculusTranslation = 0.0f;
+			// camera_->Translate(cameraTranslation, oculusTranslation);
+			float worldTranslation = camera_->GetPosition().z * 4.8 / 10;
+			XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
+			XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
+			worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
+			XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
+			camera_->Translate(cameraTranslation);
+		}
 		else
+		{
 			cameraTranslation = fabsf(camera_->GetPosition().z * 3.6 / 15.0);
+			camera_->Translate(cameraTranslation);
+		}
 
-		XMFLOAT3 oldCameraPos = camera_->GetPosition();
+		// XMFLOAT3 oldCameraPos = camera_->GetPosition();
 
 		// Camera Translation
-		camera_->SetPosition(cameraTranslation, oldCameraPos.y, oldCameraPos.z);
-		camera_->Render();
-		camera_->GetViewMatrix(viewMatrix);
+		// XMFLOAT3 oldCameraRotation = camera_->GetRotation();
 		
+		camera_->GetViewMatrix(viewMatrix);
+		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, 0.0f);
+		// camera_->Render();
+		// camera_->GetViewMatrix(viewMatrix);
+
+		// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
+		// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
+		// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
+		
+		// World Rotation
+		// XMMATRIX tempMatrix = XMMatrixRotationX(-oldCameraRotation.y * 0.0174532925f);
+		// XMMATRIX rotationMatrix = XMMatrixMultiply(XMMatrixIdentity(), tempMatrix);
+		// tempMatrix = XMMatrixRotationZ(-oldCameraRotation.z * 0.0174532925f);
+	  // rotationMatrix = XMMatrixMultiply(rotationMatrix, tempMatrix);
+
+		// World Space Translation
+		// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
+		// worldTranslationMatrix = XMMatrixMultiply(rotationMatrix, worldTranslationMatrix);
+
+	  // XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
+
 		result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 			model_->GetTexture());
 
 		// translate Camera back to origin
-		camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
+		// camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
+		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, oldCameraRotation.z);
+		
 		// camera_->Render();
 		// camera_->GetViewMatrix(viewMatrix);
 	}

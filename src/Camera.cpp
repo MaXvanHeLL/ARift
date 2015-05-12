@@ -102,6 +102,45 @@ void Camera::Render()
 	return;
 }
 
+void Camera::Translate(float translation, float oculusTranslation)
+{
+	XMFLOAT3 oldCameraPos = GetPosition();
+
+	if (oculusTranslation)
+		SetPosition(translation, oculusTranslation, oldCameraPos.z);
+	else
+		SetPosition(translation, oldCameraPos.y, oldCameraPos.z);
+
+	float yaw, pitch, roll;
+	XMMATRIX rotationMatrix;
+
+	XMVECTOR up = XMVectorSet(0.0, 1.0, 0.0, 1.0);
+
+	XMVECTOR position = XMVectorSet(positionX_, positionY_, positionZ_, 1.0f);
+
+	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+
+	pitch = rotationX_ * 0.0174532925f;
+	yaw = rotationY_ * 0.0174532925f;
+	roll = rotationZ_ * 0.0174532925f;
+
+	// Create the rotation matrix from the yaw, pitch, and roll values.
+	rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+
+	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
+	lookAt = XMVector3TransformCoord(lookAt, rotationMatrix);
+	up = XMVector3TransformCoord(up, rotationMatrix);
+
+	// Translate the rotated camera position to the location of the viewer.
+	lookAt = position + lookAt;
+
+	// Finally create the view matrix from the three updated vectors.
+	XMMATRIX viewMatrix_XmMat = XMMatrixLookAtLH(position, lookAt, up);
+	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
+
+	SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
+}
+
 void Camera::GetViewMatrix(XMFLOAT4X4& viewMatrix)
 {
 	viewMatrix = viewmatrix_;
