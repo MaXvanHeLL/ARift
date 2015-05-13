@@ -698,7 +698,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		}
 		else
 		{
-			cameraTranslation = fabsf(camera_->GetPosition().z * 3.6 / 15.0);
+			cameraTranslation = fabsf(camera_->GetPosition().z * 3.65 / 15.0);
 			camera_->Translate(cameraTranslation);
 		}
 
@@ -739,7 +739,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		// camera_->GetViewMatrix(viewMatrix);
 	}
 
-	std::cout << "--------------------------" << cam_id << std::endl;
 	if (!result)
 	{
 		return false;
