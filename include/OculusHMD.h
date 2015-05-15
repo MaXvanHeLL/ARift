@@ -24,6 +24,7 @@ class OculusHMD
 		ovrEyeRenderDesc eyeRenderDesc_[2];
 		ovrVector3f useHmdToEyeViewOffset_[2];
 		ovrPosef eyeRenderPose_[2];
+		float initPitch_;
 
 		OculusHMD();
 		virtual ~OculusHMD();

@@ -30,9 +30,12 @@ OculusHMD::OculusHMD()
 			// setup for sensors and motion tracking
 			ovrHmd_ConfigureTracking(hmd_, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection |
 				ovrTrackingCap_Position, 0);
+
+			initPitch_ = 0.0f;
 		}
 		else
 		{
+			initPitch_ = 0.0f;
       std::cout << "ERROR: OculusHMD constructor could not create HMD" << std::endl;
 			// TODO: manage error handling
 		}
@@ -78,11 +81,11 @@ void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 		{
 			OVR::Posef pose = tracking_state.HeadPose.ThePose;
 			pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
-
 			// for debug purposes only
-			cout << "yaw: " << RadToDegree(yaw) << endl;
-			cout << "pitch: " << RadToDegree(eyepitch) << endl;
-			cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
+			yaw = RadToDegree(yaw);
+			eyepitch = RadToDegree(eyepitch);
+			eyeroll = RadToDegree(eyeroll);
+			// cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
 		}
 	}
 }
@@ -98,6 +101,10 @@ void OculusHMD::calculateFOV()
 			eyeSize_[eye] = ovrHmd_GetFovTextureSize(hmd_, (ovrEyeType)eye,
 			                                         hmd_->DefaultEyeFov[eye], 1.0f);
 		}
+		std::cout << "OculusHMD::calculateFOV() | TextureHeight LeftEye: " << eyeSize_[0].h << std::endl;
+		std::cout << "OculusHMD::calculateFOV() | TextureWidth LeftEye: " << eyeSize_[0].w << std::endl;
+		std::cout << "OculusHMD::calculateFOV() | TextureHeight RightEye: " << eyeSize_[1].h << std::endl;
+		std::cout << "OculusHMD::calculateFOV() | TextureWidth RightEye: " << eyeSize_[1].w << std::endl;
 	}
 }
 
@@ -145,6 +152,8 @@ bool OculusHMD::RenderDistortion()
 	Sizei size;
 	size.w = RIFT_RESOLUTION_WIDTH; 
 	size.h = RIFT_RESOLUTION_HEIGHT;
+	// size.w = eyeSize_[0].w; // used for Oculus 3D Vision
+	// size.h = eyeSize_[0].h; // used for Oculus 3D Vision
 
 	ovrRecti eyeRenderViewport[2];
 	eyeRenderViewport[0].Pos = Vector2i(0, 0);

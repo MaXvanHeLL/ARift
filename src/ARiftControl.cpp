@@ -185,6 +185,18 @@ void ARiftControl::handleKey(char key)
       std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << " ) " << std::endl;
       break;
     }
+		case 'Z':
+		{
+			left_cam_params_.z += 1;
+			right_cam_params_.z += 1;
+			break;
+		}
+		case 'z':
+		{
+			left_cam_params_.z -= 1;
+			right_cam_params_.z -= 1;
+			break;
+		}
     //case 'f': // flip
     //  {
     //    hanldeFlip();
