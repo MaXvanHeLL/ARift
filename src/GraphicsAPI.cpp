@@ -501,11 +501,11 @@ bool GraphicsAPI::Frame()
 bool GraphicsAPI::Render()
 {
 	bool result;
-	static float cameraDistance = -50.0f;
+	static float cameraDistance = -200.0f;
 
 	cameraDistance += 0.3f;
 	if (cameraDistance > -5.0f)
-		cameraDistance = -50.f;
+		cameraDistance = -200.0f;
 
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
 
@@ -689,7 +689,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 			// cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
 			// oculusTranslation = 0.0f;
 			// camera_->Translate(cameraTranslation, oculusTranslation);
-			float worldTranslation = camera_->GetPosition().z * 4.8 / 10;
+			float worldTranslation = camera_->GetPosition().z * 4.8f / 10.0f;
 			XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
 			XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
 			worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);

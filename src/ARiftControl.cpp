@@ -1,5 +1,6 @@
 #include "../include/IDSuEyeInputHandler.h"
 #include "../include/ARiftControl.h"
+#include "../include/GraphicsAPI.h"
 #include "../include/Helpers.h"
 
 #include <opencv2/core/core.hpp>
@@ -15,9 +16,18 @@ using namespace cv;
 ARiftControl::ARiftControl()
 {
   // Write read in from file for this
-  left_cam_params_.Nxc = -39.0f;
-  left_cam_params_.Nyc = 90.0f; 
-  left_cam_params_.z = -250.0f;
+  if (HMD_DISTORTION)
+  {
+    left_cam_params_.Nxc = -50.0f;
+    left_cam_params_.Nyc = 160.0f;
+    left_cam_params_.z = -336.0f;
+  }
+  else
+  {
+    left_cam_params_.Nxc = -39.0f;
+    left_cam_params_.Nyc = 90.0f;
+    left_cam_params_.z = -250.0f;
+  }
   left_cam_params_.p6 = 0.0f;
   left_cam_params_.p5 = 16.264f;
   left_cam_params_.p4 = 109.7055f;
@@ -31,9 +41,18 @@ ARiftControl::ARiftControl()
   left_cam_params_.xc = 214.4453f;
   left_cam_params_.yc = 353.3091f;
 
-  right_cam_params_.Nxc = 79.0f; 
-  right_cam_params_.Nyc = 94.0f;
-  right_cam_params_.z = -250.0f;
+  if (HMD_DISTORTION)
+  {
+    right_cam_params_.Nxc = 50.0f;
+    right_cam_params_.Nyc = 160.0f;
+    right_cam_params_.z = -336.0f;
+  }
+  else
+  {
+    right_cam_params_.Nxc = 79.0f;
+    right_cam_params_.Nyc = 94.0f;
+    right_cam_params_.z = -250.0f;
+  }
   right_cam_params_.p6 = 50.2189f;
   right_cam_params_.p5 = 313.8636f;
   right_cam_params_.p4 = 759.1147f;
@@ -73,8 +92,8 @@ void ARiftControl::init()
   if(left_pic.empty() || right_pic.empty())
     std::cout << "Warning empty image(s) "<< std::endl;
 
-  full_view = Mat::zeros(Size(RIFT_RESOLUTION_WIDTH,RIFT_RESOLUTION_HEIGHT),left_pic.type());
-  full_view_undist = Mat::zeros(Size(RIFT_RESOLUTION_WIDTH,RIFT_RESOLUTION_HEIGHT),left_pic.type());
+  full_view = Mat::zeros(cv::Size(RIFT_RESOLUTION_WIDTH,RIFT_RESOLUTION_HEIGHT),left_pic.type());
+  full_view_undist = Mat::zeros(cv::Size(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT), left_pic.type());
 
   left_camera_mat = Mat::zeros(3,3,CV_64FC1);
   right_camera_mat = Mat::zeros(3,3,CV_64FC1);
@@ -97,12 +116,12 @@ bool ARiftControl::getImages()
 void ARiftControl::createDisplay()
 {
   resize(left_pic, left_resized,
-             Size(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT),0,0,INTER_LINEAR);
+    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
   resize(right_pic,right_resized,
-             Size(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT),0,0,INTER_LINEAR);
+    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
 
-  left_resized.copyTo(full_view(Rect(0,0,RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT)));
-  right_resized.copyTo(full_view(Rect(RIFT_RESOLUTION_WIDTH/2,0,RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT)));
+  left_resized.copyTo(full_view(cv::Rect(0, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
+  right_resized.copyTo(full_view(cv::Rect(RIFT_RESOLUTION_WIDTH / 2, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
 }
 
 void ARiftControl::undistortImages()
@@ -111,12 +130,12 @@ void ARiftControl::undistortImages()
   remap(right_pic, right_undistorted, right_map1, right_map2, INTER_LINEAR);
 
   resize(left_undistorted, left_resized,
-             Size(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT),0,0,INTER_LINEAR);
+    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
   resize(right_undistorted,right_resized,
-             Size(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT),0,0,INTER_LINEAR);
+    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
 
-  left_resized.copyTo(full_view_undist(Rect(0,0,RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT)));
-  right_resized.copyTo(full_view_undist(Rect(RIFT_RESOLUTION_WIDTH/2,0,RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT)));
+  left_resized.copyTo(full_view_undist(cv::Rect(0, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
+  right_resized.copyTo(full_view_undist(cv::Rect(RIFT_RESOLUTION_WIDTH / 2, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
 }
 
 void ARiftControl::handleKey(char key)
@@ -181,8 +200,8 @@ void ARiftControl::handleKey(char key)
     }
     case 'p':
     {
-      std::cout << "(x, y) left:  (" << left_cam_params_.Nxc  << ", " << left_cam_params_.Nyc << " ) ";
-      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << " ) " << std::endl;
+      std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
+      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
       break;
     }
 		case 'Z':

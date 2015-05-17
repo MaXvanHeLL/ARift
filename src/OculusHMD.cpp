@@ -122,8 +122,9 @@ void OculusHMD::configureStereoRendering()
 	d3d11cfg.D3D11.pSwapChain = graphicsAPI_->swapchain_;
 
 	if (!ovrHmd_ConfigureRendering(hmd_, &d3d11cfg.Config,
-		ovrDistortionCap_Chromatic | ovrDistortionCap_Vignette |
-		ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive,
+//		ovrDistortionCap_Chromatic | ovrDistortionCap_Vignette |
+//    ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive,
+    ovrDistortionCap_Chromatic | ovrDistortionCap_Overdrive,
 		hmd_->DefaultEyeFov, eyeRenderDesc_))
 	{
 		std::cout << "HMD Error: could not ConfigureRendering!" << std::endl;
