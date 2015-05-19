@@ -141,7 +141,7 @@ void ARiftControl::undistortImages()
 void ARiftControl::handleKey(char key)
 {
   //std::cout << "ARiftControl::handleKey recived char: " << key << std::endl;
-  float step = 0.2f;
+  
   switch (key)
   {
     case 27:  // quit by escape key
@@ -216,6 +216,31 @@ void ARiftControl::handleKey(char key)
 			right_cam_params_.z -= 1;
 			break;
 		}
+    case '1':
+    {
+      step = 0.1f;
+      break;
+    }
+    case '2':
+    {
+      step = 0.2f;
+      break;
+    }
+    case '3':
+    {
+      step = 0.5f;
+      break;
+    }
+    case '4':
+    {
+      step = 1.0f;
+      break;
+    }
+    case '5':
+    {
+      step = 5.0f;
+      break;
+    }
     //case 'f': // flip
     //  {
     //    hanldeFlip();

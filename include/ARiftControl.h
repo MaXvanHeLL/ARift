@@ -62,6 +62,7 @@ class ARiftControl
   private:
     bool running = false;
     int write_counter = 0;
+    float step = 0.2f;
 };
 
 #endif // ARIFTCONTROL_H
