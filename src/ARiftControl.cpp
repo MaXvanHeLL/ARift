@@ -15,9 +15,9 @@ ARiftControl::ARiftControl()
   // Write read in from file for this
   if (HMD_DISTORTION)
   {
-    left_cam_params_.Nxc = -50.0f;
-    left_cam_params_.Nyc = 160.0f;
-    left_cam_params_.z = -336.0f;
+    left_cam_params_.Nxc = -112.4f;
+    left_cam_params_.Nyc = 67.2f;
+    left_cam_params_.z = -177.0f;
   }
   else
   {
@@ -40,9 +40,9 @@ ARiftControl::ARiftControl()
 
   if (HMD_DISTORTION)
   {
-    right_cam_params_.Nxc = 50.0f;
-    right_cam_params_.Nyc = 160.0f;
-    right_cam_params_.z = -336.0f;
+    right_cam_params_.Nxc = 112.4f;
+    right_cam_params_.Nyc = 67.2f;
+    right_cam_params_.z = -177.0f;
   }
   else
   {
@@ -156,22 +156,16 @@ void ARiftControl::handleKey(char key)
       right_cam_params_.Nxc += step;
       break;
     }
-    case 'p':
-    {
-      std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
-      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
-      break;
-    }
 		case 'Z':
 		{
-			left_cam_params_.z += 1;
-			right_cam_params_.z += 1;
+			left_cam_params_.z += step;
+			right_cam_params_.z += step;
 			break;
 		}
 		case 'z':
 		{
-			left_cam_params_.z -= 1;
-			right_cam_params_.z -= 1;
+			left_cam_params_.z -= step;
+			right_cam_params_.z -= step;
 			break;
 		}
     case '1':
@@ -197,6 +191,12 @@ void ARiftControl::handleKey(char key)
     case '5':
     {
       step = 5.0f;
+      break;
+    }
+    case 'p':
+    {
+      std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
+      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
       break;
     }
     //case 'f': // flip
