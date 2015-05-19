@@ -1,7 +1,6 @@
 
 #ifndef GraphicsAPI_H
 #define GraphicsAPI_H
-#include <opencv2/core/core.hpp>
 #include <d3d11.h>
 #pragma comment (lib, "d3d11.lib")
 #include <windows.h>
@@ -18,7 +17,7 @@
 #include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
-#define HMD_DISTORTION 0
+#define HMD_DISTORTION 1
 class BitMap;
 class ARiftControl;
 // -------------------------------

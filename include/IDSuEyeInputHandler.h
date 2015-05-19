@@ -3,7 +3,7 @@
 #include "uEye.h"
 #include <vector>
 #include <utility>
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 
 #define CAMERA_CHANNELS 4
 #define CAMERA_WIDTH 752
@@ -23,8 +23,8 @@ class IDSuEyeInputHandler
     bool openCams(int left_cam, int right_cam);
     bool grabFrames();
     bool grabFrame(int cam);
-    void retrieveFrame(cv::Mat& frame, int cam);
-		void readFrame(cv::Mat& frame, int cam);
+    void retrieveFrame(int cam);
+		void readFrame(int cam);
     bool switchAutoSensorShutter(int cam);
     bool switchAutoSensorGain(int cam);
 

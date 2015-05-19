@@ -1,13 +1,9 @@
 #include <iostream>
 #include <utility>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
+
 
 #include "../include/IDSuEyeInputHandler.h"
 #include "uEye.h"
-
-using namespace cv;
 
 IDSuEyeInputHandler::IDSuEyeInputHandler()
 {
@@ -52,7 +48,7 @@ bool IDSuEyeInputHandler::openCams(int left_cam,int right_cam)
     return false;
   }
 
-  nRet1 = is_SetColorMode(hcam_[0], IS_CM_RGBA8_PACKED);// TODO set memory format to agree with opencv
+  nRet1 = is_SetColorMode(hcam_[0], IS_CM_RGBA8_PACKED);
   nRet2 = is_SetColorMode(hcam_[1], IS_CM_RGBA8_PACKED);
   if (nRet1 != IS_SUCCESS || nRet2 != IS_SUCCESS)
   {
@@ -169,7 +165,7 @@ bool IDSuEyeInputHandler::grabFrame(int cam)
   return true;
 }
 
-void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
+void IDSuEyeInputHandler::retrieveFrame(int cam)
 {
   if(cam != cam1_ && cam != cam2_)
   {
@@ -177,30 +173,11 @@ void IDSuEyeInputHandler::retrieveFrame(cv::Mat& frame, int cam)
   }
 
   grabFrame(cam);
-  //void* driver_data;
-  //if (cam == 1)
-  //  driver_data = (void*)cameraBufferLeft_;
-  //else
-  //  driver_data = (void*)cameraBufferRight_;
-
-  //Mat rgb(CAMERA_HEIGHT,CAMERA_WIDTH,CV_8UC4,driver_data); // CV_8UC3 | CV_8UC4 (Alpha Channel)
-  //if(frame.type() != rgb.type() || frame.rows != rgb.rows || frame.cols != rgb.cols )
-  //{
-  //  frame = Mat::zeros(rgb.rows,rgb.cols,rgb.type());
-  //}
-  //// change format from rgb to bgr
-  //int from_to[] = { 0,2, 1,1, 2,0};
-  //mixChannels(&rgb, 1, &frame, 1, from_to,3);
-  //rgb.release();
-  //
-  //if(flip_status_cam_[cam - 1] != NOFLIP)
-  //  flip(frame,frame,flip_status_cam_[cam - 1]);
-		
 }
 
-void IDSuEyeInputHandler::readFrame(cv::Mat& frame, int cam)
+void IDSuEyeInputHandler::readFrame(int cam)
 {
-  retrieveFrame(frame,cam);
+  retrieveFrame(cam);
 }
 
 bool IDSuEyeInputHandler::switchAutoSensorShutter(int cam)

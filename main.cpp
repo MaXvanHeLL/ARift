@@ -1,7 +1,4 @@
-// OpenCV includes
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
+
 // ARift includes
 #include "include/ARiftControl.h"
 #include "include/OculusHMD.h"
@@ -90,15 +87,15 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 	dx11->window_ = CreateWindowEx(NULL,
 		dx11->applicationName_,    // name of the window class
 		L"DirectX Render Scene",   // title of the window
-		WS_OVERLAPPEDWINDOW,    // window style
-		0,    // x-position of the window
-		0,    // y-position of the window
-		RIFT_RESOLUTION_WIDTH,  // width of the window
+		WS_OVERLAPPEDWINDOW,       // window style
+		0,                         // x-position of the window
+		0,                         // y-position of the window
+		RIFT_RESOLUTION_WIDTH,     // width of the window
 		RIFT_RESOLUTION_HEIGHT,    // height of the window
-		NULL,    // we have no parent window, NULL
-		NULL,    // we aren't using menus, NULL
-		dx11->hinstance_,    // application handle
-		NULL);    // used with multiple windows, NULL
+		NULL,                      // we have no parent window, NULL
+		NULL,                      // we aren't using menus, NULL
+		dx11->hinstance_,          // application handle
+		NULL);                     // used with multiple windows, NULL
 
 	dx11->InitD3D(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT, VSYNC_ENABLED, dx11->window_, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR, arift_c);
 	ShowWindow(dx11->window_, SW_SHOW); 	// display the window on the screen

@@ -3,10 +3,7 @@
 #include "../include/GraphicsAPI.h"
 #include "../include/Helpers.h"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+
 #include <iostream>
 
 #define GetCurrentDir _getcwd
@@ -87,55 +84,16 @@ void ARiftControl::init()
   base_save_name = getTimeString();
   cam_input = new IDSuEyeInputHandler();
   cam_input->openCams(CAM1,CAM2);
-  cam_input->retrieveFrame(left_pic, CAM1);
-  cam_input->retrieveFrame(right_pic, CAM2);
-  if(left_pic.empty() || right_pic.empty())
-    std::cout << "Warning empty image(s) "<< std::endl;
-
-  full_view = Mat::zeros(cv::Size(RIFT_RESOLUTION_WIDTH,RIFT_RESOLUTION_HEIGHT),left_pic.type());
-  full_view_undist = Mat::zeros(cv::Size(RIFT_RESOLUTION_WIDTH, RIFT_RESOLUTION_HEIGHT), left_pic.type());
-
-  left_camera_mat = Mat::zeros(3,3,CV_64FC1);
-  right_camera_mat = Mat::zeros(3,3,CV_64FC1);
+  cam_input->retrieveFrame(CAM1);
+  cam_input->retrieveFrame(CAM2);
 
 }
 
-bool ARiftControl::getImages()
+void ARiftControl::getImages()
 {
-  cam_input->retrieveFrame(left_pic, CAM1);
+  cam_input->retrieveFrame(CAM1);
+  cam_input->retrieveFrame(CAM2);
 
-  cam_input->retrieveFrame(right_pic, CAM2);
-  if(left_pic.empty() || right_pic.empty())
-  {
-    std::cout << "Warning empty image(s) in loop "<< std::endl;
-    return false;
-  }
-  return true;
-}
-
-void ARiftControl::createDisplay()
-{
-  resize(left_pic, left_resized,
-    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
-  resize(right_pic,right_resized,
-    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
-
-  left_resized.copyTo(full_view(cv::Rect(0, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
-  right_resized.copyTo(full_view(cv::Rect(RIFT_RESOLUTION_WIDTH / 2, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
-}
-
-void ARiftControl::undistortImages()
-{
-  remap(left_pic, left_undistorted, left_map1, left_map2, INTER_LINEAR);
-  remap(right_pic, right_undistorted, right_map1, right_map2, INTER_LINEAR);
-
-  resize(left_undistorted, left_resized,
-    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
-  resize(right_undistorted,right_resized,
-    cv::Size(RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT), 0, 0, INTER_LINEAR);
-
-  left_resized.copyTo(full_view_undist(cv::Rect(0, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
-  right_resized.copyTo(full_view_undist(cv::Rect(RIFT_RESOLUTION_WIDTH / 2, 0, RIFT_RESOLUTION_WIDTH / 2, RIFT_RESOLUTION_HEIGHT)));
 }
 
 void ARiftControl::handleKey(char key)
@@ -267,61 +225,8 @@ void ARiftControl::hanldeFlip()
 
 void ARiftControl::handleSave()
 {
-  std::stringstream save_name_left;
-  std::stringstream save_name_right;
-  save_name_left << base_save_name << "_left_" << write_counter << ".bmp";
-  save_name_right << base_save_name << "_right_" << write_counter << ".bmp";
-  std::cout << "write images ? (press s to confirm)" << std::endl;
-  std::cout << " " <<save_name_left.str() << std::endl <<" " <<  save_name_right.str() << std::endl << std::endl;
-  char key_2 = waitKey(0);
-  if(key_2 == 's')
-  {
-    std::cout << "saving images ";
-    imwrite(save_name_left.str(),left_pic);
-    imwrite(save_name_right.str(),right_pic);
-    write_counter++;
-    std::cout << "done" << std::endl;
-  }
 }
 
 void ARiftControl::handleCameraAutoFeatures()
 {
-  std::stringstream text;
-  text << "choose cam";
-  Mat view_cpy = full_view.clone();
-  putText(view_cpy,"TEST STRING",Point(0,25),FONT_HERSHEY_SIMPLEX,0.5,Scalar(0,255,0),1);
-  putText(view_cpy,"TEST STRING",Point(RIFT_RESOLUTION_WIDTH/2,30),FONT_HERSHEY_SIMPLEX,0.5,Scalar(0,255,0),1);
-  putText(view_cpy,text.str(),Point(0,RIFT_RESOLUTION_HEIGHT/2),FONT_HERSHEY_SIMPLEX,1,Scalar(0,255,0),2);
-  putText(view_cpy,text.str(),Point(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT/2),FONT_HERSHEY_SIMPLEX,1,Scalar(0,255,0),2);
-  imshow("both",view_cpy);
-
-  char key_2 = waitKey(0);
-  bool auto_feature = false;
-  int cam = CAM1;
-
-  std::stringstream text2;
-  text2 << "choose auto feature to switch: Gain, Shutter";
-  view_cpy = full_view.clone();
-  if(key_2 == 'l')
-  {
-    cam = CAM1;
-    putText(view_cpy,text2.str(),Point(0,RIFT_RESOLUTION_HEIGHT/2),FONT_HERSHEY_SIMPLEX,0.5,Scalar(0,255,0),1);
-  }
-  else if(key_2 == 'r')
-  {
-    cam = CAM2;
-    putText(view_cpy,text2.str(),Point(RIFT_RESOLUTION_WIDTH/2,RIFT_RESOLUTION_HEIGHT/2),FONT_HERSHEY_SIMPLEX,0.5,Scalar(0,255,0),1);
-  }
-  imshow("both",view_cpy);
-  char key_3 = waitKey(0);
-  if(key_3 == 'g')
-  {
-    auto_feature = ((IDSuEyeInputHandler*)cam_input)->switchAutoSensorGain(cam);
-    std::cout << "Auto gain on cam " << key_2 << " is " << (auto_feature ? "ON" : "OFF") << std::endl;
-  }
-  else if (key_3 == 's')
-  {
-    auto_feature = ((IDSuEyeInputHandler*)cam_input)->switchAutoSensorShutter(cam);
-    std::cout << "Auto shutter on cam " << key_2 << " is " << (auto_feature ? "ON" : "OFF") << std::endl;
-  }
 }
