@@ -76,7 +76,16 @@ bool IDSuEyeInputHandler::openCams(int left_cam,int right_cam)
   switchAutoSensorGain(2);
   switchAutoSensorShutter(1);
   switchAutoSensorShutter(2);
-
+  double auto_fps0 = -1.0;
+  double auto_fps1 = -1.0;
+  is_SetAutoParameter(hcam_[0], IS_GET_ENABLE_AUTO_FRAMERATE, &auto_fps0, 0);
+  is_SetAutoParameter(hcam_[1], IS_GET_ENABLE_AUTO_FRAMERATE, &auto_fps1, 0);
+  std::cout << "IDSuEyeInputHandler: auto fps status cam 0 :" << auto_fps0 << " cam 1: " << auto_fps1 << std::endl;
+  double enable = 1.0;
+  if (auto_fps0 < 1.0f)
+    is_SetAutoParameter(hcam_[0], IS_SET_ENABLE_AUTO_FRAMERATE, &enable, 0);
+  if (auto_fps1 < 1.0f)
+    is_SetAutoParameter(hcam_[1], IS_SET_ENABLE_AUTO_FRAMERATE, &enable, 0);
   cameraCaptureing_ = true;
   return true;
 }
@@ -216,3 +225,27 @@ bool IDSuEyeInputHandler::switchAutoSensorGain(int cam)
   return auto_sensor_gain_[cam-1];
 }
 
+void IDSuEyeInputHandler::changeAutoSensorSpeeds(double step)
+{
+  double auto_speed0 = -1.0f;
+  double auto_speed1 = -1.0f; // IS_GET_AUTO_SPEED
+  is_SetAutoParameter(hcam_[0], IS_GET_AUTO_SPEED, &auto_speed0, 0);
+  is_SetAutoParameter(hcam_[1], IS_GET_AUTO_SPEED, &auto_speed1, 0);
+  std::cout << "IDSuEyeInputHandler::changeAutoSensorSpeed speeds are" << std::endl << " (l , r): (" << auto_speed0 << " , " << auto_speed1 << ") += " << step << std::endl;
+  auto_speed0 += step;
+  auto_speed1 += step;
+  if (auto_speed0 < 0.0f || auto_speed1 < 0.0f || auto_speed0 > 100.0f || auto_speed1 > 100.0f )
+  {
+    std::cout << "IDSuEyeInputHandler::changeAutoSensorSpeed ERROR new auto speed out of bounds (0..100) abroting"<< std::endl;
+    return;
+  }
+  is_SetAutoParameter(hcam_[0], IS_SET_AUTO_SPEED, &auto_speed0, 0);
+  is_SetAutoParameter(hcam_[1], IS_SET_AUTO_SPEED, &auto_speed1, 0);
+}
+
+double IDSuEyeInputHandler::getFrameRate(int cam)
+{
+  double fps = -1.0f;
+  is_GetFramesPerSecond(hcam_[cam - 1], &fps);
+  return fps;
+}

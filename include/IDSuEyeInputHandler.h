@@ -27,6 +27,8 @@ class IDSuEyeInputHandler
 		void readFrame(int cam);
     bool switchAutoSensorShutter(int cam);
     bool switchAutoSensorGain(int cam);
+    void changeAutoSensorSpeeds(double step);
+    double getFrameRate(int cam);
 
     // Members
     unsigned char* cameraBufferLeft_;

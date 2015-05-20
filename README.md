@@ -6,7 +6,9 @@ developing augmented reality version of the Oculus rift
 - The images can be moved with relation to each other using 'w','a','s','d'.
 - The images can be moved with relation to the screen using 'W','A','S','D'.
 - The movement rate can be set using the keys '1' (= 0.1 pixel/step), '2' (= 0.2 px/st , standart), '3' (= 0.5 px/st), '4' (= 1 px/st), '5' (= 5 px/st).
-- The current translations with respect to the image centers (one for each eye) can be written to console by 'p'.
+- The current translations with respect to the image centers (one for each eye) can be written to console by 'o'.
+- The current frames per second can be written to console by pressing 'f'
+- The speed of auo sensore shutter can adjusted via 'p' (slower), 'P' (faster). Standard value is the maximum of 100. 
 
 ## Specifications of the development environments
 

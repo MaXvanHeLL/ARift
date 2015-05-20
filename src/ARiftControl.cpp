@@ -193,10 +193,26 @@ void ARiftControl::handleKey(char key)
       step = 5.0f;
       break;
     }
-    case 'p':
+    case 'o':
     {
       std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
       std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
+      break;
+    }
+    case 'P':
+    {
+      cam_input->changeAutoSensorSpeeds(step);
+      break;
+    }
+    case 'p':
+    {
+      cam_input->changeAutoSensorSpeeds(-step);
+      break;
+    }
+    case 'f':
+    {
+      std::cout << " cam " << CAM1 << " has " << cam_input->getFrameRate(CAM1) << "frames / s  |";
+      std::cout << " cam " << CAM2 << " has " << cam_input->getFrameRate(CAM2) << "frames / s" << std::endl;
       break;
     }
     //case 'f': // flip
