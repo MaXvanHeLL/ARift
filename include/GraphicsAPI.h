@@ -17,7 +17,7 @@
 #include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
-#define HMD_DISTORTION 0
+#define HMD_DISTORTION 1
 class BitMap;
 class ARiftControl;
 // -------------------------------
