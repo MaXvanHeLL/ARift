@@ -139,9 +139,20 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
 
     if (msg.message == WM_CHAR)
     {
+      //std::cout << "lparam: " << int(msg.lParam) << " int(msg.lParam & 0x0000FFFF) " << int(msg.lParam & 0x0000FFFF) << std::endl;
       //std::cout << "recieved message WM_CHAR : " << msg.wParam << std::endl;
+      //bool is_released = msg.lParam & 0x80000000;
+      bool was_down = (msg.lParam & 0x40000000) != 0;
+      std::cout << "was_down " << was_down << " lparam hex: " << std::hex << msg.lParam << std::endl;
       arift_c->handleKey((char)msg.wParam);
     }
+    //if (msg.message == WM_KEYUP)
+    //{
+    //  char key = (char)MapVirtualKey(msg.wParam, MAPVK_VK_TO_CHAR);
+    //  std::cout << "recieved message WM_KEYUP : " << key <<" as number " << (int)(key) <<std::endl;
+    //  arift_c->handleKey(key);
+    //}
+
 		// Run "game" code here
     // get fps
     std::string now = getTimeString("%S");

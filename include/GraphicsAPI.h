@@ -36,12 +36,13 @@ private:
 
 	Camera* camera_;
 	Model* model_;
+  Model* model2_;
 	BitMap* bitmap_;
 	Shader* shader_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
-	float modelRotation_;
+	//float modelRotation_;
 
 	// used for Eye Rendering
 	bool RenderToTexture(RenderTexture*,int);

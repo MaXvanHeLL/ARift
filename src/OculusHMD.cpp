@@ -72,24 +72,31 @@ void OculusHMD::initialization(GraphicsAPI* graphicsAPI)
 // -----------------------------------------------------------------------     
 void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 {
-	// get current tracking state
-	if (hmd_)
-	{
-		ovrTrackingState tracking_state = ovrHmd_GetTrackingState(hmd_, ovr_GetTimeInSeconds());
+  // get current tracking state
+  if (hmd_)
+  {
+    ovrTrackingState tracking_state = ovrHmd_GetTrackingState(hmd_, ovr_GetTimeInSeconds());
 
-		if (tracking_state.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked))
-		{
-			OVR::Posef pose = tracking_state.HeadPose.ThePose;
-			pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
-			// for debug purposes only
-			yaw = RadToDegree(yaw);
-			eyepitch = RadToDegree(eyepitch);
-			eyeroll = RadToDegree(eyeroll);
-			// cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
-		}
-	}
+    if (tracking_state.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked))
+    {
+      OVR::Posef pose = tracking_state.HeadPose.ThePose;
+      pose.Rotation.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &eyepitch, &eyeroll);
+      // for debug purposes only
+      yaw = RadToDegree(yaw);
+      eyepitch = RadToDegree(eyepitch);
+      eyeroll = RadToDegree(eyeroll);
+      // cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
+    }
+  }
 }
 
+bool OculusHMD::Recenter()
+{
+  if (!hmd_)
+    return false;
+  ovrHmd_RecenterPose(hmd_);
+  return true;
+}
 
 // -----------------------------------------------------------------------     
 void OculusHMD::calculateFOV()

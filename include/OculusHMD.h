@@ -60,6 +60,7 @@ class OculusHMD
 		void StartFrames();
 
 		bool RenderDistortion();
+    bool Recenter();
 };
 
 #endif // OCULUSHMD_H

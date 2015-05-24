@@ -1,12 +1,22 @@
 # ARift
 developing augmented reality version of the Oculus rift
-## Usage 
+## Keymapping 
 
-- The zoom can be adjusted via 'z' and 'Z'.
-- The images can be moved with relation to each other using 'w','a','s','d'.
-- The images can be moved with relation to the screen using 'W','A','S','D'.
 - The movement rate can be set using the keys '1' (= 0.1 pixel/step), '2' (= 0.2 px/st , standart), '3' (= 0.5 px/st), '4' (= 1 px/st), '5' (= 5 px/st).
 - The current translations with respect to the image centers (one for each eye) can be written to console by 'o'.
+- The zoom can be adjusted via 'z' and 'Z'.
+- 'v' Recenters the  virtual world to the current view.
+- 'm' turns on/off the model mode, requires any other keypress inbetween to work again
+- The images can be moved with relation to the screen using 'W','A','S','D'.
+- 'w','a','s','d'
+  * In default mode: The images can be moved with relation to each other
+  * In model mode: The model x,y-position is adjusted
+- In model mode 'y','x' adjust z-position of the model
+- In model mode 'q','e' adjust y-rotation of the model (in model coordinates)
+- In model mode 't' turns on/off auto z-translation of the model, requires any other keypress inbetween to work again
+- In model mode 'r' turns on/off auto y-rotation of the model, requires any other keypress inbetween to work again
+
+
 - The current frames per second can be written to console by pressing 'f'
 - The speed of auo sensore shutter can adjusted via 'p' (slower), 'P' (faster). Standard value is the maximum of 100. 
 

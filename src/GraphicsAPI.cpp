@@ -24,6 +24,7 @@ GraphicsAPI::GraphicsAPI()
 
 	camera_ = 0;
 	model_ = 0;
+  model2_ = 0;
 	bitmap_ = 0;
 	shader_ = 0;
 
@@ -34,7 +35,7 @@ GraphicsAPI::GraphicsAPI()
 	renderTextureRight_ = 0;
 	eyeWindowRight_ = 0;
 
-	modelRotation_ = 0.0f;
+	//modelRotation_ = 0.0f;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -366,19 +367,32 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	camera_->SetPosition(0.0f, 0.0f, -20.0f);
 
 	
-	// Create the model object.
+	// Create the first model object.
 	model_ = new Model();
   if (!model_) 
     return false;
 
-	// Initialize the model object.
+	// Initialize the first model object.
 	// result = model_->Initialize(device_, L"data/texture.dds");
 	result = model_->Initialize(device_, "data/Cube.txt", L"data/texture.dds");
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the model 1 object.", L"Error", MB_OK);
 		return false;
 	}
+
+  //// Create the second model object.
+  //model2_ = new Model();
+  //if (!model2_)
+  //  return false;
+
+  //// Initialize the second model object and translate a little to the left
+  //result = model2_->Initialize(device_, "data/Cube.txt", L"data/grass256x256_ad.dds", -3.0f,0.0f,0.0f);
+  //if (!result)
+  //{
+  //  MessageBox(hwnd, L"Could not initialize the model 2 object.", L"Error", MB_OK);
+  //  return false;
+  //}
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
@@ -481,12 +495,26 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 bool GraphicsAPI::Frame()
 {
 	bool result;
-
-	// rotation
-	modelRotation_ += (float)XM_PI * 0.01f;
-	if (modelRotation_ > 360.0f)
-		modelRotation_ -= 360.0f;
-
+  if (ariftcontrol_->changed_offset_)
+  {
+    //model_->Move(ariftcontrol_->model_offset_x_, ariftcontrol_->model_offset_y_, 0.0f);
+    //model_->ReInitializeBuffers(device_);
+    model_->translation_x_ += ariftcontrol_->model_offset_x_;
+    model_->translation_y_ += ariftcontrol_->model_offset_y_;
+    model_->translation_z_ += ariftcontrol_->model_offset_z_;
+    ariftcontrol_->ResetModelOffset();
+  }
+	// auto rotation
+  if (ariftcontrol_->model_auto_rotate_)
+  {
+    model_->rotation_ += (float)XM_PI * 0.01f;
+    if (model_->rotation_ > 360.0f)
+      model_->rotation_ -= 360.0f;
+  } 
+  else // get manual adjusted rotation
+  {
+    model_->rotation_ = ariftcontrol_->model_rotation_;
+  }
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -500,12 +528,18 @@ bool GraphicsAPI::Frame()
 
 bool GraphicsAPI::Render()
 {
-	bool result;
-	static float cameraDistance = -200.0f;
-
-	cameraDistance += 0.3f;
-	if (cameraDistance > -5.0f)
-		cameraDistance = -200.0f;
+  bool result;
+  float cameraDistance = -100.0f;
+  if (ariftcontrol_->model_auto_translate_)
+  {
+    cameraDistance += 0.3f;
+    if (cameraDistance > -5.0f)
+      cameraDistance = -200.0f;
+  }
+  //else
+  //{
+  //  cameraDistance += ariftcontrol_->model_offset_z_;
+  //}
 
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
 
@@ -671,8 +705,12 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	model_->Render(devicecontext_);
 
 	// rotation
-	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
-	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
+	XMMATRIX rotationMatrix = XMMatrixRotationY(model_->rotation_);
+  // translation
+  XMMATRIX translationMatrix = XMMatrixTranslation(model_->translation_x_, model_->translation_y_, model_->translation_z_);
+  XMMATRIX modelTransform = XMMatrixMultiply(rotationMatrix, translationMatrix);
+  
+  XMStoreFloat4x4(&worldMatrix, modelTransform);
 
 	// Render the model using the texture shader.
 	if (cam_id == 1)

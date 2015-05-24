@@ -39,16 +39,22 @@ class Model
 		~Model();
 
 		bool Initialize(ID3D11Device*, char*, WCHAR*);
+    bool Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename, float x, float y, float z);
 		void Shutdown();
 		// called from GraphicsAPI::Render()
 		void Render(ID3D11DeviceContext*);
-
+    bool ReInitializeBuffers(ID3D11Device* device);
 		// GetIndexCount returns the number of indexes in the model. 
 		// The color shader will need this information to draw this model. 
 		int GetIndexCount();
 
 		ID3D11ShaderResourceView* GetTexture();
 
+    float rotation_;
+    float translation_x_ = 0.0f;
+    float translation_y_ = 0.0f;
+    float translation_z_ = 0.0f;
+    void Move(float x, float y, float z);
 	private:
 		bool InitializeBuffers(ID3D11Device*);
 
@@ -60,6 +66,7 @@ class Model
 
 		bool LoadTexture(ID3D11Device*, WCHAR*);
 		void ReleaseTexture();
+
 };
 
 #endif
