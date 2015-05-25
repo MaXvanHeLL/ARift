@@ -55,6 +55,7 @@ class Model
     float translation_y_ = 0.0f;
     float translation_z_ = 0.0f;
     void Move(float x, float y, float z);
+    bool auto_rotate_ = false;
 	private:
 		bool InitializeBuffers(ID3D11Device*);
 

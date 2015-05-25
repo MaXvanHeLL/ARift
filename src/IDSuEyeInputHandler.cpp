@@ -28,6 +28,8 @@ IDSuEyeInputHandler::~IDSuEyeInputHandler()
 {
   is_ExitCamera(hcam_[0]);
   is_ExitCamera(hcam_[1]);
+  CloseHandle(cameraMutexLeft_);
+  CloseHandle(cameraMutexRight_);
 }
 
 bool IDSuEyeInputHandler::openCams(int left_cam,int right_cam)

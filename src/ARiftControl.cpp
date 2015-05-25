@@ -122,6 +122,18 @@ void ARiftControl::handleKey(char key)
       std::cout << "Model changing mode is " << model_change_mode_ << std::endl;
       break;
     }
+    case '.':
+    {
+      if (model_change_mode_)
+        graphics_api_->SetNextModelActive();
+      break;
+    }
+    case ',':
+    {
+      if (model_change_mode_)
+        graphics_api_->SetPreviousModelActive();
+      break;
+    }
     case 'r':
     {
       if (last_key_ == 'r') // ignore long keypress and requre last key to be different
@@ -149,7 +161,7 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_offset_y_ += step_;
-        changed_offset_ = true;
+        changed_model_ = true;
       }
       else
       {
@@ -163,7 +175,7 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_offset_x_ -= step_;
-        changed_offset_ = true;
+        changed_model_ = true;
       }
       else
       {
@@ -177,7 +189,7 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_offset_y_ -= step_;
-        changed_offset_ = true;
+        changed_model_ = true;
       }
       else
       {
@@ -191,7 +203,7 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_offset_x_ += step_;
-        changed_offset_ = true;
+        changed_model_ = true;
       }
       else
       {
@@ -205,7 +217,7 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_offset_z_ += step_;
-        changed_offset_ = true;
+        changed_model_ = true;
       }
       break;
     }
@@ -214,14 +226,17 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_offset_z_ -= step_;
-        changed_offset_ = true;
+        changed_model_ = true;
       }
       break;
     }
     case 'q':
     {
       if (model_change_mode_)
-        model_rotation_ = float(fmod(double(model_rotation_ + step_), 360.0));
+      {
+        model_rotation_ += step_; //float(fmod(double(model_rotation_ + step_), 360.0));
+        changed_model_ = true;
+      }
       break;
     }
     case 'e':
@@ -229,8 +244,10 @@ void ARiftControl::handleKey(char key)
       if (model_change_mode_)
       {
         model_rotation_ -= step_;
-        if (model_rotation_ < 0.0f)
-          model_rotation_ = model_rotation_ + 360.0f;
+        //if (model_rotation_ < 0.0f)
+        //  model_rotation_ = model_rotation_ + 360.0f;
+        
+        changed_model_ = true;
       }
       break;
     }
@@ -337,12 +354,13 @@ void ARiftControl::handleKey(char key)
   }
   last_key_ = key;
 }
-void ARiftControl::ResetModelOffset()
+void ARiftControl::ResetModelChange()
 {
   model_offset_x_ = 0.0f;
   model_offset_y_ = 0.0f;
   model_offset_z_ = 0.0f;
-  changed_offset_ = false;
+  model_rotation_ = 0.0f;
+  changed_model_ = false;
 }
 void ARiftControl::hanldeFlip()
 {

@@ -2,6 +2,7 @@
 #define ARIFTCONTROL_H
 #include "IDSuEyeInputHandler.h"
 #include "../include/Shader.h"
+#include "../include/GraphicsAPI.h"
 #include <direct.h>
 
 #define CAM1 1
@@ -36,15 +37,16 @@ class ARiftControl
     Shader::UndistortionBuffer left_cam_params_;
     Shader::UndistortionBuffer right_cam_params_;
 
-    void ResetModelOffset();
+    void ResetModelChange();
     float model_offset_x_ = 0.0f;
     float model_offset_y_ = 0.0f;
     float model_offset_z_ = 0.0f;
 
-    bool changed_offset_ = false;
+    bool changed_model_ = false;
     float model_rotation_ = 0.0f;
     bool model_auto_rotate_ = false;
     bool model_auto_translate_ = false;
+    GraphicsAPI* graphics_api_ = NULL;
   protected:
   private:
     bool model_change_mode_= false;

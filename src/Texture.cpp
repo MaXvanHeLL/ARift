@@ -26,7 +26,7 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 	result = CreateDDSTextureFromFile(device, filename, nullptr, &shaderResource_);
 	if (FAILED(result))
 	{
-		std::wcout << filename << std::endl;
+		std::wcout << "Could no create texture " << filename << " Error: " << result << std::endl;
 		return false;
 	}
 

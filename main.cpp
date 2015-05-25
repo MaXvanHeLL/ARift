@@ -27,7 +27,7 @@ int main(int, char**)
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
   ARiftControl cont;
-
+  cont.graphics_api_ = dx11;
   if (AR_HMD_ENABLED)
   {
 	  cont.init();
@@ -142,8 +142,8 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
       //std::cout << "lparam: " << int(msg.lParam) << " int(msg.lParam & 0x0000FFFF) " << int(msg.lParam & 0x0000FFFF) << std::endl;
       //std::cout << "recieved message WM_CHAR : " << msg.wParam << std::endl;
       //bool is_released = msg.lParam & 0x80000000;
-      bool was_down = (msg.lParam & 0x40000000) != 0;
-      std::cout << "was_down " << was_down << " lparam hex: " << std::hex << msg.lParam << std::endl;
+      //bool was_down = (msg.lParam & 0x40000000) != 0;
+      //std::cout << "was_down " << was_down << " lparam hex: " << std::hex << msg.lParam << std::endl;
       arift_c->handleKey((char)msg.wParam);
     }
     //if (msg.message == WM_KEYUP)

@@ -8,6 +8,8 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <utility>
+#include <vector>
 #include "../include/Camera.h"
 #include "../include/Model.h"
 #include "../include/Shader.h"
@@ -35,22 +37,26 @@ private:
 	char videocarddescription_[128];
 
 	Camera* camera_;
-	Model* model_;
-  Model* model2_;
+  std::vector<Model*> models_;
+
 	BitMap* bitmap_;
 	Shader* shader_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
-	//float modelRotation_;
+  int current_model_idx_;
 
-	// used for Eye Rendering
+  // used for Eye Rendering
 	bool RenderToTexture(RenderTexture*,int);
 	bool RenderScene(int cam_id);
 	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          
 public:
-	GraphicsAPI();
+  HANDLE models_Mutex_;
+
+  int SetNextModelActive();
+  int SetPreviousModelActive();
+  GraphicsAPI();
 	virtual ~GraphicsAPI();
 	
 	DWORD WINAPI run(LPVOID lpArg);
