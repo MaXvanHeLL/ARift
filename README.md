@@ -1,21 +1,29 @@
 # ARift
 developing augmented reality version of the Oculus rift
-## Keymapping 
+## User Interface and Keymapping 
 
 - The movement rate can be set using the keys '1' (= 0.1 pixel/step), '2' (= 0.2 px/st , standart), '3' (= 0.5 px/st), '4' (= 1 px/st), '5' (= 5 px/st).
-- The current translations with respect to the image centers (one for each eye) can be written to console by 'o'.
+- 'o': Write offest in camera input, virtual eye distance and virtual world offset to console 
 - The zoom can be adjusted via 'z' and 'Z'.
 - 'v' Recenters the  virtual world to the current view.
-- 'm' turns on/off the model mode, requires any other keypress inbetween to work again
+- 'm' switches through modes: default mode -> model mode -> camera mode -> world mode.
+   repeated presses are ignored,  requires any other keypress inbetween to work again
+   * default mode: nothing is highlighted
+   * model mode: current model is highlighted
+   * camera mode: nothing is highlighted
+   * world mode: all models are highligted 
 - The images can be moved with relation to the screen using 'W','A','S','D'.
-- 'w','a','s','d'
+- 'w','a','s','d' :
   * In default mode: The images can be moved with relation to each other
-  * In model mode: The model x,y-position is adjusted
-- In model mode 'y','x' adjust z-position of the model
+  * In model mode: The current model x,y-position is adjusted
+  * In world mode: all models x,y-position is adjusted
+- 'y','x':
+  * model mode: adjust z-position of the current model
+  * world mode: adjust z-position of the all models
 - In model mode 'q','e' adjust y-rotation of the model (in model coordinates)
 - In model mode 't' turns on/off auto z-translation of the model, requires any other keypress inbetween to work again
 - In model mode 'r' turns on/off auto y-rotation of the model, requires any other keypress inbetween to work again
-
+- 'c' and 'C' change offset of virtual cameras along the y-axis (i.e. adjust virutal eye distance)
 
 - The current frames per second can be written to console by pressing 'f'
 - The speed of auo sensore shutter can adjusted via 'p' (slower), 'P' (faster). Standard value is the maximum of 100. 

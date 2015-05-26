@@ -22,6 +22,7 @@
 #define HMD_DISTORTION 1
 class BitMap;
 class ARiftControl;
+class Texture;
 // -------------------------------
 
 class GraphicsAPI
@@ -45,6 +46,10 @@ private:
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
   int current_model_idx_;
+  float world_offset_x_ = 0.0f;
+  float world_offset_y_ = 0.0f;
+  float world_offset_z_ = 0.0f;
+  Texture* highlight_texture_ = NULL;
 
   // used for Eye Rendering
 	bool RenderToTexture(RenderTexture*,int);

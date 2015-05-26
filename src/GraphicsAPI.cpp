@@ -1,6 +1,7 @@
 #include "../include/GraphicsAPI.h"
 #include "../include/ARiftControl.h"
 #include "../include/BitMap.h"
+#include "../include/Texture.h"
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -373,12 +374,12 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (!model) 
     return false;
 
-	// Initialize the first model object.
+	// Initialize the 1. model object.
 	// result = model_->Initialize(device_, L"data/texture.dds");
   result = model->Initialize(device_, "data/Cube.txt",  L"data/texture.dds");
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the model 1 object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
 		return false;
 	}
   WaitForSingleObject(models_Mutex_, INFINITE);
@@ -392,16 +393,44 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (!model)
     return false;
 
-  // Initialize the second model object and translate a little to the left
-  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds",-2.0,0.0,0.0);
+  // Initialize the 2. model object and translate a little to the left and back
+  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds",-10.0,0.0,-10.0);
   if (!result)
   {
-    MessageBox(hwnd, L"Could not initialize the model 2 object.", L"Error", MB_OK);
+    MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
     return false;
   }
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(models_Mutex_);
+
+  // Create the 3. model object.
+  model = NULL;
+  model = new Model();
+  if (!model)
+    return false;
+
+  // Initialize the 3. model object and translate a little to the right and front
+  result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 10.0, 0.0, 10.0);
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
+    return false;
+  }
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  ReleaseMutex(models_Mutex_);
+  
+  highlight_texture_ = new Texture();
+  if (!highlight_texture_)
+    return false;
+  result = highlight_texture_->Initialize(device_, L"data/selected_red.dds");
+  if (!result)
+  {
+    std::cout << "Could not load highlight texture. " << std::endl;
+    return false;
+  }
+  
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
@@ -740,11 +769,13 @@ bool GraphicsAPI::RenderScene(int cam_id)
   //}
   if (cam_id == 1)
   {
-    float cameraTranslation = fabsf(camera_->GetPosition().z * 3.65f / 15.0f);
+    //float cameraTranslation = fabsf(camera_->GetPosition().z * 3.65f / 15.0f);
+    float cameraTranslation = ariftcontrol_->camera_offset_y_;
     camera_->Translate(cameraTranslation);
     camera_->GetViewMatrix(viewMatrix);
   }
-
+  // TODO make this threadsafe
+  XMMATRIX worldTranslationMatrix = XMMatrixTranslation(ariftcontrol_->world_offset_x_, ariftcontrol_->world_offset_y_, ariftcontrol_->world_offset_z_);
   if (models_.empty())
     std::cout << "GraphicsAPI::RenderScene WARNING no models found. models_ is empty! " << std::endl;
   int i = 0;
@@ -758,13 +789,22 @@ bool GraphicsAPI::RenderScene(int cam_id)
     // translation
     XMMATRIX translationMatrix = XMMatrixTranslation((*model)->translation_x_, (*model)->translation_y_, (*model)->translation_z_);
     XMMATRIX modelTransform = XMMatrixMultiply(rotationMatrix, translationMatrix);
-
+    modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
     XMStoreFloat4x4(&worldMatrix, modelTransform);
 
+    ID3D11ShaderResourceView* model_tex = NULL;
+    if ( (ariftcontrol_->input_mode_ == ARiftControl::InputMode::MODEL && i == current_model_idx_)
+         || ariftcontrol_->input_mode_ == ARiftControl::InputMode::WORLD)
+    {
+      model_tex = highlight_texture_->GetTexture();
+    }
+    else
+    {
+      model_tex = (*model)->GetTexture();
+    }
     // Render the model using the texture shader.
-
     result = shader_->Render(devicecontext_, (*model)->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-      (*model)->GetTexture());
+      model_tex);
 
     if (!result)
     {

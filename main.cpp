@@ -144,13 +144,20 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
       //bool is_released = msg.lParam & 0x80000000;
       //bool was_down = (msg.lParam & 0x40000000) != 0;
       //std::cout << "was_down " << was_down << " lparam hex: " << std::hex << msg.lParam << std::endl;
+      //std::cout << "recieved message WM_CHAR : " << (char)msg.wParam << " as number " << (int)(msg.wParam) << " lparam(hex) " << std::hex << msg.lParam << std::endl;
       arift_c->handleKey((char)msg.wParam);
     }
+    //if (msg.message == WM_KEYDOWN)
+    //{
+    //  char key = (char)MapVirtualKey(msg.wParam, MAPVK_VK_TO_CHAR);
+    //  std::cout << "recieved message WM_KEYDOWN : " << key << " as number " << (int)(key) << " lparam(hex) " << std::hex << msg.lParam << std::endl;
+    //  //arift_c->handleKey(key);
+    //}
     //if (msg.message == WM_KEYUP)
     //{
     //  char key = (char)MapVirtualKey(msg.wParam, MAPVK_VK_TO_CHAR);
-    //  std::cout << "recieved message WM_KEYUP : " << key <<" as number " << (int)(key) <<std::endl;
-    //  arift_c->handleKey(key);
+    //  std::cout << "recieved message WM_KEYUP : " << key << " as number " << (int)(key) << " lparam(hex) " << std::hex << msg.lParam << std::endl;
+    //  //arift_c->handleKey(key);
     //}
 
 		// Run "game" code here

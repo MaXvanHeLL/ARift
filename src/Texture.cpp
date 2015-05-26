@@ -95,7 +95,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 
 bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* cam_input, int cam_id)
 {
-	HRESULT result;
+	//HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
   unsigned char* cameraBuffer = NULL;
   if (cam_id == 1)
