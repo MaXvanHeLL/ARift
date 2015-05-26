@@ -9,6 +9,9 @@
 *.vcxproj
 *.vcxproj.*
 *.props
+*.dds
+*.jpg
+
 Calibrate_OpenCV
 DirectXTK
 calib
