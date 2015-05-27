@@ -3,6 +3,8 @@
 
 # ignore binary files to stop git repo to grow unnecessary
 *.dds
+*.jpg
+
 # niki specific files
 *.cbp
 *.depend
@@ -11,7 +13,7 @@
 *.vcxproj
 *.vcxproj.*
 *.props
-*.jpg
+
 
 Calibrate_OpenCV
 DirectXTK
