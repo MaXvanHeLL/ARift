@@ -24,7 +24,6 @@ developing augmented reality version of the Oculus rift
 - In model mode 't' turns on/off auto z-translation of the model, requires any other keypress inbetween to work again
 - In model mode 'r' turns on/off auto y-rotation of the model, requires any other keypress inbetween to work again
 - 'c' and 'C' change offset of virtual cameras along the y-axis (i.e. adjust virutal eye distance)
-
 - The current frames per second can be written to console by pressing 'f'
 - The speed of auo sensore shutter can adjusted via 'p' (slower), 'P' (faster). Standard value is the maximum of 100. 
 
