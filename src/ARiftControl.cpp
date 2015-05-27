@@ -117,7 +117,7 @@ void ARiftControl::handleKey(char key)
     {
       if (last_key_ == 'm') // ignore long keypress and requre last key to be different
         break;
-      if (input_mode_ == InputMode::WORLD)
+      if (input_mode_ == InputMode::CAMERA)
         input_mode_ = InputMode::DEFAULT;
       else
         input_mode_ = InputMode(input_mode_ + 1);
@@ -159,16 +159,6 @@ void ARiftControl::handleKey(char key)
       }
       break;
     }
-    case 'C':
-    {
-      camera_offset_y_ += step_;
-      break;
-    }
-    case 'c':
-    {
-      camera_offset_y_ -= step_;
-      break;
-    }
     case 'w':
     {
       if (input_mode_ == InputMode::DEFAULT)
@@ -202,6 +192,10 @@ void ARiftControl::handleKey(char key)
       else if (input_mode_ == InputMode::WORLD)
       {
         world_offset_x_ -= step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_x_ -= step_;
       }
       break;
     }
@@ -239,6 +233,10 @@ void ARiftControl::handleKey(char key)
       {
         world_offset_x_ += step_;
       }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_x_ += step_;
+      }
       break;
     }
     case 'y':
@@ -252,6 +250,10 @@ void ARiftControl::handleKey(char key)
       {
         world_offset_z_ += step_;
       }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_z_ += step_;
+      }
       break;
     }
     case 'x':
@@ -264,6 +266,10 @@ void ARiftControl::handleKey(char key)
       else if (input_mode_ == InputMode::WORLD)
       {
         world_offset_z_ -= step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_z_ -= step_;
       }
       break;
     }
@@ -342,6 +348,11 @@ void ARiftControl::handleKey(char key)
       }
 			break;
 		}
+    case '0':
+    {
+      step_ = 0.01f;
+      break;
+    }
     case '1':
     {
       step_ = 0.1f;

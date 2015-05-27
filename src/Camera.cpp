@@ -102,14 +102,9 @@ void Camera::Render()
 	return;
 }
 
-void Camera::Translate(float translation, float oculusTranslation)
+void Camera::TranslateAndRender(float translation_forward, int translation_sideways)
 {
 	XMFLOAT3 oldCameraPos = GetPosition();
-
-	if (oculusTranslation)
-		SetPosition(translation, oculusTranslation, oldCameraPos.z);
-	else
-		SetPosition(translation, oldCameraPos.y, oldCameraPos.z);
 
 	float yaw, pitch, roll;
 	XMMATRIX rotationMatrix;
@@ -126,11 +121,16 @@ void Camera::Translate(float translation, float oculusTranslation)
 
 	// Create the rotation matrix from the yaw, pitch, and roll values.
 	rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+  // Create the translation matrix for left or right eye translation from "head" center
+  XMMATRIX translationMatrix = XMMatrixTranslation(translation_sideways, 0.0f, translation_forward);
+  // TODO: rewrite comment currently wrong: Combine matrices first translate from center to left/or right eye, then rotate head
+  XMMATRIX transfromMatrix = XMMatrixMultiply(translationMatrix, rotationMatrix);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
-	lookAt = XMVector3TransformCoord(lookAt, rotationMatrix);
-	up = XMVector3TransformCoord(up, rotationMatrix);
-
+  lookAt = XMVector3TransformCoord(lookAt, transfromMatrix);
+  up = XMVector3TransformCoord(up, transfromMatrix);
+  position = XMVector3TransformCoord(position, transfromMatrix);
+  
 	// Translate the rotated camera position to the location of the viewer.
 	lookAt = position + lookAt;
 

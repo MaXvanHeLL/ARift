@@ -537,8 +537,6 @@ bool GraphicsAPI::Frame()
 
   if (ariftcontrol_->changed_model_)
   {
-    //model_->Move(ariftcontrol_->model_offset_x_, ariftcontrol_->model_offset_y_, 0.0f);
-    //model_->ReInitializeBuffers(device_);
     model->translation_x_ += ariftcontrol_->model_offset_x_;
     model->translation_y_ += ariftcontrol_->model_offset_y_;
     model->translation_z_ += ariftcontrol_->model_offset_z_;
@@ -590,7 +588,7 @@ bool GraphicsAPI::Render()
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 
 	camera_->SetPosition(0.0f, 0.0f, cameraDistance);
-	camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
+  camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
 	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
 	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
@@ -767,13 +765,17 @@ bool GraphicsAPI::RenderScene(int cam_id)
   //  }
   //  camera_->GetViewMatrix(viewMatrix);
   //}
+  float cameraTranslation = ;
   if (cam_id == 1)
   {
     //float cameraTranslation = fabsf(camera_->GetPosition().z * 3.65f / 15.0f);
-    float cameraTranslation = ariftcontrol_->camera_offset_y_;
-    camera_->Translate(cameraTranslation);
-    camera_->GetViewMatrix(viewMatrix);
+    camera_->TranslateAndRender(ariftcontrol_->camera_offset_x_ / 2, ariftcontrol_->camera_offset_z_);
   }
+  else
+  {
+    camera_->TranslateAndRender(-(ariftcontrol_->camera_offset_x_) / 2, ariftcontrol_->camera_offset_z_);
+  }
+  camera_->GetViewMatrix(viewMatrix);
   // TODO make this threadsafe
   XMMATRIX worldTranslationMatrix = XMMatrixTranslation(ariftcontrol_->world_offset_x_, ariftcontrol_->world_offset_y_, ariftcontrol_->world_offset_z_);
   if (models_.empty())

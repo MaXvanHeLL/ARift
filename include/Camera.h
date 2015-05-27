@@ -19,7 +19,7 @@ public:
 	XMFLOAT3 GetRotation();
 
 	void Render();
-	void Translate(float, float=0.0f);
+  void TranslateAndRender(float translation_forward, int translation_sideways);
 	void GetViewMatrix(XMFLOAT4X4&);
 
 private:
