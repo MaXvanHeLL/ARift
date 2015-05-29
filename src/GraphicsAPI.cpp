@@ -775,22 +775,27 @@ bool GraphicsAPI::RenderScene(int cam_id)
   //  camera_->GetViewMatrix(viewMatrix);
   //}
   //float cameraTranslation = ;
+  camera_->SaveState();
   OculusHMD::instance()->updateEyePoses();
-  float cam_x, cam_y, cam_z, cam_yaw, cam_pitch, cam_roll;
-  cam_x = cam_y = cam_z = cam_yaw = cam_pitch = cam_roll = 0.0f;
-  if (cam_id == 1)
+  float cam_x, cam_y, cam_z, cam_pitch, cam_yaw, cam_roll;
+  cam_x = cam_y = cam_z = cam_pitch = cam_yaw = cam_roll = 0.0f;
+  if (cam_id == 0)
   {
     //float cameraTranslation = fabsf(camera_->GetPosition().z * 3.65f / 15.0f);
-    OculusHMD::instance()->getLeftEyePose(cam_x, cam_y, cam_z, cam_yaw, cam_pitch, cam_roll);
+    OculusHMD::instance()->getLeftEyePose(cam_x, cam_y, cam_z, cam_pitch, cam_yaw, cam_roll);
+    cam_x -= ariftcontrol_->camera_offset_x_;
   }
   else
   {
-    OculusHMD::instance()->getRightEyePose(cam_x, cam_y, cam_z, cam_yaw, cam_pitch, cam_roll);
+    OculusHMD::instance()->getRightEyePose(cam_x, cam_y, cam_z, cam_pitch, cam_yaw, cam_roll);
+    cam_x += ariftcontrol_->camera_offset_x_;
   }
   camera_->SetPosition(cam_x, cam_y,cam_z);
-  camera_->SetRotation(cam_pitch + ariftcontrol_->camera_offset_x_, cam_yaw + ariftcontrol_->camera_offset_y_, cam_roll + ariftcontrol_->camera_offset_z_);
-  camera_->SetLookAt(0.01f);
-  camera_->Render();
+  //camera_->SetRotation(-cam_roll + ariftcontrol_->camera_offset_x_, -cam_pitch + ariftcontrol_->camera_offset_y_, -cam_yaw + ariftcontrol_->camera_offset_z_);
+  camera_->SetRotation(-cam_pitch, -cam_yaw, -cam_roll);
+  camera_->SetLookAt(-1.0f);
+  //camera_->Render();
+  camera_->TranslateAndRender();
   camera_->GetViewMatrix(viewMatrix);
   // TODO make this threadsafe
   XMMATRIX worldTranslationMatrix = XMMatrixTranslation(ariftcontrol_->world_offset_x_, ariftcontrol_->world_offset_y_, ariftcontrol_->world_offset_z_);
@@ -834,6 +839,9 @@ bool GraphicsAPI::RenderScene(int cam_id)
       return false;
     }
   }
+  if (!(camera_->RestoreState()))
+    return false;
+
 	return true;
 }
 

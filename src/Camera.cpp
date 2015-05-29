@@ -17,7 +17,10 @@ Camera::Camera(const Camera& other)
 
 
 Camera::~Camera()
-{}
+{
+  if (old_state_)
+    delete old_state_;
+}
 
 
 void Camera::SetPosition(float x, float y, float z)
@@ -51,11 +54,42 @@ XMFLOAT3 Camera::GetRotation()
 {
 	return XMFLOAT3(rotationX_, rotationY_, rotationZ_);
 }
+bool Camera::SaveState()
+{
+  bool overwritten = true;
+  if (old_state_ == 0)
+  {
+    old_state_ = new Camera::State;
+    overwritten = false;
+  }
+  old_state_->lookAt_ = lookAt_;
+  old_state_->positionX_ = positionX_;
+  old_state_->positionY_ = positionY_;
+  old_state_->positionZ_ = positionZ_;
+  old_state_->rotationX_ = rotationX_;
+  old_state_->rotationY_ = rotationY_;
+  old_state_->rotationZ_ = rotationZ_;
+  return overwritten;
+}
 
+bool Camera::RestoreState()
+{
+  if (!old_state_)
+    return false;
+
+  lookAt_ = old_state_->lookAt_;
+  positionX_ = old_state_->positionX_;
+  positionY_ = old_state_->positionY_;
+  positionZ_ = old_state_->positionZ_;
+  rotationX_ = old_state_->rotationX_;
+  rotationY_ = old_state_->rotationY_;
+  rotationZ_ = old_state_->rotationZ_;
+  return true;
+}
 void Camera::Render()
 {
 	// XMFLOAT3 up, position, lookAt;
-	float yaw, pitch, roll;
+	//float yaw, pitch, roll;
 	XMMATRIX rotationMatrix;
 
 	/*
@@ -107,27 +141,21 @@ void Camera::Render()
 	return;
 }
 
-void Camera::TranslateAndRender(float translation_forward, float translation_sideways)
+void Camera::TranslateAndRender()
 {
-	XMFLOAT3 oldCameraPos = GetPosition();
 
-	float yaw, pitch, roll;
 	XMMATRIX rotationMatrix;
 
 	XMVECTOR up = XMVectorSet(0.0, 1.0, 0.0, 1.0);
 
-	XMVECTOR position = XMVectorSet(positionX_, positionY_, positionZ_, 1.0f);
+  XMVECTOR position = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 
-	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
-
-	pitch = rotationX_ * 0.0174532925f;
-	yaw = rotationY_ * 0.0174532925f;
-	roll = rotationZ_ * 0.0174532925f;
+	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, lookAt_, 1.0f);
 
 	// Create the rotation matrix from the yaw, pitch, and roll values.
-	rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+	rotationMatrix = XMMatrixRotationRollPitchYaw(rotationX_, rotationY_, rotationZ_);
   // Create the translation matrix for left or right eye translation from "head" center
-  XMMATRIX translationMatrix = XMMatrixTranslation(translation_sideways, 0.0f, translation_forward);
+  XMMATRIX translationMatrix = XMMatrixTranslation(positionX_, positionY_, positionZ_);
   // TODO: rewrite comment currently wrong: Combine matrices first translate from center to left/or right eye, then rotate head
   XMMATRIX transfromMatrix = XMMatrixMultiply(translationMatrix, rotationMatrix);
 
@@ -142,8 +170,6 @@ void Camera::TranslateAndRender(float translation_forward, float translation_sid
 	// Finally create the view matrix from the three updated vectors.
 	XMMATRIX viewMatrix_XmMat = XMMatrixLookAtLH(position, lookAt, up);
 	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
-
-	SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
 }
 
 void Camera::GetViewMatrix(XMFLOAT4X4& viewMatrix)

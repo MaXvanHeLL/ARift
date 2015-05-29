@@ -359,7 +359,7 @@ void ARiftControl::handleKey(char key)
     case '0':
     {
       if (last_key_ != '0')
-        step_ = step_ * 0.1;
+        step_ = step_ * 0.1f;
       break;
     }
     case '1':

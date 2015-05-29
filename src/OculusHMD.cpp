@@ -108,25 +108,25 @@ void OculusHMD::printEyePoses()
   std::cout << "           orientation ( " << eyeRenderPose_[1].Orientation.x << ", " << eyeRenderPose_[1].Orientation.y << ", " << eyeRenderPose_[1].Orientation.z << ", " << eyeRenderPose_[1].Orientation.w << ") " << std::endl << std::endl;
 }
 
-void OculusHMD::getLeftEyePose(float& x, float& y, float& z, float& yaw, float& pitch, float& roll)
+void OculusHMD::getLeftEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll)
 {
-  getEulerAngles(eyeRenderPose_[0].Orientation, yaw, pitch, roll);
+  getEulerAngles(eyeRenderPose_[0].Orientation, pitch, yaw, roll);
   x = eyeRenderPose_[0].Position.x;
   y = eyeRenderPose_[0].Position.y;
   z = eyeRenderPose_[0].Position.z;
 }
-void OculusHMD::getRightEyePose(float& x, float& y, float& z, float& yaw, float& pitch, float& roll)
+void OculusHMD::getRightEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll)
 {
-  getEulerAngles(eyeRenderPose_[1].Orientation, yaw, pitch, roll);
+  getEulerAngles(eyeRenderPose_[1].Orientation, pitch, yaw, roll);
   x = eyeRenderPose_[1].Position.x;
   y = eyeRenderPose_[1].Position.y;
   z = eyeRenderPose_[1].Position.z;
 }
-void OculusHMD::getEulerAngles(ovrQuatf q, float& roll, float& pitch, float& yaw)
+void OculusHMD::getEulerAngles(ovrQuatf q, float& pitch, float& yaw, float& roll )
 {
   roll = atan2(2.0f*(q.x*q.y + q.z*q.w), 1.0f - 2.0f*(q.y*q.y + q.z*q.z));
-  pitch = asin(2.0f*(q.x*q.z - q.w*q.y));
-  yaw = atan2(2.0f*(q.x*q.w + q.y*q.z), 1.0f - 2.0f*(q.z*q.z + q.w*q.w));
+  yaw = asin(2.0f*(q.x*q.z - q.w*q.y));
+  pitch = atan2(2.0f*(q.x*q.w + q.y*q.z), 1.0f - 2.0f*(q.z*q.z + q.w*q.w));
 }
 
 bool OculusHMD::Recenter()

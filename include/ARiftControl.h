@@ -45,8 +45,8 @@ class ARiftControl
     float model_offset_z_ = 0.0f;
 
     float world_offset_x_ = 0.0f;
-    float world_offset_y_ = 0.0f;
-    float world_offset_z_ = 0.0f;
+    float world_offset_y_ = 0.14f;
+    float world_offset_z_ = 1.1f;
 
     float camera_offset_x_ = 0.0f;
     float camera_offset_y_ = 0.0f;

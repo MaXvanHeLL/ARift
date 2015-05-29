@@ -58,9 +58,9 @@ class OculusHMD
     void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
     void updateEyePoses();
     void printEyePoses();
-    void getLeftEyePose(float& x, float& y, float& z, float& yaw, float& pitch, float& roll);
-    void getRightEyePose(float& x, float& y, float& z, float& yaw, float& pitch, float& roll);
-    void getEulerAngles(ovrQuatf q, float& yaw, float& pitch, float& roll);
+    void getLeftEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll);
+    void getRightEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll);
+    void getEulerAngles(ovrQuatf q, float& pitch, float& yaw, float& roll);
 
 		void StartFrames();
 
