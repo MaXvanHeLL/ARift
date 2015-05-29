@@ -19,12 +19,13 @@ public:
 	XMFLOAT3 GetRotation();
 
 	void Render();
-  void TranslateAndRender(float translation_forward, int translation_sideways);
+  void TranslateAndRender(float translation_forward, float translation_sideways);
 	void GetViewMatrix(XMFLOAT4X4&);
-
+  void SetLookAt(float lookAt);
 private:
 	float positionX_, positionY_, positionZ_;
 	float rotationX_, rotationY_, rotationZ_;
+  float lookAt_ = 1.0f;
 	XMFLOAT4X4 viewmatrix_;
 };
 

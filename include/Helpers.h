@@ -9,5 +9,6 @@ void findAndReplaceAll(std::string& s,const std::string to_replace,const std::st
 std::string getTimeString(const char*);
 std::string getTimeString();
 
+
 void rotate(cv::Mat& src, double angle, cv::Mat& dst);
 #endif // HELPERS_H_

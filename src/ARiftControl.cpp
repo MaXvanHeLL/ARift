@@ -175,6 +175,10 @@ void ARiftControl::handleKey(char key)
       {
         world_offset_y_ += step_;
       }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_y_ += step_;
+      }
       break;
     }
     case 'a':
@@ -214,6 +218,10 @@ void ARiftControl::handleKey(char key)
       else if (input_mode_ == InputMode::WORLD)
       {
         world_offset_y_ -= step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_y_ -= step_;
       }
       break;
     }
@@ -350,7 +358,8 @@ void ARiftControl::handleKey(char key)
 		}
     case '0':
     {
-      step_ = 0.01f;
+      if (last_key_ != '0')
+        step_ = step_ * 0.1;
       break;
     }
     case '1':
@@ -378,14 +387,19 @@ void ARiftControl::handleKey(char key)
       step_ = 5.0f;
       break;
     }
-    case 'o':
+    case 'O':
     {
       std::cout << "undistortion: " << std::endl;
       std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
       std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
-      std::cout << "camera offset y: " << camera_offset_y_ << std::endl;
+      std::cout << "camera offset x: " << camera_offset_x_ << std::endl;
       std::cout << "world offset: " << std::endl;
       std::cout << "(x,y,z): ( " << world_offset_x_ << "," << world_offset_y_ << "," << world_offset_z_ << ")" << std::endl;
+      break;
+    }
+    case 'o':
+    {
+      show_eye_pose_ = true;
       break;
     }
     case 'P':

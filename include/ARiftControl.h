@@ -49,7 +49,9 @@ class ARiftControl
     float world_offset_z_ = 0.0f;
 
     float camera_offset_x_ = 0.0f;
+    float camera_offset_y_ = 0.0f;
     float camera_offset_z_ = 0.0f;
+    bool show_eye_pose_ = false;
 
     bool changed_model_ = false;
     float model_rotation_ = 0.0f;

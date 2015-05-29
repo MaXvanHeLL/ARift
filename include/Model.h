@@ -54,6 +54,12 @@ class Model
     float translation_x_ = 0.0f;
     float translation_y_ = 0.0f;
     float translation_z_ = 0.0f;
+    bool true_scale_ = true;
+    float scale_x_ = 1.0f;
+    float scale_y_ = 1.0f;
+    float scale_z_ = 1.0f;
+    void Scale(float scale);
+    void Scale(float scale_x, float scale_y, float scale_z);
     void Move(float x, float y, float z);
     bool auto_rotate_ = false;
 	private:

@@ -36,6 +36,10 @@ void Camera::SetRotation(float x, float y, float z)
 	rotationZ_ = z;
 	return;
 }
+void Camera::SetLookAt(float lookAt)
+{
+  lookAt_ = lookAt;
+}
 
 XMFLOAT3 Camera::GetPosition()
 {
@@ -74,15 +78,16 @@ void Camera::Render()
 	lookAt.y = 0.0f;
 	lookAt.z = 1.0f;
 	*/
-	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, lookAt_, 1.0f);
 
-	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
-	pitch = rotationX_ * 0.0174532925f; // 0.0174532925f == 2*pi/360
-	yaw = rotationY_ * 0.0174532925f;
-	roll = rotationZ_ * 0.0174532925f;
+    //// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
+    //pitch = rotationX_ * 0.0174532925f; // 0.0174532925f == 2*pi/360
+    //yaw = rotationY_ * 0.0174532925f;
+    //roll = rotationZ_ * 0.0174532925f;
 
-	// Create the rotation matrix from the yaw, pitch, and roll values.
-	rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+    //// Create the rotation matrix from the yaw, pitch, and roll values.
+    //rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+  rotationMatrix = XMMatrixRotationRollPitchYaw(rotationX_, rotationY_, rotationZ_);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
 	// XMStoreFloat3(&lookAt, XMVector3TransformCoord(XMLoadFloat3(&lookAt), rotationMatrix));
@@ -102,7 +107,7 @@ void Camera::Render()
 	return;
 }
 
-void Camera::TranslateAndRender(float translation_forward, int translation_sideways)
+void Camera::TranslateAndRender(float translation_forward, float translation_sideways)
 {
 	XMFLOAT3 oldCameraPos = GetPosition();
 

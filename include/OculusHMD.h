@@ -55,7 +55,12 @@ class OculusHMD
 		// @param3: z rotation
 		// @return: void
 		// ----
-		void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
+    void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
+    void updateEyePoses();
+    void printEyePoses();
+    void getLeftEyePose(float& x, float& y, float& z, float& yaw, float& pitch, float& roll);
+    void getRightEyePose(float& x, float& y, float& z, float& yaw, float& pitch, float& roll);
+    void getEulerAngles(ovrQuatf q, float& yaw, float& pitch, float& roll);
 
 		void StartFrames();
 

@@ -272,13 +272,13 @@ bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, in
 	previousposY_ = positionY;
 
 	// Calculate the screen coordinates of the left side of the bitmap.
-	left = (float)((screenwidth_ / 2) * -1) + (float)positionX;
+	left = (float)((screenwidth_ / 2.0f) * (-1.0f)) + (float)positionX;
 
 	// Calculate the screen coordinates of the right side of the bitmap.
 	right = left + (float)bitmapwidth_;
 
 	// Calculate the screen coordinates of the top of the bitmap.
-	top = (float)(screenheight_ / 2) - (float)positionY;
+	top = (float)(screenheight_ / 2.0f) - (float)positionY;
 
 	// Calculate the screen coordinates of the bottom of the bitmap.
 	bottom = top - (float)bitmapheight_;

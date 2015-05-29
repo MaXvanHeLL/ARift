@@ -123,6 +123,18 @@ ID3D11ShaderResourceView* Model::GetTexture()
 	return texture_->GetTexture();
 }
 
+void Model::Scale(float scale)
+{
+  Scale(scale, scale, scale);
+}
+
+void Model::Scale(float scale_x, float scale_y, float scale_z)
+{
+  scale_x_ = scale_x;
+  scale_y_ = scale_y;
+  scale_z_ = scale_z;
+  true_scale_ = false;
+}
 
 bool Model::InitializeBuffers(ID3D11Device* device)
 {

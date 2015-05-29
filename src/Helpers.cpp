@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sstream>
 #include <time.h>
+#include <cmath>
 
 void findAndReplaceAll(std::string& s,const std::string to_replace,const std::string replacement)
 {
@@ -38,7 +39,12 @@ std::string getTimeString()
   return getTimeString("%Y-%m-%d_%H-%M-%S");
 }
 
-
+//void getEulerAngles(ovrQuatf q, float& yaw, float& pitch, float& roll)
+//{
+//  roll = atan2(2.0f*(q.x*q.y + q.z*q.w), 1.0f - 2.0f*(q.y*q.y + q.z*q.z));
+//  pitch = asin(2.0f*(q.x*q.z - q.w*q.y));
+//  yaw = atan2(2.0f*(q.x*q.w + q.y*q.z), 1.0f - 2.0f*(q.z*q.z + q.w*q.w));
+//}
 
 /**
 * Rotate an image

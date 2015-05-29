@@ -382,6 +382,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
 		return false;
 	}
+  model->Scale(0.01f);
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   current_model_idx_ = 0;
@@ -400,6 +401,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
     return false;
   }
+  model->Scale(0.01f);
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(models_Mutex_);
@@ -417,6 +419,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
     return false;
   }
+  model->Scale(0.01f);
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(models_Mutex_);
@@ -585,10 +588,16 @@ bool GraphicsAPI::Render()
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
 
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
-	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 
-	camera_->SetPosition(0.0f, 0.0f, cameraDistance);
-  camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
+	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
+  if (ariftcontrol_->show_eye_pose_)
+  {
+    OculusHMD::instance()->updateEyePoses();
+    OculusHMD::instance()->printEyePoses();
+    ariftcontrol_->show_eye_pose_ = false;
+  } 
+	//camera_->SetPosition(0.0f, 0.0f, cameraDistance);
+ // camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
 	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
 	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
@@ -765,16 +774,23 @@ bool GraphicsAPI::RenderScene(int cam_id)
   //  }
   //  camera_->GetViewMatrix(viewMatrix);
   //}
-  float cameraTranslation = ;
+  //float cameraTranslation = ;
+  OculusHMD::instance()->updateEyePoses();
+  float cam_x, cam_y, cam_z, cam_yaw, cam_pitch, cam_roll;
+  cam_x = cam_y = cam_z = cam_yaw = cam_pitch = cam_roll = 0.0f;
   if (cam_id == 1)
   {
     //float cameraTranslation = fabsf(camera_->GetPosition().z * 3.65f / 15.0f);
-    camera_->TranslateAndRender(ariftcontrol_->camera_offset_x_ / 2, ariftcontrol_->camera_offset_z_);
+    OculusHMD::instance()->getLeftEyePose(cam_x, cam_y, cam_z, cam_yaw, cam_pitch, cam_roll);
   }
   else
   {
-    camera_->TranslateAndRender(-(ariftcontrol_->camera_offset_x_) / 2, ariftcontrol_->camera_offset_z_);
+    OculusHMD::instance()->getRightEyePose(cam_x, cam_y, cam_z, cam_yaw, cam_pitch, cam_roll);
   }
+  camera_->SetPosition(cam_x, cam_y,cam_z);
+  camera_->SetRotation(cam_pitch + ariftcontrol_->camera_offset_x_, cam_yaw + ariftcontrol_->camera_offset_y_, cam_roll + ariftcontrol_->camera_offset_z_);
+  camera_->SetLookAt(0.01f);
+  camera_->Render();
   camera_->GetViewMatrix(viewMatrix);
   // TODO make this threadsafe
   XMMATRIX worldTranslationMatrix = XMMatrixTranslation(ariftcontrol_->world_offset_x_, ariftcontrol_->world_offset_y_, ariftcontrol_->world_offset_z_);
@@ -786,11 +802,15 @@ bool GraphicsAPI::RenderScene(int cam_id)
     // Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
     (*model)->Render(devicecontext_);
 
+    // scaling
+    XMMATRIX scalingMatrix = XMMatrixScaling((*model)->scale_x_, (*model)->scale_y_, (*model)->scale_z_);
     // rotation
     XMMATRIX rotationMatrix = XMMatrixRotationY((*model)->rotation_);
     // translation
     XMMATRIX translationMatrix = XMMatrixTranslation((*model)->translation_x_, (*model)->translation_y_, (*model)->translation_z_);
-    XMMATRIX modelTransform = XMMatrixMultiply(rotationMatrix, translationMatrix);
+    // calculate full transformation
+    XMMATRIX modelTransform = XMMatrixMultiply(scalingMatrix,rotationMatrix);
+    modelTransform = XMMatrixMultiply(modelTransform, translationMatrix);
     modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
     XMStoreFloat4x4(&worldMatrix, modelTransform);
 
