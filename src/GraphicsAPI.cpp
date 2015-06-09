@@ -382,7 +382,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
 		return false;
 	}
-  model->Scale(0.01f);
+  model->Scale(0.1f);
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   current_model_idx_ = 0;
@@ -395,13 +395,13 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 2. model object and translate a little to the left and back
-  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds",-10.0,0.0,-10.0);
+  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds",0.0,0.0,-10.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
     return false;
   }
-  model->Scale(0.01f);
+  model->Scale(0.1f);
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(models_Mutex_);
@@ -413,13 +413,13 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 3. model object and translate a little to the right and front
-  result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 10.0, 0.0, 10.0);
+  result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 0.0, 0.0, 10.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
     return false;
   }
-  model->Scale(0.01f);
+  model->Scale(0.1f);
   WaitForSingleObject(models_Mutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(models_Mutex_);
@@ -442,7 +442,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	
 	// Initialize the bitmap object.
 	if (AR_HMD_ENABLED)
-		result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
+    result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth / 2, screenHeight);
 	else
 		result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", screenWidth, screenHeight);
 
@@ -460,7 +460,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
+  result = renderTextureLeft_->Initialize(device_, screenWidth / 2, screenHeight);
 	// result = renderTextureLeft_->Initialize(device_, OculusHMD::instance()->eyeSize_[0].w, OculusHMD::instance()->eyeSize_[0].h); // used for Oculus 3D View
 	if (!result)
 		return false;
@@ -494,7 +494,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 
 	// Initialize the render to texture object.
-  result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
+  result = renderTextureRight_->Initialize(device_, screenWidth / 2, screenHeight);
 	// result = renderTextureRight_->Initialize(device_, OculusHMD::instance()->eyeSize_[1].w, OculusHMD::instance()->eyeSize_[1].h);
 	if (!result)
 		return false;
@@ -594,6 +594,7 @@ bool GraphicsAPI::Render()
   {
     OculusHMD::instance()->updateEyePoses();
     OculusHMD::instance()->printEyePoses();
+    std::cout << "  trackmotion results: ( " << oculusMotionX << " , " << oculusMotionY << " , " << oculusMotionZ << ") " << std::endl;
     ariftcontrol_->show_eye_pose_ = false;
   } 
 	//camera_->SetPosition(0.0f, 0.0f, cameraDistance);
@@ -751,48 +752,62 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 	//// ******************************** || 3D RENDERING || *********************************
 
-  //if (cam_id == 1)
-  //{
-  //  // 3.6
-  //  float cameraTranslation = 0.0f;
-  //  if (HMD_DISTORTION)
-  //  {
-  //    // cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
-  //    // oculusTranslation = 0.0f;
-  //    // camera_->Translate(cameraTranslation, oculusTranslation);
-  //    float worldTranslation = camera_->GetPosition().z * 4.8f / 10.0f;
-  //    XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
-  //    XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
-  //    worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
-  //    XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
-  //    camera_->Translate(cameraTranslation);
-  //  }
-  //  else
-  //  {
-  //    cameraTranslation = fabsf(camera_->GetPosition().z * 3.65 / 15.0);
-  //    camera_->Translate(cameraTranslation);
-  //  }
-  //  camera_->GetViewMatrix(viewMatrix);
-  //}
-  //float cameraTranslation = ;
   camera_->SaveState();
-  OculusHMD::instance()->updateEyePoses();
+  float lr_x, lr_y, lr_z;
+  lr_x = lr_y = lr_z = 0.0f;
   float cam_x, cam_y, cam_z, cam_pitch, cam_yaw, cam_roll;
   cam_x = cam_y = cam_z = cam_pitch = cam_yaw = cam_roll = 0.0f;
-  if (cam_id == 0)
+  OculusHMD::instance()->updateEyePoses();
+  OculusHMD::instance()->getLeftToRight(lr_x, lr_y, lr_z);
+  if (cam_id == ariftcontrol_->cam_id_)
   {
-    //float cameraTranslation = fabsf(camera_->GetPosition().z * 3.65f / 15.0f);
+    // LEFT CAM
+    lr_x = -lr_x;
+    lr_y = -lr_y;
+    lr_z = -lr_z;
     OculusHMD::instance()->getLeftEyePose(cam_x, cam_y, cam_z, cam_pitch, cam_yaw, cam_roll);
-    cam_x -= ariftcontrol_->camera_offset_x_;
+    if (ariftcontrol_->print_eye_dist_)
+      std::cout << "cam 2";
+
+    cam_pitch -= ariftcontrol_->camera_offset_x_;
+    cam_yaw -= ariftcontrol_->camera_offset_y_;
+    cam_roll -= ariftcontrol_->camera_offset_z_;
   }
   else
   {
     OculusHMD::instance()->getRightEyePose(cam_x, cam_y, cam_z, cam_pitch, cam_yaw, cam_roll);
-    cam_x += ariftcontrol_->camera_offset_x_;
+    if (ariftcontrol_->print_eye_dist_)
+      std::cout << "cam 1";
+
+    cam_pitch += ariftcontrol_->camera_offset_x_;
+    cam_yaw += ariftcontrol_->camera_offset_y_;
+    cam_roll += ariftcontrol_->camera_offset_z_;
   }
+  if (ariftcontrol_->print_eye_dist_)
+  {
+    std::cout << " (x,y,z): ( " << cam_x << ", " << cam_y << ", " << cam_z << " ) " << std::endl;
+    std::cout << "lr    (x,y,z): ( " << lr_x << ", " << lr_y << ", " << lr_z << " ) " << std::endl;
+  }
+  //cam_pitch = 90.0 - cam_pitch;
+  
+  int eye = cam_id - 1;
+  //float fov_angle_y = atan(OculusHMD::instance()->eyeRenderDesc_[eye].Fov.UpTan) + atan(OculusHMD::instance()->eyeRenderDesc_[cam_id - 1].Fov.DownTan);
+  //float fov_angle_x = atan(OculusHMD::instance()->eyeRenderDesc_[eye].Fov.LeftTan) + atan(OculusHMD::instance()->eyeRenderDesc_[eye].Fov.RightTan);
+  //XMMATRIX projectionXMMatrix = XMMatrixPerspectiveFovLH(fov_angle_y, fov_angle_y / fov_angle_x, 0.1f, 1000.0f);
+  //XMStoreFloat4x4(&projectionMatrix, projectionXMMatrix);
+  cam_x += (lr_x*(ariftcontrol_->ipd_offset_)) / 2.0f;
+  cam_y += (lr_y*(ariftcontrol_->ipd_offset_)) / 2.0f;
+  cam_z += (lr_z*(ariftcontrol_->ipd_offset_)) / 2.0f;
+  if (ariftcontrol_->print_eye_dist_)
+  {
+    std::cout << "cam   (x,y,z): ( " << cam_x << ", " << cam_y << ", " << cam_z << " ) " << std::endl;
+    std::cout << "lr    (x,y,z): ( " << lr_x << ", " << lr_y << ", " << lr_z << " ) " << std::endl;
+  }
+  if (ariftcontrol_->print_eye_dist_ && cam_id == 2)
+    ariftcontrol_->print_eye_dist_ = false;
   camera_->SetPosition(cam_x, cam_y,cam_z);
   //camera_->SetRotation(-cam_roll + ariftcontrol_->camera_offset_x_, -cam_pitch + ariftcontrol_->camera_offset_y_, -cam_yaw + ariftcontrol_->camera_offset_z_);
-  camera_->SetRotation(-cam_pitch, -cam_yaw, -cam_roll);
+  camera_->SetRotation(cam_pitch, cam_yaw, -cam_roll);
   camera_->SetLookAt(-1.0f);
   //camera_->Render();
   camera_->TranslateAndRender();
@@ -820,8 +835,11 @@ bool GraphicsAPI::RenderScene(int cam_id)
     XMStoreFloat4x4(&worldMatrix, modelTransform);
 
     ID3D11ShaderResourceView* model_tex = NULL;
-    if ( (ariftcontrol_->input_mode_ == ARiftControl::InputMode::MODEL && i == current_model_idx_)
-         || ariftcontrol_->input_mode_ == ARiftControl::InputMode::WORLD)
+    // highlight model(s) according to ariftcontrols settings
+    if ( (ariftcontrol_->input_mode_ == ARiftControl::InputMode::MODEL && i == current_model_idx_) // one model
+         || ariftcontrol_->input_mode_ == ARiftControl::InputMode::WORLD // all models
+         || (cam_id == ariftcontrol_->identify_cam_) // all models on cam with id identify_cam_
+         || (ariftcontrol_->show_left_cam_ && (cam_id == ariftcontrol_->cam_id_))) // all models on the left
     {
       model_tex = highlight_texture_->GetTexture();
     }

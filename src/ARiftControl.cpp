@@ -109,7 +109,7 @@ void ARiftControl::handleKey(char key)
     }
     case 'v':
     {
-      if (HMD_DISTORTION && AR_HMD_ENABLED)
+      if (HMD_DISTORTION)
         OculusHMD::instance()->Recenter();
       break;
     }
@@ -356,6 +356,16 @@ void ARiftControl::handleKey(char key)
       }
 			break;
 		}
+    case 'c':
+    {
+      ipd_offset_ -= step_*0.1f;
+      break;
+    }
+    case 'C':
+    {
+      ipd_offset_ += step_*0.1f;
+      break;
+    }
     case '0':
     {
       if (last_key_ != '0')
@@ -387,6 +397,34 @@ void ARiftControl::handleKey(char key)
       step_ = 5.0f;
       break;
     }
+    case 'I':
+    {
+      if (last_key_ == 'I')
+        break;
+      identify_cam_ = (++identify_cam_) % 3;
+
+      break;
+    }
+    case 'l':
+    {
+      if (last_key_ == 'l')
+        break;
+      show_left_cam_ = !show_left_cam_;
+
+      break;
+    }
+    case 'i':
+    {
+      if (last_key_ == 'i')
+        break;
+
+      if (cam_id_ = 1)
+        cam_id_ = 2;
+      else
+        cam_id_ = 1;
+
+      break;
+    }
     case 'O':
     {
       std::cout << "undistortion: " << std::endl;
@@ -399,7 +437,12 @@ void ARiftControl::handleKey(char key)
     }
     case 'o':
     {
-      show_eye_pose_ = true;
+      if (last_key_ != 'o')
+      {
+        show_eye_pose_ = true;
+        print_eye_dist_ = true;
+        std::cout << "eye distance modifier: " << ipd_offset_ << std::endl;
+      }
       break;
     }
     case 'P':

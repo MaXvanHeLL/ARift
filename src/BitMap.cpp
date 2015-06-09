@@ -101,7 +101,7 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 	bool result = 0;
 
 	// Re-build the dynamic vertex buffer for rendering to possibly a different location on the screen.
-	result = UpdateBuffers(deviceContext, positionX, positionY);
+	result = UpdateBuffers(deviceContext, positionX, positionY, cam_id);
 	if (!result)
 	{
 		return false;
@@ -252,7 +252,7 @@ void BitMap::ShutdownBuffers()
 }
 
 
-bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, int positionY)
+bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, int positionY, int cam_id)
 {
 	float left, right, top, bottom;
 	VertexType* vertices = 0;
@@ -262,10 +262,10 @@ bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, in
 
 	// If the position we are rendering this bitmap to has not changed then don't update the vertex buffer since it
 	// currently has the correct parameters.
-	if ((positionX == previousposX_) && (positionY == previousposY_))
-	{
-		return true;
-	}
+	//if ((positionX == previousposX_) && (positionY == previousposY_))
+	//{
+	//	return true;
+	//}
 
 	// If it has changed then update the position it is being rendered to.
 	previousposX_ = positionX;
@@ -273,6 +273,8 @@ bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, in
 
 	// Calculate the screen coordinates of the left side of the bitmap.
 	left = (float)((screenwidth_ / 2.0f) * (-1.0f)) + (float)positionX;
+  if (cam_id == 2)
+    left += screenwidth_/3.0f;
 
 	// Calculate the screen coordinates of the right side of the bitmap.
 	right = left + (float)bitmapwidth_;

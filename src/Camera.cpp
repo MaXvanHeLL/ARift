@@ -146,24 +146,25 @@ void Camera::TranslateAndRender()
 
 	XMMATRIX rotationMatrix;
 
-	XMVECTOR up = XMVectorSet(0.0, 1.0, 0.0, 1.0);
+	XMVECTOR up = XMVectorSet(0.0, -1.0, 0.0, 1.0);
 
-  XMVECTOR position = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
-
+//  XMVECTOR position = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+  XMVECTOR position = XMVectorSet(positionX_,positionY_,positionZ_, 1.0f);
 	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, lookAt_, 1.0f);
 
 	// Create the rotation matrix from the yaw, pitch, and roll values.
 	rotationMatrix = XMMatrixRotationRollPitchYaw(rotationX_, rotationY_, rotationZ_);
   // Create the translation matrix for left or right eye translation from "head" center
-  XMMATRIX translationMatrix = XMMatrixTranslation(positionX_, positionY_, positionZ_);
+//  XMMATRIX translationMatrix = XMMatrixTranslation(positionX_, positionY_, positionZ_);
   // TODO: rewrite comment currently wrong: Combine matrices first translate from center to left/or right eye, then rotate head
-  XMMATRIX transfromMatrix = XMMatrixMultiply(translationMatrix, rotationMatrix);
+//  XMMATRIX transfromMatrix = XMMatrixMultiply(translationMatrix, rotationMatrix);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.
-  lookAt = XMVector3TransformCoord(lookAt, transfromMatrix);
-  up = XMVector3TransformCoord(up, transfromMatrix);
-  position = XMVector3TransformCoord(position, transfromMatrix);
-  
+//  lookAt = XMVector3TransformCoord(lookAt, transfromMatrix);
+//  up = XMVector3TransformCoord(up, transfromMatrix);
+//  position = XMVector3TransformCoord(position, transfromMatrix);
+  lookAt = XMVector3TransformCoord(lookAt, rotationMatrix);
+  up = XMVector3TransformCoord(up, rotationMatrix);
 	// Translate the rotated camera position to the location of the viewer.
 	lookAt = position + lookAt;
 

@@ -60,6 +60,7 @@ class OculusHMD
     void printEyePoses();
     void getLeftEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll);
     void getRightEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll);
+    void getLeftToRight(float& x, float& y, float& z);
     void getEulerAngles(ovrQuatf q, float& pitch, float& yaw, float& roll);
 
 		void StartFrames();
