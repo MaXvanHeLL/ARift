@@ -1,6 +1,6 @@
 #ifndef OCULUSHMD_H
 #define OCULUSHMD_H
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 // #define OVR_D3D_VERSION 11
 #include <OVR_CAPI.h>
 // #include "OVR_CAPI_D3D.h"

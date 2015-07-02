@@ -6,8 +6,9 @@
 #include "include\Helpers.h"
 #include <iostream>
 #include <windows.h>
+#include <string>
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 // ********************************************************************************
 DWORD WINAPI directXHandling(LPVOID lpArg);

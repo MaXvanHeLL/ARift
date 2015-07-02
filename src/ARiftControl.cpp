@@ -9,7 +9,7 @@
 #include <math.h>
 #define GetCurrentDir _getcwd
 
-using namespace cv;
+//using namespace cv;
 
 ARiftControl::ARiftControl()
 {

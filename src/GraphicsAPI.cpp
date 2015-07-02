@@ -779,6 +779,10 @@ bool GraphicsAPI::RenderScene(int cam_id)
     cam_pitch -= ariftcontrol_->camera_offset_x_;
     cam_yaw -= ariftcontrol_->camera_offset_y_;
     cam_roll -= ariftcontrol_->camera_offset_z_;
+
+    cam_x -= (lr_x*(ariftcontrol_->ipd_offset_)) / 2.0f;
+    cam_y -= (lr_y*(ariftcontrol_->ipd_offset_)) / 2.0f;
+    cam_z -= (lr_z*(ariftcontrol_->ipd_offset_)) / 2.0f;
   }
   else
   {
@@ -882,7 +886,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
     {
       model_tex = highlight_texture_->GetTexture();
     }
-    else
+    else // no highlighting
     {
       model_tex = (*model)->GetTexture();
     }

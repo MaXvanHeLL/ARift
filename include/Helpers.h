@@ -1,5 +1,5 @@
 #include <string.h>
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 
 #ifndef HELPERS_H_
 #define HELPERS_H_
@@ -10,5 +10,5 @@ std::string getTimeString(const char*);
 std::string getTimeString();
 
 
-void rotate(cv::Mat& src, double angle, cv::Mat& dst);
+//void rotate(cv::Mat& src, double angle, cv::Mat& dst);
 #endif // HELPERS_H_
