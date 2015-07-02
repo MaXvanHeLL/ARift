@@ -205,22 +205,22 @@ void OculusHMD::StartFrames()
 	ovrHmd_BeginFrame(hmd_, 0);
 }
 
-
+//bool show1 = true;
 bool OculusHMD::RenderDistortion()
 {
 	ovrD3D11Texture eyeTexture[2]; // Gather data for eye textures 
 	Sizei size;
 	size.w = RIFT_RESOLUTION_WIDTH/2; 
 	size.h = RIFT_RESOLUTION_HEIGHT;
-	// size.w = eyeSize_[0].w; // used for Oculus 3D Vision
-	// size.h = eyeSize_[0].h; // used for Oculus 3D Vision
+	//size.w = eyeSize_[0].w; // used for Oculus 3D Vision
+	//size.h = eyeSize_[0].h; // used for Oculus 3D Vision
 
 	ovrRecti eyeRenderViewport[2];
 	eyeRenderViewport[0].Pos = Vector2i(0, 0);
 	eyeRenderViewport[0].Size = size;
-  eyeRenderViewport[1].Pos = Vector2i(size.w / 2, 0);
-  //eyeRenderViewport[1].Pos = Vector2i(0, 0);
-	eyeRenderViewport[1].Size = size;
+  //eyeRenderViewport[1].Pos = Vector2i(320, 0);
+  eyeRenderViewport[1].Pos = Vector2i(0, 0);
+  eyeRenderViewport[1].Size = size;
 
 	eyeTexture[0].D3D11.Header.API = ovrRenderAPI_D3D11;
 	eyeTexture[0].D3D11.Header.TextureSize = size;

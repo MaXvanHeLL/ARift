@@ -597,17 +597,6 @@ bool GraphicsAPI::Render()
     std::cout << "  trackmotion results: ( " << oculusMotionX << " , " << oculusMotionY << " , " << oculusMotionZ << ") " << std::endl;
     ariftcontrol_->show_eye_pose_ = false;
   } 
-	//camera_->SetPosition(0.0f, 0.0f, cameraDistance);
- // camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
-	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
-	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
-	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
-	// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);ix_
-	// XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(oculusMotionY, oculusMotionX, oculusMotionZ);
-	// XMMATRIX rotationMatrix = XMMatrixRotationY(oculusMotionY);
-	// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
-	// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
-	// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -690,7 +679,7 @@ bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture, int cam_id)
 	return true;
 }
 
-
+bool show = true;
 bool GraphicsAPI::RenderScene(int cam_id)
 {
 	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
@@ -705,6 +694,24 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	GetWorldMatrix(worldMatrix);
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
+  
+  //if (cam_id == 2)
+  //{
+  //  float x = OculusHMD::instance()->useHmdToEyeViewOffset_[1].x;
+  //  float y = OculusHMD::instance()->useHmdToEyeViewOffset_[1].y;
+  //  float z = OculusHMD::instance()->useHmdToEyeViewOffset_[1].z;
+  //  float w = sqrt(x*x + y*y + z*z);
+  //  orthoMatrix._14 = x/w;
+  //  orthoMatrix._24 = y/w;
+  //  orthoMatrix._34 = z/w;
+  //  orthoMatrix._34 = 1.0f;
+  //  if (show)
+  //  {
+  //    std::cout << "useHmdToEyeViewOffset_ (xyzw) : (";
+  //    std::cout << x << " , " << y << " , "<< z << " , " << w <<")" << std::endl;
+  //    show = false;
+  //  }
+  //}
 
 	// ******************************** || 2D RENDERING || *********************************
 
@@ -782,6 +789,10 @@ bool GraphicsAPI::RenderScene(int cam_id)
     cam_pitch += ariftcontrol_->camera_offset_x_;
     cam_yaw += ariftcontrol_->camera_offset_y_;
     cam_roll += ariftcontrol_->camera_offset_z_;
+
+    cam_x += (lr_x*(ariftcontrol_->ipd_offset_)) / 2.0f;
+    cam_y += (lr_y*(ariftcontrol_->ipd_offset_)) / 2.0f;
+    cam_z += (lr_z*(ariftcontrol_->ipd_offset_)) / 2.0f;
   }
   if (ariftcontrol_->print_eye_dist_)
   {
@@ -790,14 +801,42 @@ bool GraphicsAPI::RenderScene(int cam_id)
   }
   //cam_pitch = 90.0 - cam_pitch;
   
-  int eye = cam_id - 1;
+  //int eye = cam_id - 1;
   //float fov_angle_y = atan(OculusHMD::instance()->eyeRenderDesc_[eye].Fov.UpTan) + atan(OculusHMD::instance()->eyeRenderDesc_[cam_id - 1].Fov.DownTan);
   //float fov_angle_x = atan(OculusHMD::instance()->eyeRenderDesc_[eye].Fov.LeftTan) + atan(OculusHMD::instance()->eyeRenderDesc_[eye].Fov.RightTan);
   //XMMATRIX projectionXMMatrix = XMMatrixPerspectiveFovLH(fov_angle_y, fov_angle_y / fov_angle_x, 0.1f, 1000.0f);
   //XMStoreFloat4x4(&projectionMatrix, projectionXMMatrix);
-  cam_x += (lr_x*(ariftcontrol_->ipd_offset_)) / 2.0f;
-  cam_y += (lr_y*(ariftcontrol_->ipd_offset_)) / 2.0f;
-  cam_z += (lr_z*(ariftcontrol_->ipd_offset_)) / 2.0f;
+  //if (show && ariftcontrol_->show_eye_pose_)
+  //{
+  //  std::cout << "cam" << cam_id << " fov_angle_y " << fov_angle_y << std::endl;
+  //  std::cout << "cam" << cam_id << " fov_angle_x " << fov_angle_x << std::endl;
+  //  show = false;
+  //}
+  //int eye = cam_id - 1;
+  //ovrMatrix4f ovrPrMat = ovrMatrix4f_Projection(OculusHMD::instance()->eyeRenderDesc_[eye].Fov, 0.01f, 10000.0f, true);
+  //projectionMatrix._11 = ovrPrMat.M[0][0];
+  //projectionMatrix._21 = ovrPrMat.M[0][1];
+  //projectionMatrix._31 = ovrPrMat.M[0][2];
+  //projectionMatrix._41 = ovrPrMat.M[0][3];
+
+  //projectionMatrix._12 = ovrPrMat.M[1][0];
+  //projectionMatrix._22 = ovrPrMat.M[1][1];
+  //projectionMatrix._32 = ovrPrMat.M[1][2];
+  //projectionMatrix._42 = ovrPrMat.M[1][3];
+
+  //projectionMatrix._13 = ovrPrMat.M[2][0];
+  //projectionMatrix._23 = ovrPrMat.M[2][1];
+  //projectionMatrix._33 = ovrPrMat.M[2][2];
+  //projectionMatrix._43 = ovrPrMat.M[2][3];
+
+  //projectionMatrix._14 = ovrPrMat.M[3][0];
+  //projectionMatrix._24 = ovrPrMat.M[3][1];
+  //projectionMatrix._34 = ovrPrMat.M[3][2];
+  //projectionMatrix._44 = ovrPrMat.M[3][3];
+
+  //cam_x += (lr_x*(ariftcontrol_->ipd_offset_)) / 2.0f;
+  //cam_y += (lr_y*(ariftcontrol_->ipd_offset_)) / 2.0f;
+  //cam_z += (lr_z*(ariftcontrol_->ipd_offset_)) / 2.0f;
   if (ariftcontrol_->print_eye_dist_)
   {
     std::cout << "cam   (x,y,z): ( " << cam_x << ", " << cam_y << ", " << cam_z << " ) " << std::endl;
