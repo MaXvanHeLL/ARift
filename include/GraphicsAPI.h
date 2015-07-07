@@ -17,7 +17,7 @@
 #include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
-#define HMD_DISTORTION 1
+#define HMD_DISTORTION 0
 class BitMap;
 class ARiftControl;
 // -------------------------------
@@ -29,10 +29,16 @@ private:
 	ID3D11Device* device_;
 	ID3D11DeviceContext* devicecontext_;
 	DirectX::XMFLOAT4X4 projectionmatrix_;
+	DirectX::XMFLOAT4X4 stereoprojectionmatrix_;
 	DirectX::XMFLOAT4X4 worldmatrix_;
 	DirectX::XMFLOAT4X4 orthomatrix_;
 	int videocardmemory_;
 	char videocarddescription_[128];
+
+	float screenDepth_;
+	float screenNear_;
+	float fieldOfView_;
+	float screenAspect_;
 
 	Camera* camera_;
 	Model* model_;
@@ -73,9 +79,11 @@ public:
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 	void GetProjectionMatrix(DirectX::XMFLOAT4X4&);
+	void GetStereoProjectionMatrix(DirectX::XMFLOAT4X4&);
 	void GetWorldMatrix(DirectX::XMFLOAT4X4&);
 	void GetOrthoMatrix(DirectX::XMFLOAT4X4&);
 	void GetVideoCardInfo(char*, int&);
+	void StereoProjectionTransformation();
 
 	// Windows stuff
 	HINSTANCE hinstance_;

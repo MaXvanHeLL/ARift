@@ -35,6 +35,11 @@ GraphicsAPI::GraphicsAPI()
 	eyeWindowRight_ = 0;
 
 	modelRotation_ = 0.0f;
+
+	screenDepth_ = 0.0f;
+	screenNear_ = 0.0f;
+	fieldOfView_ = 0.0f;
+	screenAspect_ = 0.0f;
 }
 
 GraphicsAPI::~GraphicsAPI()
@@ -45,6 +50,11 @@ GraphicsAPI::~GraphicsAPI()
 bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
 	                        float screenDepth, float screenNear, ARiftControl* arift_control)
 {
+
+	screenDepth_ = screenDepth;
+	screenNear_ = screenNear;
+	fieldOfView_ = (float)XM_PI / 4.0f;
+	screenAspect_ = (float)screenWidth / (float)screenHeight;
 
 	ariftcontrol_ = arift_control;
 
@@ -319,7 +329,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	fieldOfView = (float)XM_PI / 4.0f;
 	screenAspect = (float)screenWidth / (float)screenHeight;
 
-	// Create the projection matrix for 3D rendering.
+	// Create the [Monoscope]projection matrix for 3D rendering.
 	XMMATRIX projectionMatrix_XmMat = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 	XMStoreFloat4x4(&projectionmatrix_, projectionMatrix_XmMat);
 
@@ -363,9 +373,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
 	// Set the initial position of the camera.
-	camera_->SetPosition(0.0f, 0.0f, -20.0f);
+	camera_->SetPosition(0.0f, 0.0f, -10.0f);
 
-	
 	// Create the model object.
 	model_ = new Model();
   if (!model_) 
@@ -501,19 +510,43 @@ bool GraphicsAPI::Frame()
 bool GraphicsAPI::Render()
 {
 	bool result;
-	static float cameraDistance = -200.0f;
+	static bool cameramode_movebackward = true ;
 
-	cameraDistance += 0.3f;
-	if (cameraDistance > -5.0f)
-		cameraDistance = -200.0f;
+	static float cameraDistance = 0.0f;
+
+	if (cameramode_movebackward)
+	{
+		if (cameraDistance < -100.0f)
+			cameramode_movebackward = false;
+		else if (cameraDistance > -30.0f)
+			cameraDistance -= 0.1f;
+		else
+			cameraDistance -= 0.4f;
+	}
+	else
+	{
+		if (cameraDistance > 0.0f)
+			cameramode_movebackward = true;
+		else if (cameraDistance > -70.0f)
+			cameraDistance += 0.1f;
+		else
+			cameraDistance += 0.4f;
+	}
+	camera_->SetPosition(camera_->GetPosition().x, camera_->GetPosition().y, cameraDistance);
+
+
 
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
 
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 
-	camera_->SetPosition(0.0f, 0.0f, cameraDistance);
-	camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
+	// input changeable
+	/*float camerax_translate = camera_->GetPosition().x + ariftcontrol_->virtualcameraX_translation;
+	float cameray_translate = camera_->GetPosition().y + ariftcontrol_->virtualcameraY_translation;
+	camera_->SetPosition(camerax_translate, cameray_translate, cameraDistance);*/
+	// camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
+
 	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
 	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
 	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
@@ -608,7 +641,7 @@ bool GraphicsAPI::RenderToTexture(RenderTexture* renderTexture, int cam_id)
 
 bool GraphicsAPI::RenderScene(int cam_id)
 {
-	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, stereoProjectionMatrix;
 	bool result;
 
 	// Generate the view matrix based on the camera's position.
@@ -627,7 +660,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_,cam_id);
+	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_, cam_id);
 	if (!result)
 	{
 		return false;
@@ -674,40 +707,70 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
-	// Render the model using the texture shader.
-	if (cam_id == 1)
-	{		
-		result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-			model_->GetTexture());
-	}
-	else
+	 //std::cout << "****************************************************" << std::endl;
+	 //std::cout << "Camera ID: " << cam_id << std::endl;
+
+	// Translate 2nd virtual camera with idp 62cm on x-axis.
+	XMFLOAT3 oldCameraPos = camera_->GetPosition();
+	XMFLOAT3 oldCameraRot = camera_->GetRotation();
+	// left eye translation (Mono Eye (0,0,0);
+	camera_->SetPosition(-0.32, oldCameraPos.y, oldCameraPos.z);
+	camera_->Render();
+	if (cam_id == 2)
 	{
 		// 3.6
 		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
 		{
+			cameraTranslation = 0.62f;
+			camera_->Translate(cameraTranslation);
+
 			// cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
 			// oculusTranslation = 0.0f;
 			// camera_->Translate(cameraTranslation, oculusTranslation);
-			float worldTranslation = camera_->GetPosition().z * 4.8f / 10.0f;
-			XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
-			XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
-			worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
-			XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
-			camera_->Translate(cameraTranslation);
+			// float worldTranslation = camera_->GetPosition().z * 4.8f / 10.0f;
+			// XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
+			// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
+			// worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
+			// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
+			// camera_->Translate(cameraTranslation);
 		}
 		else
 		{
-			cameraTranslation = fabsf(camera_->GetPosition().z * 3.65 / 15.0);
-			camera_->Translate(cameraTranslation);
+			// cameraTranslation = fabsf(camera_->GetPosition().z * 3.65 / 15.0);
+			// camera_->Translate(cameraTranslation);
+			// cameraTranslation = 0.62f;
+			// camera_->Translate(cameraTranslation);
+			// camera_->SetRotation(oldCameraRot.x, 8.0f, oldCameraRot.z);
+			// right eye translation (Mono Eye (0,0,0);
+			camera_->SetPosition(0.32, oldCameraPos.y, oldCameraPos.z);
+			camera_->Render();
 		}
+	}
+
+	// Render the 3D Model
+	//std::cout << "Camera Position X: " << camera_->GetPosition().x << " Camera Position Y : " <<
+	//	camera_->GetPosition().y << " Camera Position Z : " << camera_->GetPosition().z << std::endl;
+	//std::cout << "Camera Rotation X: " << camera_->GetRotation().x << " Camera Rotation Y : " <<
+	//	camera_->GetRotation().y << " Camera Rotation Z : " << camera_->GetRotation().z << std::endl;
+	//std::cout << "Model at Depth (Z): " << model_->average_modelDepth_ << std::endl;
+	//std::cout << "------------------------------------------------" << std::endl;
+
+	StereoProjectionTransformation();
+	GetStereoProjectionMatrix(stereoProjectionMatrix);
+
+	camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
+	camera_->SetRotation(oldCameraRot.x, oldCameraRot.y, oldCameraRot.z);
+
+	camera_->GetViewMatrix(viewMatrix);
+	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
+		model_->GetTexture());
 
 		// XMFLOAT3 oldCameraPos = camera_->GetPosition();
 
 		// Camera Translation
 		// XMFLOAT3 oldCameraRotation = camera_->GetRotation();
 		
-		camera_->GetViewMatrix(viewMatrix);
 		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, 0.0f);
 		// camera_->Render();
 		// camera_->GetViewMatrix(viewMatrix);
@@ -728,16 +791,12 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 	  // XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
 
-		result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-			model_->GetTexture());
-
 		// translate Camera back to origin
 		// camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
 		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, oldCameraRotation.z);
 		
 		// camera_->Render();
 		// camera_->GetViewMatrix(viewMatrix);
-	}
 
 	if (!result)
 	{
@@ -996,6 +1055,12 @@ void GraphicsAPI::GetProjectionMatrix(XMFLOAT4X4& projectionMatrix)
 	return;
 }
 
+void GraphicsAPI::GetStereoProjectionMatrix(XMFLOAT4X4& stereoProjectionMatrix)
+{
+	stereoProjectionMatrix = stereoprojectionmatrix_;
+	return;
+}
+
 
 void GraphicsAPI::GetWorldMatrix(XMFLOAT4X4& worldMatrix)
 {
@@ -1045,4 +1110,17 @@ void GraphicsAPI::SetBackBufferRenderTarget()
 	devicecontext_->OMSetRenderTargets(1, &rendertargetview_, depthstencilview_);
 
 	return;
+}
+
+void GraphicsAPI::StereoProjectionTransformation()
+{
+	XMFLOAT3 position = camera_->GetPosition();
+
+	float left = screenNear_ * (-30.f - position.x) / position.z;
+	float right = screenNear_ * (30.f - position.x) / position.z;
+	float bottom = screenNear_ * (-20.f - position.y) / position.z;
+	float top = screenNear_ * (20.f - position.y) / position.z;
+
+	XMMATRIX stereomatrix = XMMatrixPerspectiveOffCenterLH(left, right, bottom, top, screenNear_, screenDepth_);
+	XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
 }

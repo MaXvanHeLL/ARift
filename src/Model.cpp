@@ -10,6 +10,7 @@ Model::Model()
 	indexbuffer_ = 0;
 	texture_ = 0;
 	modeltype_ = 0;
+	average_modelDepth_ = 0;
 }
 
 
@@ -254,12 +255,15 @@ bool Model::LoadModel(char* filename)
 	fin.get(input);
 
 	// Read in the vertex data.
+	float sum_depth = 0;
 	for (i = 0; i<vertexcount_; i++)
 	{
 		fin >> modeltype_[i].x >> modeltype_[i].y >> modeltype_[i].z;
 		fin >> modeltype_[i].tu >> modeltype_[i].tv;
 	  fin >> modeltype_[i].nx >> modeltype_[i].ny >> modeltype_[i].nz;
+		sum_depth += modeltype_[i].z;
 	}
+	average_modelDepth_ = sum_depth / vertexcount_;
 
 	// Close the model file.
 	fin.close();

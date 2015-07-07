@@ -1,4 +1,5 @@
 #include "../include/Camera.h"
+#include <iostream>
 
 Camera::Camera()
 {
@@ -110,6 +111,10 @@ void Camera::Translate(float translation, float oculusTranslation)
 		SetPosition(translation, oculusTranslation, oldCameraPos.z);
 	else
 		SetPosition(translation, oldCameraPos.y, oldCameraPos.z);
+
+	std::cout << "Camera Position X: " << positionX_ << " Camera Position Y : " <<
+		positionY_ << " Camera Position Z : " << positionZ_ << std::endl;
+	std::cout << "------------------------------------------------" << std::endl;
 
 	float yaw, pitch, roll;
 	XMMATRIX rotationMatrix;

@@ -31,6 +31,11 @@ class ARiftControl
 
     std::string base_save_name;
 
+
+		float virtualcameraX_translation = 0.0f;
+		float virtualcameraY_translation = 0.0f;
+		float virtualcameraZ_translation = 0.0f;
+
     int wait_time = 30;
     IDSuEyeInputHandler *cam_input = NULL;
     Shader::UndistortionBuffer left_cam_params_;

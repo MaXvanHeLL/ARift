@@ -32,7 +32,6 @@ class Model
 
 		ModelType* modeltype_;
 
-
 	public:
 		Model();
 		Model(const Model&);
@@ -48,6 +47,8 @@ class Model
 		int GetIndexCount();
 
 		ID3D11ShaderResourceView* GetTexture();
+
+		float average_modelDepth_;
 
 	private:
 		bool InitializeBuffers(ID3D11Device*);
