@@ -17,7 +17,7 @@
 #include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
-#define HMD_DISTORTION 0
+#define HMD_DISTORTION 1
 class BitMap;
 class ARiftControl;
 // -------------------------------
@@ -83,7 +83,7 @@ public:
 	void GetWorldMatrix(DirectX::XMFLOAT4X4&);
 	void GetOrthoMatrix(DirectX::XMFLOAT4X4&);
 	void GetVideoCardInfo(char*, int&);
-	void StereoProjectionTransformation();
+	void StereoProjectionTransformation(int camID);
 
 	// Windows stuff
 	HINSTANCE hinstance_;

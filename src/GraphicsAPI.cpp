@@ -333,6 +333,11 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	XMMATRIX projectionMatrix_XmMat = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
 	XMStoreFloat4x4(&projectionmatrix_, projectionMatrix_XmMat);
 
+	std::cout << projectionmatrix_._11 << " " << projectionmatrix_._21 << " " << projectionmatrix_._31 << " " << projectionmatrix_._41 << std::endl;
+	std::cout << projectionmatrix_._12 << " " << projectionmatrix_._22 << " " << projectionmatrix_._32 << " " << projectionmatrix_._42 << std::endl;
+	std::cout << projectionmatrix_._13 << " " << projectionmatrix_._23 << " " << projectionmatrix_._33 << " " << projectionmatrix_._43 << std::endl;
+	std::cout << projectionmatrix_._14 << " " << projectionmatrix_._24 << " " << projectionmatrix_._34 << " " << projectionmatrix_._44 << std::endl;
+
 	// Initialize the world matrix to the identity matrix.
 	XMMATRIX worldMatrix_XmMat = XMMatrixIdentity();
 	XMStoreFloat4x4(&worldmatrix_, worldMatrix_XmMat);
@@ -382,7 +387,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Initialize the model object.
 	// result = model_->Initialize(device_, L"data/texture.dds");
-	result = model_->Initialize(device_, "data/Cube.txt", L"data/texture.dds");
+	result = model_->Initialize(device_, "data/Cube.txt", L"data/companion_cube.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -534,12 +539,11 @@ bool GraphicsAPI::Render()
 	}
 	camera_->SetPosition(camera_->GetPosition().x, camera_->GetPosition().y, cameraDistance);
 
-
-
 	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
 
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
+	camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 
 	// input changeable
 	/*float camerax_translate = camera_->GetPosition().x + ariftcontrol_->virtualcameraX_translation;
@@ -714,7 +718,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMFLOAT3 oldCameraPos = camera_->GetPosition();
 	XMFLOAT3 oldCameraRot = camera_->GetRotation();
 	// left eye translation (Mono Eye (0,0,0);
-	camera_->SetPosition(-0.32, oldCameraPos.y, oldCameraPos.z);
+	camera_->SetPosition((oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
 	camera_->Render();
 	if (cam_id == 2)
 	{
@@ -722,8 +726,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
 		{
-			cameraTranslation = 0.62f;
-			camera_->Translate(cameraTranslation);
+			// cameraTranslation = 0.62f;
+			// camera_->Translate(cameraTranslation);
 
 			// cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
 			// oculusTranslation = 0.0f;
@@ -734,6 +738,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
 			// worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
 			// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
 			// camera_->Translate(cameraTranslation);
+			camera_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
+			camera_->Render();
 		}
 		else
 		{
@@ -743,7 +749,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 			// camera_->Translate(cameraTranslation);
 			// camera_->SetRotation(oldCameraRot.x, 8.0f, oldCameraRot.z);
 			// right eye translation (Mono Eye (0,0,0);
-			camera_->SetPosition(0.32, oldCameraPos.y, oldCameraPos.z);
+			camera_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
 			camera_->Render();
 		}
 	}
@@ -756,14 +762,14 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	//std::cout << "Model at Depth (Z): " << model_->average_modelDepth_ << std::endl;
 	//std::cout << "------------------------------------------------" << std::endl;
 
-	StereoProjectionTransformation();
+	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
 
 	camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
 	camera_->SetRotation(oldCameraRot.x, oldCameraRot.y, oldCameraRot.z);
 
 	camera_->GetViewMatrix(viewMatrix);
-	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
+	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoprojectionmatrix_,
 		model_->GetTexture());
 
 		// XMFLOAT3 oldCameraPos = camera_->GetPosition();
@@ -1112,15 +1118,104 @@ void GraphicsAPI::SetBackBufferRenderTarget()
 	return;
 }
 
-void GraphicsAPI::StereoProjectionTransformation()
+void GraphicsAPI::StereoProjectionTransformation(int camID)
 {
 	XMFLOAT3 position = camera_->GetPosition();
 
-	float left = screenNear_ * (-30.f - position.x) / position.z;
-	float right = screenNear_ * (30.f - position.x) / position.z;
-	float bottom = screenNear_ * (-20.f - position.y) / position.z;
-	float top = screenNear_ * (20.f - position.y) / position.z;
+	// [Method 1] ------------------------------------------------------------
+	//float left = screenNear_ * ((-3.f) - position.x) / position.z;
+	//float right = screenNear_ * ((3.f) - position.x) / position.z;
+	//float bottom = screenNear_ * ((-2.f) - position.y) / position.z;
+	//float top = screenNear_ * ((2.f) - position.y) / position.z;
 
-	XMMATRIX stereomatrix = XMMatrixPerspectiveOffCenterLH(left, right, bottom, top, screenNear_, screenDepth_);
-	XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
+	//XMMATRIX stereomatrix = XMMatrixPerspectiveOffCenterLH(left, right, bottom, top, screenNear_ ,screenDepth_);
+	//XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
+
+	// [Method 2] ------------------------------------------------------------
+	 //float yScale = 2.f * viewerDistance / viewportHeight;
+	 //float xScale = 2.f * viewerDistance / viewportWidth;
+
+	//float yScale = 2.f * 0.04 / screenheight_;
+	//float xScale = 2.f * 0.04 / screenwidth_;
+
+	//float mFactor = -0.064 / screenwidth_;
+
+	//if (camID == 1)
+	//{
+	//	mFactor = -mFactor;
+	//}
+
+	//float m22 = screenDepth_ / (screenNear_ - screenDepth_);
+
+	//XMMATRIX stereomatrix = XMMATRIX(
+	//	xScale, 0, 0, 0,
+	//	0, yScale, 0, 0,
+	//	mFactor, 0, m22, -1,
+	//	0.04 * mFactor, 0, screenNear_ * m22, 0
+	//	);
+	//XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
+
+	// [Method 3] -----------------------------------------------------------------
+
+		//float Separation = -0.064 / screenwidth_;
+		//float Side = 1.0f;
+
+		//if (camID == 1)
+		//{
+		//	Side = -Side;
+		//}
+		//
+		//XMMATRIX stereomatrix = XMMATRIX(
+		//	projectionmatrix_._11, 0, 0, 0,
+		//	0, projectionmatrix_._22, projectionmatrix_._32, 0,
+		//	projectionmatrix_._13 + Side * Separation, 0, projectionmatrix_._33, 1,
+		//	-Side * Separation * 2.f, 0, projectionmatrix_._34, 0
+		//	);
+		//XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
+
+	// Method 4 (works with oculus SDK) ----------------------------------------------------------------
+	Matrix4f proj = ovrMatrix4f_Projection(OculusHMD::instance()->eyeRenderDesc_[camID-1].Fov, screenNear_, screenDepth_, false);
+	
+	stereoprojectionmatrix_._11 = proj.M[0][0];
+	stereoprojectionmatrix_._21 = proj.M[0][1];
+	stereoprojectionmatrix_._31 = proj.M[0][2];
+	stereoprojectionmatrix_._41 = proj.M[0][3];
+
+	stereoprojectionmatrix_._12 = proj.M[1][0];
+	stereoprojectionmatrix_._22 = proj.M[1][1];
+	stereoprojectionmatrix_._32 = proj.M[1][2];
+	stereoprojectionmatrix_._42 = proj.M[1][3];
+
+	stereoprojectionmatrix_._13 = proj.M[2][0];
+	stereoprojectionmatrix_._23 = proj.M[2][1];
+	stereoprojectionmatrix_._33 = proj.M[2][2];
+	stereoprojectionmatrix_._43 = proj.M[2][3];	
+
+	stereoprojectionmatrix_._14 = proj.M[3][0];
+	stereoprojectionmatrix_._24 = proj.M[3][1];
+	stereoprojectionmatrix_._34 = proj.M[3][2];
+	stereoprojectionmatrix_._44 = proj.M[3][3];
+
+	// Method 5 ----------------------------------------------------------------
+	//float side = 1.0f;
+	//float factor = 0.0106667f;
+	//if (camID == 1)
+	//{
+	//	side = -1.0f;
+	//	factor = -0.0106667f;
+	//}
+
+	//float separation = 0.064 / screenwidth_;
+
+	//stereoprojectionmatrix_ = projectionmatrix_;
+	// stereoprojectionmatrix_._13 += side * separation;
+	// stereoprojectionmatrix_._14 = -side * separation;
+	//stereoprojectionmatrix_._31 = factor;
+
+	//std::cout << "CamID: " << camID << std::endl;
+	//std::cout << "Cam Position X: " << position.x << " Cam Position Y: " << position.y << " Cam Position Z: " << position.z << std::endl;
+	//std::cout << stereoprojectionmatrix_._11 << " " << stereoprojectionmatrix_._21 << " " << stereoprojectionmatrix_._31 << " " << stereoprojectionmatrix_._41 << std::endl;
+	//std::cout << stereoprojectionmatrix_._12 << " " << stereoprojectionmatrix_._22 << " " << stereoprojectionmatrix_._32 << " " << stereoprojectionmatrix_._42 << std::endl;
+	//std::cout << stereoprojectionmatrix_._13 << " " << stereoprojectionmatrix_._23 << " " << stereoprojectionmatrix_._33 << " " << stereoprojectionmatrix_._43 << std::endl;
+	//std::cout << stereoprojectionmatrix_._14 << " " << stereoprojectionmatrix_._24 << " " << stereoprojectionmatrix_._34 << " " << stereoprojectionmatrix_._44 << std::endl;
 }

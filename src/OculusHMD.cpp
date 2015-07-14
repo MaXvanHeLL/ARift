@@ -101,6 +101,7 @@ void OculusHMD::calculateFOV()
 			eyeSize_[eye] = ovrHmd_GetFovTextureSize(hmd_, (ovrEyeType)eye,
 			                                         hmd_->DefaultEyeFov[eye], 1.0f);
 		}
+		std::cout << "OculusHMD::calculateFOV() | DefaultFOV Left: " << hmd_->DefaultEyeFov[0].
 		std::cout << "OculusHMD::calculateFOV() | TextureHeight LeftEye: " << eyeSize_[0].h << std::endl;
 		std::cout << "OculusHMD::calculateFOV() | TextureWidth LeftEye: " << eyeSize_[0].w << std::endl;
 		std::cout << "OculusHMD::calculateFOV() | TextureHeight RightEye: " << eyeSize_[1].h << std::endl;
