@@ -8,6 +8,8 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <utility>
+#include <vector>
 #include "../include/Camera.h"
 #include "../include/Model.h"
 #include "../include/Shader.h"
@@ -20,6 +22,7 @@
 #define HMD_DISTORTION 1
 class BitMap;
 class ARiftControl;
+class Texture;
 // -------------------------------
 
 class GraphicsAPI
@@ -41,13 +44,19 @@ private:
 	float screenAspect_;
 
 	Camera* camera_;
-	Model* model_;
+  std::vector<Model*> models_;
 	BitMap* bitmap_;
 	Shader* shader_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
 	float modelRotation_;
+
+  int current_model_idx_;
+  float world_offset_x_ = 0.0f;
+  float world_offset_y_ = 0.0f;
+  float world_offset_z_ = 0.0f;
+  Texture* highlight_texture_ = NULL;
 
 	// used for Eye Rendering
 	bool RenderToTexture(RenderTexture*,int);
@@ -57,7 +66,10 @@ private:
 public:
 	GraphicsAPI();
 	virtual ~GraphicsAPI();
-	
+  HANDLE models_Mutex_;
+
+  int SetNextModelActive();
+  int SetPreviousModelActive();
 	DWORD WINAPI run(LPVOID lpArg);
 	bool InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen,
 		           float screenDepth, float screenNear, ARiftControl* arift_control); 

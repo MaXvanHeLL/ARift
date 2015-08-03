@@ -1,9 +1,8 @@
 #ifndef OCULUSHMD_H
 #define OCULUSHMD_H
-#include <opencv2/core/core.hpp>
-// #define OVR_D3D_VERSION 11
+
 #include <OVR_CAPI.h>
-// #include "OVR_CAPI_D3D.h"
+
 #include "Kernel/OVR_Math.h"
 
 using namespace OVR;
@@ -57,9 +56,17 @@ class OculusHMD
 		// ----
 		void trackMotion(float& yaw, float& eyepitch, float& eyeroll);
 
+    void updateEyePoses();
+    void printEyePoses();
+    void getLeftEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll);
+    void getRightEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll);
+    void getLeftToRight(float& x, float& y, float& z);
+    void getEulerAngles(ovrQuatf q, float& pitch, float& yaw, float& roll);
+
 		void StartFrames();
 
 		bool RenderDistortion();
+    bool Recenter();
 };
 
 #endif // OCULUSHMD_H

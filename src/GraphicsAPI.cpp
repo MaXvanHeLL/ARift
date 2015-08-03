@@ -1,8 +1,11 @@
 #include "../include/GraphicsAPI.h"
 #include "../include/ARiftControl.h"
 #include "../include/BitMap.h"
+#include "../include/Texture.h"
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <utility>
 
 using namespace DirectX;
 
@@ -23,7 +26,6 @@ GraphicsAPI::GraphicsAPI()
 	rasterstate_ = 0;
 
 	camera_ = 0;
-	model_ = 0;
 	bitmap_ = 0;
 	shader_ = 0;
 
@@ -34,6 +36,8 @@ GraphicsAPI::GraphicsAPI()
 	renderTextureRight_ = 0;
 	eyeWindowRight_ = 0;
 
+  current_model_idx_ = -1;
+  models_Mutex_ = CreateMutex(NULL, FALSE, L"Models Mutex");
 	modelRotation_ = 0.0f;
 
 	screenDepth_ = 0.0f;
@@ -380,19 +384,71 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Set the initial position of the camera.
 	camera_->SetPosition(0.0f, 0.0f, -10.0f);
 
-	// Create the model object.
-	model_ = new Model();
-  if (!model_) 
+
+  // Create the first model object.
+  Model* model = new Model();
+  if (!model)
     return false;
 
-	// Initialize the model object.
-	// result = model_->Initialize(device_, L"data/texture.dds");
-	result = model_->Initialize(device_, "data/Cube.txt", L"data/companion_cube.dds");
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
-		return false;
-	}
+  // Initialize the 1. model object.
+  // result = model_->Initialize(device_, L"data/texture.dds");
+  result = model->Initialize(device_, "data/Cube.txt", L"data/texture.dds");
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
+    return false;
+  }
+  model->Scale(0.1f);
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  current_model_idx_ = 0;
+  ReleaseMutex(models_Mutex_);
+
+  // Create the second model object.
+  model = NULL;
+  model = new Model();
+  if (!model)
+    return false;
+
+  // Initialize the 2. model object and translate a little to the left and back
+  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds", 0.0, 0.0, -10.0);
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
+    return false;
+  }
+  model->Scale(0.1f);
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  ReleaseMutex(models_Mutex_);
+
+  // Create the 3. model object.
+  model = NULL;
+  model = new Model();
+  if (!model)
+    return false;
+
+  // Initialize the 3. model object and translate a little to the right and front
+  result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 0.0, 0.0, 10.0);
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
+    return false;
+  }
+  model->Scale(0.1f);
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  ReleaseMutex(models_Mutex_);
+
+  highlight_texture_ = new Texture();
+  if (!highlight_texture_)
+    return false;
+  result = highlight_texture_->Initialize(device_, L"data/selected_red.dds");
+  if (!result)
+  {
+    std::cout << "Could not load highlight texture. " << std::endl;
+    return false;
+  }
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
@@ -495,12 +551,30 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 bool GraphicsAPI::Frame()
 {
 	bool result;
+  // apply model translation
+  Model* model = models_.at(current_model_idx_);
+  if (ariftcontrol_->changed_model_)
+  {
+    model->translation_x_ += ariftcontrol_->model_offset_x_;
+    model->translation_y_ += ariftcontrol_->model_offset_y_;
+    model->translation_z_ += ariftcontrol_->model_offset_z_;
+    model->rotation_ += ariftcontrol_->model_rotation_;
+    while (model->rotation_ < 0.0f)   { model->rotation_ += 360.0f; }
+    while (model->rotation_ > 360.0f) { model->rotation_ -= 360.0f; }
+    ariftcontrol_->ResetModelChange();
+  }
+  // auto rotation
+  model->auto_rotate_ = ariftcontrol_->model_auto_rotate_;
 
-	// rotation
-	modelRotation_ += (float)XM_PI * 0.01f;
-	if (modelRotation_ > 360.0f)
-		modelRotation_ -= 360.0f;
-
+  for (std::vector<Model*>::iterator model_it = models_.begin(); model_it != models_.end(); model_it++)
+  {
+    if ((*model_it)->auto_rotate_)
+    {
+      (*model_it)->rotation_ += (float)XM_PI * 0.01f;
+      if ((*model_it)->rotation_ > 360.0f)
+        (*model_it)->rotation_ -= 360.0f;
+    }
+  }
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -544,22 +618,6 @@ bool GraphicsAPI::Render()
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 	camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
-
-	// input changeable
-	/*float camerax_translate = camera_->GetPosition().x + ariftcontrol_->virtualcameraX_translation;
-	float cameray_translate = camera_->GetPosition().y + ariftcontrol_->virtualcameraY_translation;
-	camera_->SetPosition(camerax_translate, cameray_translate, cameraDistance);*/
-	// camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
-
-	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
-	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
-	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
-	// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);ix_
-	// XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(oculusMotionY, oculusMotionX, oculusMotionZ);
-	// XMMATRIX rotationMatrix = XMMatrixRotationY(oculusMotionY);
-	// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
-	// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
-	// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -704,107 +762,89 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 	//// ******************************** || 3D RENDERING || *********************************
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	model_->Render(devicecontext_);
-
 	// rotation
 	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
-	 //std::cout << "****************************************************" << std::endl;
-	 //std::cout << "Camera ID: " << cam_id << std::endl;
-
+  // save camera position before manipulating it
+  camera_->SaveState();
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
 	XMFLOAT3 oldCameraPos = camera_->GetPosition();
 	XMFLOAT3 oldCameraRot = camera_->GetRotation();
-	// left eye translation (Mono Eye (0,0,0);
-	camera_->SetPosition((oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
-	camera_->Render();
+
+  // left eye translation (Mono Eye (0,0,0);
+  camera_->SetPosition((float)(oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
+	
 	if (cam_id == 2)
 	{
-		// 3.6
-		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
 		{
-			// cameraTranslation = 0.62f;
-			// camera_->Translate(cameraTranslation);
-
-			// cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
-			// oculusTranslation = 0.0f;
-			// camera_->Translate(cameraTranslation, oculusTranslation);
-			// float worldTranslation = camera_->GetPosition().z * 4.8f / 10.0f;
-			// XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
-			// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
-			// worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
-			// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
-			// camera_->Translate(cameraTranslation);
-			camera_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
-			camera_->Render();
+      oldCameraPos.x += (float)(0.032 + ariftcontrol_->ipd_offset_);
 		}
 		else
 		{
-			// cameraTranslation = fabsf(camera_->GetPosition().z * 3.65 / 15.0);
-			// camera_->Translate(cameraTranslation);
-			// cameraTranslation = 0.62f;
-			// camera_->Translate(cameraTranslation);
-			// camera_->SetRotation(oldCameraRot.x, 8.0f, oldCameraRot.z);
-			// right eye translation (Mono Eye (0,0,0);
-			camera_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
-			camera_->Render();
+      oldCameraPos.x = (float)(0.032 - ariftcontrol_->ipd_offset_);
 		}
 	}
-
-	// Render the 3D Model
-	//std::cout << "Camera Position X: " << camera_->GetPosition().x << " Camera Position Y : " <<
-	//	camera_->GetPosition().y << " Camera Position Z : " << camera_->GetPosition().z << std::endl;
-	//std::cout << "Camera Rotation X: " << camera_->GetRotation().x << " Camera Rotation Y : " <<
-	//	camera_->GetRotation().y << " Camera Rotation Z : " << camera_->GetRotation().z << std::endl;
-	//std::cout << "Model at Depth (Z): " << model_->average_modelDepth_ << std::endl;
-	//std::cout << "------------------------------------------------" << std::endl;
+  camera_->SetPosition((float)0.032, oldCameraPos.y, oldCameraPos.z);
+  camera_->Render();
 
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
 
-	camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
-	camera_->SetRotation(oldCameraRot.x, oldCameraRot.y, oldCameraRot.z);
 
 	camera_->GetViewMatrix(viewMatrix);
-	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoprojectionmatrix_,
-		model_->GetTexture());
+  // TODO make this threadsafe
+  XMMATRIX worldTranslationMatrix = 
+      XMMatrixTranslation(
+        ariftcontrol_->world_offset_x_,
+        ariftcontrol_->world_offset_y_,
+        ariftcontrol_->world_offset_z_);
 
-		// XMFLOAT3 oldCameraPos = camera_->GetPosition();
+  if (models_.empty())
+    std::cout << "GraphicsAPI::RenderScene WARNING no models found. models_ is empty! " << std::endl;
+  int i = 0;
+  for (std::vector<Model*>::iterator model = models_.begin(); model != models_.end(); model++, i++)
+  {
+    // Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+    (*model)->Render(devicecontext_);
 
-		// Camera Translation
-		// XMFLOAT3 oldCameraRotation = camera_->GetRotation();
-		
-		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, 0.0f);
-		// camera_->Render();
-		// camera_->GetViewMatrix(viewMatrix);
+    // scaling
+    XMMATRIX scalingMatrix = XMMatrixScaling((*model)->scale_x_, (*model)->scale_y_, (*model)->scale_z_);
+    // rotation
+    XMMATRIX rotationMatrix = XMMatrixRotationY((*model)->rotation_);
+    // translation
+    XMMATRIX translationMatrix = XMMatrixTranslation((*model)->translation_x_, (*model)->translation_y_, (*model)->translation_z_);
+    // calculate full transformation
+    XMMATRIX modelTransform = XMMatrixMultiply(scalingMatrix, rotationMatrix);
+    modelTransform = XMMatrixMultiply(modelTransform, translationMatrix);
+    modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
+    XMStoreFloat4x4(&worldMatrix, modelTransform);
 
-		// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
-		// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
-		// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
-		
-		// World Rotation
-		// XMMATRIX tempMatrix = XMMatrixRotationX(-oldCameraRotation.y * 0.0174532925f);
-		// XMMATRIX rotationMatrix = XMMatrixMultiply(XMMatrixIdentity(), tempMatrix);
-		// tempMatrix = XMMatrixRotationZ(-oldCameraRotation.z * 0.0174532925f);
-	  // rotationMatrix = XMMatrixMultiply(rotationMatrix, tempMatrix);
+    ID3D11ShaderResourceView* model_tex = NULL;
+    // highlight model(s) according to ariftcontrols settings
+    if ((ariftcontrol_->input_mode_ == ARiftControl::InputMode::MODEL && i == current_model_idx_) // one model
+      || ariftcontrol_->input_mode_ == ARiftControl::InputMode::WORLD // all models
+      || (cam_id == ariftcontrol_->identify_cam_) // all models on cam with id identify_cam_
+      || (ariftcontrol_->show_left_cam_ && (cam_id == ariftcontrol_->cam_id_))) // all models on the left
+    {
+      model_tex = highlight_texture_->GetTexture();
+    }
+    else // no highlighting
+    {
+      model_tex = (*model)->GetTexture();
+    }
+    // Render the model using the texture shader.
+    result = shader_->Render(devicecontext_, (*model)->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
+      model_tex);
 
-		// World Space Translation
-		// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
-		// worldTranslationMatrix = XMMatrixMultiply(rotationMatrix, worldTranslationMatrix);
-
-	  // XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
-
-		// translate Camera back to origin
-		// camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
-		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, oldCameraRotation.z);
-		
-		// camera_->Render();
-		// camera_->GetViewMatrix(viewMatrix);
-
-	if (!result)
+    if (!result)
+    {
+      std::cout << "GraphicsAPI::RenderScene ERROR could not render model " << i << std::endl;
+      return false;
+    }
+  }
+  if (!result || !(camera_->RestoreState()))
 	{
 		return false;
 	}
@@ -926,13 +966,18 @@ void GraphicsAPI::shutDownD3D()
 		shader_ = 0;
 	}
 
-	// Release the model object.
-	if (model_)
-	{
-		model_->Shutdown();
-		delete model_;
-		model_ = 0;
-	}
+  // Release the model objects.
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  while (models_.size() > 0)
+  {
+    Model* current_model = models_.back();
+    current_model->Shutdown();
+    delete current_model;
+    current_model = NULL;
+    models_.pop_back();
+  }
+  ReleaseMutex(models_Mutex_);
+  CloseHandle(models_Mutex_);
 
 	// Release the camera object.
 	if (camera_)
@@ -1116,6 +1161,23 @@ void GraphicsAPI::SetBackBufferRenderTarget()
 	devicecontext_->OMSetRenderTargets(1, &rendertargetview_, depthstencilview_);
 
 	return;
+}
+int GraphicsAPI::SetNextModelActive()
+{
+  int new_current_model_idx = -1;
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  new_current_model_idx = current_model_idx_ = (current_model_idx_ + 1) % models_.size();
+  ReleaseMutex(models_Mutex_);
+  return new_current_model_idx;
+}
+
+int GraphicsAPI::SetPreviousModelActive()
+{
+  int new_current_model_idx = -1;
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  new_current_model_idx = current_model_idx_ = (current_model_idx_ - 1) % models_.size();
+  ReleaseMutex(models_Mutex_);
+  return new_current_model_idx;
 }
 
 void GraphicsAPI::StereoProjectionTransformation(int camID)

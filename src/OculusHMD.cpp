@@ -5,14 +5,9 @@
 #include <algorithm> 
 #define   OVR_D3D_VERSION 11
 #include "OVR_CAPI_D3D.h" 
+#include "../include/Helpers.h"
 
-// #define OVR_D3D_VERSION 11
-// #include "OVR_CAPI.h"
-// #include "OVR_CAPI_D3D.h"
-// #include "Kernel/OVR_Math.h"
 
-// #include <d3d11.h>
-// #pragma comment (lib, "d3d11.lib")
 
 OculusHMD* OculusHMD::instance_ = NULL;
 
@@ -90,6 +85,66 @@ void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 	}
 }
 
+
+void OculusHMD::updateEyePoses()
+{
+  ovrHmd_GetEyePoses(hmd_, 0, useHmdToEyeViewOffset_, eyeRenderPose_, NULL);
+}
+
+void OculusHMD::printEyePoses()
+{
+  // I am quite sure eyeRenderPose.Positiom stores the position of the eyes with respect to the rotation center in meters
+  float yaw, pitch, roll;
+  yaw = pitch = roll = 0.0f;
+  getEulerAngles(eyeRenderPose_[0].Orientation, yaw, pitch, roll);
+  std::cout << "Eyepose 0: position    ( " << eyeRenderPose_[0].Position.x << ", " << eyeRenderPose_[0].Position.y << ", " << eyeRenderPose_[0].Position.z << ") " << std::endl;
+  //std::cout << "           orientation ( " << eyeRenderPose_[0].Orientation.x << ", " << eyeRenderPose_[0].Orientation.y << ", " << eyeRenderPose_[0].Orientation.z << ", " << eyeRenderPose_[0].Orientation.w << ") " << std::endl;
+  std::cout << "                 euler ( " << (yaw*360.0 / (2.0*3.1415926)) << ", " << (pitch*360.0 / (2.0*3.1415926)) << ", " << (roll*360.0 / (2.0*3.1415926)) << ") " << std::endl;
+  std::cout << " hmdToEyeViewOffset    ( " << eyeRenderDesc_[0].HmdToEyeViewOffset.x << " , " << eyeRenderDesc_[0].HmdToEyeViewOffset.y << " , " << eyeRenderDesc_[0].HmdToEyeViewOffset.z << " ) " << std::endl;
+  std::cout << "Eyepose 1: position    ( " << eyeRenderPose_[1].Position.x << ", " << eyeRenderPose_[1].Position.y << ", " << eyeRenderPose_[1].Position.z << ") " << std::endl;
+  //std::cout << "           orientation ( " << eyeRenderPose_[1].Orientation.x << ", " << eyeRenderPose_[1].Orientation.y << ", " << eyeRenderPose_[1].Orientation.z << ", " << eyeRenderPose_[1].Orientation.w << ") " << std::endl << std::endl;
+  std::cout << " hmdToEyeViewOffset    ( " << eyeRenderDesc_[1].HmdToEyeViewOffset.x << " , " << eyeRenderDesc_[1].HmdToEyeViewOffset.y << " , " << eyeRenderDesc_[1].HmdToEyeViewOffset.z << " ) " << std::endl;
+  std::cout << " offset0 + pos0        ( " << eyeRenderPose_[0].Position.x + eyeRenderDesc_[0].HmdToEyeViewOffset.x << " , " << eyeRenderPose_[0].Position.y + eyeRenderDesc_[0].HmdToEyeViewOffset.y << " , " << eyeRenderPose_[0].Position.z + eyeRenderDesc_[0].HmdToEyeViewOffset.z << " ) " << std::endl;
+  std::cout << " vec 01                ( " << (eyeRenderPose_[1].Position.x - eyeRenderPose_[0].Position.x) << " , " << (eyeRenderPose_[1].Position.y - eyeRenderPose_[0].Position.y) << " , " << (eyeRenderPose_[1].Position.z - eyeRenderPose_[0].Position.z) << " ) " << std::endl;
+
+}
+
+void OculusHMD::getLeftEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll)
+{
+  getEulerAngles(eyeRenderPose_[0].Orientation, pitch, yaw, roll);
+  x = eyeRenderPose_[0].Position.x;
+  y = eyeRenderPose_[0].Position.y;
+  z = eyeRenderPose_[0].Position.z;
+}
+void OculusHMD::getRightEyePose(float& x, float& y, float& z, float& pitch, float& yaw, float& roll)
+{
+  getEulerAngles(eyeRenderPose_[1].Orientation, pitch, yaw, roll);
+  x = eyeRenderPose_[1].Position.x;
+  y = eyeRenderPose_[1].Position.y;
+  z = eyeRenderPose_[1].Position.z;
+}
+
+void OculusHMD::getLeftToRight(float& x, float& y, float& z)
+{
+  x = eyeRenderPose_[1].Position.x - eyeRenderPose_[0].Position.x;
+  y = eyeRenderPose_[1].Position.y - eyeRenderPose_[0].Position.y;
+  z = eyeRenderPose_[1].Position.z - eyeRenderPose_[0].Position.z;
+}
+
+void OculusHMD::getEulerAngles(ovrQuatf q, float& pitch, float& yaw, float& roll)
+{
+  roll = atan2(2.0f*(q.x*q.y + q.z*q.w), 1.0f - 2.0f*(q.y*q.y + q.z*q.z));
+  yaw = asin(2.0f*(q.x*q.z - q.w*q.y));
+  pitch = atan2(2.0f*(q.x*q.w + q.y*q.z), 1.0f - 2.0f*(q.z*q.z + q.w*q.w));
+}
+
+bool OculusHMD::Recenter()
+{
+  if (!hmd_)
+    return false;
+  ovrHmd_RecenterPose(hmd_);
+  return true;
+}
 
 // -----------------------------------------------------------------------     
 void OculusHMD::calculateFOV()

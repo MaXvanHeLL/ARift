@@ -6,8 +6,9 @@
 #include "include\Helpers.h"
 #include <iostream>
 #include <windows.h>
+#include <string>
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 // ********************************************************************************
 DWORD WINAPI directXHandling(LPVOID lpArg);
@@ -27,7 +28,7 @@ int main(int, char**)
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
   ARiftControl cont;
-
+  cont.graphics_api_ = dx11;
   if (AR_HMD_ENABLED)
   {
 	  cont.init();

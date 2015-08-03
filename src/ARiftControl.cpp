@@ -1,14 +1,13 @@
 #include "../include/IDSuEyeInputHandler.h"
 #include "../include/ARiftControl.h"
 #include "../include/GraphicsAPI.h"
+#include "../include/OculusHMD.h"
 #include "../include/Helpers.h"
 
 
 #include <iostream>
-
+#include <math.h>
 #define GetCurrentDir _getcwd
-
-using namespace cv;
 
 ARiftControl::ARiftControl()
 {
@@ -81,7 +80,7 @@ void ARiftControl::init()
   } else {
     std::cout << "Error retrieving working path." << std::endl << std::endl;
   }
-  base_save_name = getTimeString();
+  base_save_name_ = getTimeString();
   cam_input = new IDSuEyeInputHandler();
   cam_input->openCams(CAM1,CAM2);
   cam_input->retrieveFrame(CAM1);
@@ -99,114 +98,359 @@ void ARiftControl::getImages()
 void ARiftControl::handleKey(char key)
 {
   //std::cout << "ARiftControl::handleKey recived char: " << key << std::endl;
-  
   switch (key)
   {
     case 27:  // quit by escape key
     {
       //running = false;
       break;
+    }    
+    case 'v':
+    {
+      if (HMD_DISTORTION)
+        OculusHMD::instance()->Recenter();
+      break;
+    }
+    case 'm':
+    {
+      if (last_key_ == 'm') // ignore long keypress and requre last key to be different
+        break;
+      if (input_mode_ == InputMode::CAMERA)
+        input_mode_ = InputMode::DEFAULT;
+      else
+        input_mode_ = InputMode(input_mode_ + 1);
+
+      std::cout << "Model changing mode is " << input_mode_ << std::endl;
+      break;
+    }
+    case '.':
+    {
+      if (input_mode_ == InputMode::MODEL)
+        graphics_api_->SetNextModelActive();
+      break;
+    }
+    case ',':
+    {
+      if (input_mode_ == InputMode::MODEL)
+        graphics_api_->SetPreviousModelActive();
+      break;
+    }
+    case 'r':
+    {
+      if (last_key_ == 'r') // ignore long keypress and requre last key to be different
+        break;
+      if (input_mode_ == InputMode::MODEL)
+      {
+        model_auto_rotate_ = !model_auto_rotate_;
+        std::cout << "model auto rotate is " << model_auto_rotate_ << std::endl;
+      }
+      break;
+    }
+    case 't':
+    {
+      if (last_key_ == 't') // ignore long keypress and requre last key to be different
+        break;
+      if (input_mode_ == InputMode::MODEL)
+      {
+        model_auto_translate_ = !model_auto_translate_;
+        std::cout << "model auto translate is " << model_auto_translate_ << std::endl;
+      }
+      break;
     }
     case 'w':
     {
-      left_cam_params_.Nyc += step;
-      right_cam_params_.Nyc -= step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nyc += step_;
+        right_cam_params_.Nyc -= step_;
+      }
+      else if (input_mode_ == InputMode::MODEL)
+      {
+        model_offset_y_ += step_;
+        changed_model_ = true;
+      }
+      else if (input_mode_ == InputMode::WORLD)
+      {
+        world_offset_y_ += step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_y_ += step_;
+      }
       break;
     }
     case 'a':
     {
-      left_cam_params_.Nxc -= step;
-      right_cam_params_.Nxc += step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nxc -= step_;
+        right_cam_params_.Nxc += step_;
+      }
+      else if (input_mode_ == InputMode::MODEL)
+      {
+        model_offset_x_ -= step_;
+        changed_model_ = true;
+      }
+      else if (input_mode_ == InputMode::WORLD)
+      {
+        world_offset_x_ -= step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_x_ -= step_;
+      }
       break;
     }
     case 's':
     {
-      left_cam_params_.Nyc -= step;
-      right_cam_params_.Nyc += step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nyc -= step_;
+        right_cam_params_.Nyc += step_;
+      }
+      else if (input_mode_ == InputMode::MODEL)
+      {
+        model_offset_y_ -= step_;
+        changed_model_ = true;
+      }
+      else if (input_mode_ == InputMode::WORLD)
+      {
+        world_offset_y_ -= step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_y_ -= step_;
+      }
       break;
     }
     case 'd':
     {
-      left_cam_params_.Nxc += step;
-      right_cam_params_.Nxc -= step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nxc += step_;
+        right_cam_params_.Nxc -= step_;
+      }
+      else if (input_mode_ == InputMode::MODEL)
+      {
+        model_offset_x_ += step_;
+        changed_model_ = true;
+      }
+      else if (input_mode_ == InputMode::WORLD)
+      {
+        world_offset_x_ += step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_x_ += step_;
+      }
       break;
     }
+    case 'y':
+    {
+      if (input_mode_ == InputMode::MODEL)
+      {
+        model_offset_z_ += step_;
+        changed_model_ = true;
+      }
+      else if (input_mode_ == InputMode::WORLD)
+      {
+        world_offset_z_ += step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_z_ += step_;
+      }
+      break;
+    }
+    case 'x':
+    {
+      if (input_mode_ == InputMode::MODEL)
+      {
+        model_offset_z_ -= step_;
+        changed_model_ = true;
+      }
+      else if (input_mode_ == InputMode::WORLD)
+      {
+        world_offset_z_ -= step_;
+      }
+      else if (input_mode_ == InputMode::CAMERA)
+      {
+        camera_offset_z_ -= step_;
+      }
+      break;
+    }
+    case 'q':
+    {
+      if (input_mode_ == InputMode::MODEL)
+      {
+        model_rotation_ += step_; //float(fmod(double(model_rotation_ + step_), 360.0));
+        changed_model_ = true;
+      }
+      break;
+    }
+    case 'e':
+    {
+      if (input_mode_ == InputMode::MODEL)
+      {
+        model_rotation_ -= step_;
+        //if (model_rotation_ < 0.0f)
+        //  model_rotation_ = model_rotation_ + 360.0f;
 
+        changed_model_ = true;
+      }
+      break;
+    }
     case 'W':
     {
-      left_cam_params_.Nyc += step;
-      right_cam_params_.Nyc += step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nyc += step_;
+        right_cam_params_.Nyc += step_;
+      }
       break;
     }
     case 'A':
     {
-      left_cam_params_.Nxc -= step;
-      right_cam_params_.Nxc -= step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nxc -= step_;
+        right_cam_params_.Nxc -= step_;
+      }
       break;
     }
     case 'S':
     {
-      left_cam_params_.Nyc -= step;
-      right_cam_params_.Nyc -= step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nyc -= step_;
+        right_cam_params_.Nyc -= step_;
+      }
       break;
     }
     case 'D':
     {
-      left_cam_params_.Nxc += step;
-      right_cam_params_.Nxc += step;
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.Nxc += step_;
+        right_cam_params_.Nxc += step_;
+      }
       break;
     }
-		case 'Z':
-		{
-			left_cam_params_.z += step;
-			right_cam_params_.z += step;
-			break;
-		}
-		case 'z':
-		{
-			left_cam_params_.z -= step;
-			right_cam_params_.z -= step;
-			break;
-		}
+    case 'Z':
+    {
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.z += step_;
+        right_cam_params_.z += step_;
+      }
+      break;
+    }
+    case 'z':
+    {
+      if (input_mode_ == InputMode::DEFAULT)
+      {
+        left_cam_params_.z -= step_;
+        right_cam_params_.z -= step_;
+      }
+      break;
+    }
+    case 'c':
+    {
+      ipd_offset_ -= step_*0.1f;
+      break;
+    }
+    case 'C':
+    {
+      ipd_offset_ += step_*0.1f;
+      break;
+    }
+    case '0':
+    {
+      if (last_key_ != '0')
+        step_ = step_ * 0.1f;
+      break;
+    }
     case '1':
     {
-      step = 0.1f;
+      step_ = 0.1f;
       break;
     }
     case '2':
     {
-      step = 0.2f;
+      step_ = 0.2f;
       break;
     }
     case '3':
     {
-      step = 0.5f;
+      step_ = 0.5f;
       break;
     }
     case '4':
     {
-      step = 1.0f;
+      step_ = 1.0f;
       break;
     }
     case '5':
     {
-      step = 5.0f;
+      step_ = 5.0f;
+      break;
+    }
+    case 'I':
+    {
+      if (last_key_ == 'I')
+        break;
+      identify_cam_ = (++identify_cam_) % 3;
+
+      break;
+    }
+    case 'l':
+    {
+      if (last_key_ == 'l')
+        break;
+      show_left_cam_ = !show_left_cam_;
+
+      break;
+    }
+    case 'i':
+    {
+      if (last_key_ == 'i')
+        break;
+
+      if (cam_id_ = 1)
+        cam_id_ = 2;
+      else
+        cam_id_ = 1;
+
+      break;
+    }
+    case 'O':
+    {
+      std::cout << "undistortion: " << std::endl;
+      std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
+      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
+      std::cout << "camera offset x: " << camera_offset_x_ << std::endl;
+      std::cout << "world offset: " << std::endl;
+      std::cout << "(x,y,z): ( " << world_offset_x_ << "," << world_offset_y_ << "," << world_offset_z_ << ")" << std::endl;
       break;
     }
     case 'o':
     {
-      std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
-      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
+      if (last_key_ != 'o')
+      {
+        show_eye_pose_ = true;
+        print_eye_dist_ = true;
+        std::cout << "eye distance modifier: " << ipd_offset_ << std::endl;
+      }
       break;
     }
     case 'P':
     {
-      cam_input->changeAutoSensorSpeeds(step);
+      cam_input->changeAutoSensorSpeeds(step_);
       break;
     }
     case 'p':
     {
-      cam_input->changeAutoSensorSpeeds(-step);
+      cam_input->changeAutoSensorSpeeds(-step_);
       break;
     }
     case 'f':
@@ -233,8 +477,16 @@ void ARiftControl::handleKey(char key)
     default:
       break;
   }
+  last_key_ = key;
 }
-
+void ARiftControl::ResetModelChange()
+{
+  model_offset_x_ = 0.0f;
+  model_offset_y_ = 0.0f;
+  model_offset_z_ = 0.0f;
+  model_rotation_ = 0.0f;
+  changed_model_ = false;
+}
 void ARiftControl::hanldeFlip()
 {
 }

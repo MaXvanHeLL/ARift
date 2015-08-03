@@ -101,7 +101,7 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 	bool result = 0;
 
 	// Re-build the dynamic vertex buffer for rendering to possibly a different location on the screen.
-	result = UpdateBuffers(deviceContext, positionX, positionY);
+	result = UpdateBuffers(deviceContext, positionX, positionY, cam_id);
 	if (!result)
 	{
 		return false;
@@ -252,7 +252,7 @@ void BitMap::ShutdownBuffers()
 }
 
 
-bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, int positionY)
+bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, int positionY, int cam_id)
 {
 	float left, right, top, bottom;
 	VertexType* vertices = 0;

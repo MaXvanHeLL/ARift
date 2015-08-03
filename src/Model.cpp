@@ -11,6 +11,7 @@ Model::Model()
 	texture_ = 0;
 	modeltype_ = 0;
 	average_modelDepth_ = 0;
+  rotation_ = 0.0f;
 }
 
 
@@ -33,6 +34,30 @@ bool Model::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* texture
 		return false;
 	}
 
+  // Initialize the vertex and index buffer that hold the geometry for the triangle.
+  result = InitializeBuffers(device);
+  if (!result)
+    return false;
+
+  // Load the texture for this model.
+  result = LoadTexture(device, textureFilename);
+  if (!result)
+    return false;
+
+  return true;
+}
+
+bool Model::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* textureFilename, float x, float y, float z)
+{
+  bool result;
+
+  // Load in the model data,
+  result = LoadModel(modelFilename);
+  if (!result)
+  {
+    return false;
+  }
+  Move(x, y, z);
 	// Initialize the vertex and index buffer that hold the geometry for the triangle.
 	result = InitializeBuffers(device);
   if (!result) 
@@ -44,6 +69,25 @@ bool Model::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* texture
     return false;
 
 	return true;
+}
+
+void Model::Move(float x, float y, float z)
+{
+  for (int i = 0; i < vertexcount_; i++)
+  {
+    modeltype_[i].x += x;
+    modeltype_[i].y += y;
+    modeltype_[i].z += z;
+  }
+}
+
+bool Model::ReInitializeBuffers(ID3D11Device* device)
+{
+  if (!modeltype_)
+    return false;
+  ShutdownBuffers();
+  bool result = InitializeBuffers(device);
+  return result;
 }
 
 void Model::Shutdown()
@@ -75,12 +119,23 @@ int Model::GetIndexCount()
 	return indexcount_;
 }
 
-
 ID3D11ShaderResourceView* Model::GetTexture()
 {
 	return texture_->GetTexture();
 }
 
+void Model::Scale(float scale)
+{
+  Scale(scale, scale, scale);
+}
+
+void Model::Scale(float scale_x, float scale_y, float scale_z)
+{
+  scale_x_ = scale_x;
+  scale_y_ = scale_y;
+  scale_z_ = scale_z;
+  true_scale_ = false;
+}
 
 bool Model::InitializeBuffers(ID3D11Device* device)
 {

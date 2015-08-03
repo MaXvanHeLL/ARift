@@ -18,7 +18,10 @@ Camera::Camera(const Camera& other)
 
 
 Camera::~Camera()
-{}
+{
+  if (old_state_)
+    delete old_state_;
+}
 
 
 void Camera::SetPosition(float x, float y, float z)
@@ -38,6 +41,11 @@ void Camera::SetRotation(float x, float y, float z)
 	return;
 }
 
+void Camera::SetLookAt(float lookAt)
+{
+  lookAt_ = lookAt;
+}
+
 XMFLOAT3 Camera::GetPosition()
 {
 	return XMFLOAT3(positionX_, positionY_, positionZ_);
@@ -47,6 +55,38 @@ XMFLOAT3 Camera::GetPosition()
 XMFLOAT3 Camera::GetRotation()
 {
 	return XMFLOAT3(rotationX_, rotationY_, rotationZ_);
+}
+bool Camera::SaveState()
+{
+  bool overwritten = true;
+  if (old_state_ == 0)
+  {
+    old_state_ = new Camera::State;
+    overwritten = false;
+  }
+  old_state_->lookAt_ = lookAt_;
+  old_state_->positionX_ = positionX_;
+  old_state_->positionY_ = positionY_;
+  old_state_->positionZ_ = positionZ_;
+  old_state_->rotationX_ = rotationX_;
+  old_state_->rotationY_ = rotationY_;
+  old_state_->rotationZ_ = rotationZ_;
+  return overwritten;
+}
+
+bool Camera::RestoreState()
+{
+  if (!old_state_)
+    return false;
+
+  lookAt_ = old_state_->lookAt_;
+  positionX_ = old_state_->positionX_;
+  positionY_ = old_state_->positionY_;
+  positionZ_ = old_state_->positionZ_;
+  rotationX_ = old_state_->rotationX_;
+  rotationY_ = old_state_->rotationY_;
+  rotationZ_ = old_state_->rotationZ_;
+  return true;
 }
 
 void Camera::Render()
