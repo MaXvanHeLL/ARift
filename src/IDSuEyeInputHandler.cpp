@@ -84,14 +84,6 @@ bool IDSuEyeInputHandler::openCams(int left_cam,int right_cam)
   double fps, new_fps0, new_fps1;
   fps = 30;
   new_fps0 = new_fps1 = -1.0;
-  //is_SetFrameRate(hcam_[0], fps, &new_fps0);
-  //is_SetFrameRate(hcam_[1], fps, &new_fps1);
-  //std::cout << "IDSuEyeInputHandler: fps status cam 0 :" << new_fps0 << " cam 1: " << new_fps1 << std::endl;
-  //double enable = 1.0;
-  //if (auto_fps0 < 1.0f)
-  //  is_SetAutoParameter(hcam_[0], IS_SET_ENABLE_AUTO_FRAMERATE, &enable, 0);
-  //if (auto_fps1 < 1.0f)
-  //  is_SetAutoParameter(hcam_[1], IS_SET_ENABLE_AUTO_FRAMERATE, &enable, 0);
   cameraCaptureing_ = true;
   return true;
 }

@@ -98,15 +98,8 @@ void ARiftControl::getImages()
 
 void ARiftControl::handleKey(char key)
 {
-  //std::cout << "ARiftControl::handleKey recived char: " << key << std::endl;
-  
   switch (key)
   {
-    case 27:  // quit by escape key
-    {
-      //running = false;
-      break;
-    }
     case 'w':
     {
       left_cam_params_.Nyc += step;
@@ -215,21 +208,6 @@ void ARiftControl::handleKey(char key)
       std::cout << " cam " << CAM2 << " has " << cam_input->getFrameRate(CAM2) << "frames / s" << std::endl;
       break;
     }
-    //case 'f': // flip
-    //  {
-    //    hanldeFlip();
-    //    break;
-    //  }
-    //case 's': // save
-    //  {
-    //    handleSave();
-    //    break;
-    //  }
-    //case 'a':
-    //  {
-    //    handleCameraAutoFeatures();
-    //    break;
-    //  }
     default:
       break;
   }

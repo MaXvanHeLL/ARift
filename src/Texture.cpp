@@ -121,7 +121,6 @@ bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* ca
 		mappedData += mappedResource.RowPitch;
 		cameraBuffer += CAMERA_WIDTH * 4;
 	}
-	// memcpy(mappedResource.pData, arift_control->cameraBufferLeft_, CAMERA_BUFFER_LENGTH);
   if (cam_id == 1)
     ReleaseMutex(cam_input->cameraMutexLeft_);
   else

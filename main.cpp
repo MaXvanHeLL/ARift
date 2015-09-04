@@ -44,11 +44,6 @@ int main(int, char**)
   {
 		if (AR_HMD_ENABLED)
 		{
-			// motion tracking debug tests here
-			// *****************************************************************
-			// float test1; float test2; float test3;
-		  // OculusHMD::instance()->trackMotion(test1, test2, test3);
-			// *****************************************************************
 		}
 	}
 

@@ -6,14 +6,6 @@
 #define   OVR_D3D_VERSION 11
 #include "OVR_CAPI_D3D.h" 
 
-// #define OVR_D3D_VERSION 11
-// #include "OVR_CAPI.h"
-// #include "OVR_CAPI_D3D.h"
-// #include "Kernel/OVR_Math.h"
-
-// #include <d3d11.h>
-// #pragma comment (lib, "d3d11.lib")
-
 OculusHMD* OculusHMD::instance_ = NULL;
 
 OculusHMD::OculusHMD()
@@ -85,7 +77,6 @@ void OculusHMD::trackMotion(float& yaw, float& eyepitch, float& eyeroll)
 			yaw = RadToDegree(yaw);
 			eyepitch = RadToDegree(eyepitch);
 			eyeroll = RadToDegree(eyeroll);
-			// cout << "roll: " << RadToDegree(eyeroll) << endl << endl;
 		}
 	}
 }
@@ -101,7 +92,6 @@ void OculusHMD::calculateFOV()
 			eyeSize_[eye] = ovrHmd_GetFovTextureSize(hmd_, (ovrEyeType)eye,
 			                                         hmd_->DefaultEyeFov[eye], 1.0f);
 		}
-		std::cout << "OculusHMD::calculateFOV() | DefaultFOV Left: " << hmd_->DefaultEyeFov[0].
 		std::cout << "OculusHMD::calculateFOV() | TextureHeight LeftEye: " << eyeSize_[0].h << std::endl;
 		std::cout << "OculusHMD::calculateFOV() | TextureWidth LeftEye: " << eyeSize_[0].w << std::endl;
 		std::cout << "OculusHMD::calculateFOV() | TextureHeight RightEye: " << eyeSize_[1].h << std::endl;
@@ -123,8 +113,6 @@ void OculusHMD::configureStereoRendering()
 	d3d11cfg.D3D11.pSwapChain = graphicsAPI_->swapchain_;
 
 	if (!ovrHmd_ConfigureRendering(hmd_, &d3d11cfg.Config,
-//		ovrDistortionCap_Chromatic | ovrDistortionCap_Vignette |
-//    ovrDistortionCap_TimeWarp | ovrDistortionCap_Overdrive,
     ovrDistortionCap_Chromatic | ovrDistortionCap_Overdrive,
 		hmd_->DefaultEyeFov, eyeRenderDesc_))
 	{
@@ -154,8 +142,6 @@ bool OculusHMD::RenderDistortion()
 	Sizei size;
 	size.w = RIFT_RESOLUTION_WIDTH; 
 	size.h = RIFT_RESOLUTION_HEIGHT;
-	// size.w = eyeSize_[0].w; // used for Oculus 3D Vision
-	// size.h = eyeSize_[0].h; // used for Oculus 3D Vision
 
 	ovrRecti eyeRenderViewport[2];
 	eyeRenderViewport[0].Pos = Vector2i(0, 0);

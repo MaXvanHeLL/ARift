@@ -160,8 +160,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Set the width and height of the back buffer.
 	swapChainDesc.BufferDesc.Width = screenWidth;
 	swapChainDesc.BufferDesc.Height = screenHeight;
-	// swapChainDesc.BufferDesc.Width = OculusHMD::instance()->eyeSize_[0].w; // used for Oculus 3D View
-	// swapChainDesc.BufferDesc.Height = OculusHMD::instance()->eyeSize_[0].h; // used for Oculus 3D View
 
 	// Set regular 32-bit surface for the back buffer.
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -227,8 +225,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Set up the description of the depth buffer.
 	depthBufferDesc.Width = screenWidth;
   depthBufferDesc.Height = screenHeight;
-	// depthBufferDesc.Width = OculusHMD::instance()->eyeSize_[0].w; // used for Oculus 3D View
-	// depthBufferDesc.Height = OculusHMD::instance()->eyeSize_[1].h; // used for Oculus 3D View
 
 	depthBufferDesc.MipLevels = 1;
 	depthBufferDesc.ArraySize = 1;
@@ -386,7 +382,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
 	// Initialize the model object.
-	// result = model_->Initialize(device_, L"data/texture.dds");
 	result = model_->Initialize(device_, "data/Cube.txt", L"data/companion_cube.dds");
 	if (!result)
 	{
@@ -420,16 +415,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Initialize the render to texture object.
 	result = renderTextureLeft_->Initialize(device_, screenWidth, screenHeight);
-	// result = renderTextureLeft_->Initialize(device_, OculusHMD::instance()->eyeSize_[0].w, OculusHMD::instance()->eyeSize_[0].h); // used for Oculus 3D View
 	if (!result)
 		return false;
-
-	/*
-	std::cout << "Eye[0] Width : " << OculusHMD::instance()->eyeSize_[0].w << std::endl;
-	std::cout << "Eye[0] Heigth : " << OculusHMD::instance()->eyeSize_[0].h << std::endl;
-	std::cout << "Eye[1] Width : " << OculusHMD::instance()->eyeSize_[1].w << std::endl;
-	std::cout << "Eye[1] Height : " << OculusHMD::instance()->eyeSize_[1].h << std::endl;
-	*/
 
 	// Create the debug window object.
 	eyeWindowLeft_ = new EyeWindow();
@@ -454,7 +441,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Initialize the render to texture object.
   result = renderTextureRight_->Initialize(device_, screenWidth, screenHeight);
-	// result = renderTextureRight_->Initialize(device_, OculusHMD::instance()->eyeSize_[1].w, OculusHMD::instance()->eyeSize_[1].h);
 	if (!result)
 		return false;
 	
@@ -545,22 +531,6 @@ bool GraphicsAPI::Render()
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
 	camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 
-	// input changeable
-	/*float camerax_translate = camera_->GetPosition().x + ariftcontrol_->virtualcameraX_translation;
-	float cameray_translate = camera_->GetPosition().y + ariftcontrol_->virtualcameraY_translation;
-	camera_->SetPosition(camerax_translate, cameray_translate, cameraDistance);*/
-	// camera_->SetRotation(-oculusMotionX, -oculusMotionY, 0.0f);
-
-	// camera_->SetRotation(-oculusMotionX, 0.0f, oculusMotionZ);
-	// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-4.0f, 0.0f, 0.0f);
-	// worldTranslationMatrix = XMMatrixMultiply(XMMatrixIdentity(), worldTranslationMatrix);
-	// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);ix_
-	// XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(oculusMotionY, oculusMotionX, oculusMotionZ);
-	// XMMATRIX rotationMatrix = XMMatrixRotationY(oculusMotionY);
-	// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
-	// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
-	// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
-
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
 
@@ -573,17 +543,6 @@ bool GraphicsAPI::Render()
 
 	// Clear the buffers to begin the scene.
 	BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
-
-	// Render the scene as normal to the back buffer.
-	// [Normal Rendering] ------------------------------
-	// result = RenderScene();
-	/*
-	if (!result)
-	{
-		return false;
-	}
-	*/
-	// -------------------------------------------------
 
 	if (!HMD_DISTORTION)
 	{
@@ -711,9 +670,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
-	 //std::cout << "****************************************************" << std::endl;
-	 //std::cout << "Camera ID: " << cam_id << std::endl;
-
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
 	XMFLOAT3 oldCameraPos = camera_->GetPosition();
 	XMFLOAT3 oldCameraRot = camera_->GetRotation();
@@ -726,42 +682,16 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		float cameraTranslation = 0.0f;
 		if (HMD_DISTORTION)
 		{
-			// cameraTranslation = 0.62f;
-			// camera_->Translate(cameraTranslation);
-
-			// cameraTranslation = fabsf(camera_->GetPosition().z * 2.85 / 5.0);
-			// oculusTranslation = 0.0f;
-			// camera_->Translate(cameraTranslation, oculusTranslation);
-			// float worldTranslation = camera_->GetPosition().z * 4.8f / 10.0f;
-			// XMMATRIX worldMatrixTemp = XMLoadFloat4x4(&worldMatrix);
-			// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(worldTranslation, 0.0f, 0.0f);
-			// worldTranslationMatrix = XMMatrixMultiply(worldMatrixTemp, worldTranslationMatrix);
-			// XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
-			// camera_->Translate(cameraTranslation);
 			camera_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
 			camera_->Render();
 		}
 		else
 		{
-			// cameraTranslation = fabsf(camera_->GetPosition().z * 3.65 / 15.0);
-			// camera_->Translate(cameraTranslation);
-			// cameraTranslation = 0.62f;
-			// camera_->Translate(cameraTranslation);
-			// camera_->SetRotation(oldCameraRot.x, 8.0f, oldCameraRot.z);
-			// right eye translation (Mono Eye (0,0,0);
 			camera_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
 			camera_->Render();
 		}
 	}
-
 	// Render the 3D Model
-	//std::cout << "Camera Position X: " << camera_->GetPosition().x << " Camera Position Y : " <<
-	//	camera_->GetPosition().y << " Camera Position Z : " << camera_->GetPosition().z << std::endl;
-	//std::cout << "Camera Rotation X: " << camera_->GetRotation().x << " Camera Rotation Y : " <<
-	//	camera_->GetRotation().y << " Camera Rotation Z : " << camera_->GetRotation().z << std::endl;
-	//std::cout << "Model at Depth (Z): " << model_->average_modelDepth_ << std::endl;
-	//std::cout << "------------------------------------------------" << std::endl;
-
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
 
@@ -771,38 +701,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	camera_->GetViewMatrix(viewMatrix);
 	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoprojectionmatrix_,
 		model_->GetTexture());
-
-		// XMFLOAT3 oldCameraPos = camera_->GetPosition();
-
-		// Camera Translation
-		// XMFLOAT3 oldCameraRotation = camera_->GetRotation();
-		
-		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, 0.0f);
-		// camera_->Render();
-		// camera_->GetViewMatrix(viewMatrix);
-
-		// XMMATRIX worldMatrix = XMLoadFloat4x4(&worldmatrix_);
-		// worldMatrix = XMMatrixMultiply(XMMatrixIdentity(), rotationMatrix);
-		// XMStoreFloat4x4(&worldmatrix_, worldMatrix);
-		
-		// World Rotation
-		// XMMATRIX tempMatrix = XMMatrixRotationX(-oldCameraRotation.y * 0.0174532925f);
-		// XMMATRIX rotationMatrix = XMMatrixMultiply(XMMatrixIdentity(), tempMatrix);
-		// tempMatrix = XMMatrixRotationZ(-oldCameraRotation.z * 0.0174532925f);
-	  // rotationMatrix = XMMatrixMultiply(rotationMatrix, tempMatrix);
-
-		// World Space Translation
-		// XMMATRIX worldTranslationMatrix = XMMatrixTranslation(-5.0f, 0.0f, 0.0f);
-		// worldTranslationMatrix = XMMatrixMultiply(rotationMatrix, worldTranslationMatrix);
-
-	  // XMStoreFloat4x4(&worldMatrix, worldTranslationMatrix);
-
-		// translate Camera back to origin
-		// camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
-		// camera_->SetRotation(oldCameraRotation.x, oldCameraRotation.y, oldCameraRotation.z);
-		
-		// camera_->Render();
-		// camera_->GetViewMatrix(viewMatrix);
 
 	if (!result)
 	{
@@ -1121,59 +1019,6 @@ void GraphicsAPI::SetBackBufferRenderTarget()
 void GraphicsAPI::StereoProjectionTransformation(int camID)
 {
 	XMFLOAT3 position = camera_->GetPosition();
-
-	// [Method 1] ------------------------------------------------------------
-	//float left = screenNear_ * ((-3.f) - position.x) / position.z;
-	//float right = screenNear_ * ((3.f) - position.x) / position.z;
-	//float bottom = screenNear_ * ((-2.f) - position.y) / position.z;
-	//float top = screenNear_ * ((2.f) - position.y) / position.z;
-
-	//XMMATRIX stereomatrix = XMMatrixPerspectiveOffCenterLH(left, right, bottom, top, screenNear_ ,screenDepth_);
-	//XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
-
-	// [Method 2] ------------------------------------------------------------
-	 //float yScale = 2.f * viewerDistance / viewportHeight;
-	 //float xScale = 2.f * viewerDistance / viewportWidth;
-
-	//float yScale = 2.f * 0.04 / screenheight_;
-	//float xScale = 2.f * 0.04 / screenwidth_;
-
-	//float mFactor = -0.064 / screenwidth_;
-
-	//if (camID == 1)
-	//{
-	//	mFactor = -mFactor;
-	//}
-
-	//float m22 = screenDepth_ / (screenNear_ - screenDepth_);
-
-	//XMMATRIX stereomatrix = XMMATRIX(
-	//	xScale, 0, 0, 0,
-	//	0, yScale, 0, 0,
-	//	mFactor, 0, m22, -1,
-	//	0.04 * mFactor, 0, screenNear_ * m22, 0
-	//	);
-	//XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
-
-	// [Method 3] -----------------------------------------------------------------
-
-		//float Separation = -0.064 / screenwidth_;
-		//float Side = 1.0f;
-
-		//if (camID == 1)
-		//{
-		//	Side = -Side;
-		//}
-		//
-		//XMMATRIX stereomatrix = XMMATRIX(
-		//	projectionmatrix_._11, 0, 0, 0,
-		//	0, projectionmatrix_._22, projectionmatrix_._32, 0,
-		//	projectionmatrix_._13 + Side * Separation, 0, projectionmatrix_._33, 1,
-		//	-Side * Separation * 2.f, 0, projectionmatrix_._34, 0
-		//	);
-		//XMStoreFloat4x4(&stereoprojectionmatrix_, stereomatrix);
-
-	// Method 4 (works with oculus SDK) ----------------------------------------------------------------
 	Matrix4f proj = ovrMatrix4f_Projection(OculusHMD::instance()->eyeRenderDesc_[camID-1].Fov, screenNear_, screenDepth_, false);
 	
 	stereoprojectionmatrix_._11 = proj.M[0][0];
@@ -1195,27 +1040,4 @@ void GraphicsAPI::StereoProjectionTransformation(int camID)
 	stereoprojectionmatrix_._24 = proj.M[3][1];
 	stereoprojectionmatrix_._34 = proj.M[3][2];
 	stereoprojectionmatrix_._44 = proj.M[3][3];
-
-	// Method 5 ----------------------------------------------------------------
-	//float side = 1.0f;
-	//float factor = 0.0106667f;
-	//if (camID == 1)
-	//{
-	//	side = -1.0f;
-	//	factor = -0.0106667f;
-	//}
-
-	//float separation = 0.064 / screenwidth_;
-
-	//stereoprojectionmatrix_ = projectionmatrix_;
-	// stereoprojectionmatrix_._13 += side * separation;
-	// stereoprojectionmatrix_._14 = -side * separation;
-	//stereoprojectionmatrix_._31 = factor;
-
-	//std::cout << "CamID: " << camID << std::endl;
-	//std::cout << "Cam Position X: " << position.x << " Cam Position Y: " << position.y << " Cam Position Z: " << position.z << std::endl;
-	//std::cout << stereoprojectionmatrix_._11 << " " << stereoprojectionmatrix_._21 << " " << stereoprojectionmatrix_._31 << " " << stereoprojectionmatrix_._41 << std::endl;
-	//std::cout << stereoprojectionmatrix_._12 << " " << stereoprojectionmatrix_._22 << " " << stereoprojectionmatrix_._32 << " " << stereoprojectionmatrix_._42 << std::endl;
-	//std::cout << stereoprojectionmatrix_._13 << " " << stereoprojectionmatrix_._23 << " " << stereoprojectionmatrix_._33 << " " << stereoprojectionmatrix_._43 << std::endl;
-	//std::cout << stereoprojectionmatrix_._14 << " " << stereoprojectionmatrix_._24 << " " << stereoprojectionmatrix_._34 << " " << stereoprojectionmatrix_._44 << std::endl;
 }
