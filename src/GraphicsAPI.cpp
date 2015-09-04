@@ -1,6 +1,7 @@
 #include "../include/GraphicsAPI.h"
 #include "../include/ARiftControl.h"
 #include "../include/BitMap.h"
+#include "../include/OculusHMD.h"
 #include <iostream>
 #include <cmath>
 
@@ -675,22 +676,15 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMFLOAT3 oldCameraRot = camera_->GetRotation();
 	// left eye translation (Mono Eye (0,0,0);
 	camera_->SetPosition((oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
-	camera_->Render();
-	if (cam_id == 2)
+  if (cam_id == 2 && HMD_DISTORTION)
 	{
-		// 3.6
-		float cameraTranslation = 0.0f;
-		if (HMD_DISTORTION)
-		{
-			camera_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
-			camera_->Render();
-		}
-		else
-		{
-			camera_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
-			camera_->Render();
-		}
+    camera_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
 	}
+  else if (cam_id == 2 && !HMD_DISTORTION)
+  {
+    camera_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
+  }
+  camera_->Render();
 	// Render the 3D Model
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);

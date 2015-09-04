@@ -165,3 +165,11 @@ bool OculusHMD::RenderDistortion()
 
 	return true;
 }
+
+bool OculusHMD::Recenter()
+{
+  if (!hmd_)
+     return false;
+  ovrHmd_RecenterPose(hmd_);
+  return true;
+}

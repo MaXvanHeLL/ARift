@@ -13,7 +13,6 @@
 #include "../include/Shader.h"
 #include "../include/EyeWindow.h"
 #include "../include/RenderTexture.h"
-#include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
 #define HMD_DISTORTION 1

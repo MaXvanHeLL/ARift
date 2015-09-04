@@ -2,6 +2,7 @@
 #include "../include/ARiftControl.h"
 #include "../include/GraphicsAPI.h"
 #include "../include/Helpers.h"
+#include "../include/OculusHMD.h"
 
 
 #include <iostream>
@@ -100,6 +101,11 @@ void ARiftControl::handleKey(char key)
 {
   switch (key)
   {
+    case 15: // carrige return
+    {
+      OculusHMD::instance()->Recenter();
+      break;
+    }
     case 'w':
     {
       left_cam_params_.Nyc += step;
