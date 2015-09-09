@@ -491,6 +491,34 @@ bool GraphicsAPI::Frame()
 	if (modelRotation_ > 360.0f)
 		modelRotation_ -= 360.0f;
 
+  static float cameraDistance = 0.0f;
+  static bool cameramode_movebackward = true;
+  if (cameramode_movebackward)
+  {
+    if (cameraDistance < -100.0f)
+      cameramode_movebackward = false;
+    else if (cameraDistance > -30.0f)
+      cameraDistance -= 0.1f;
+    else
+      cameraDistance -= 0.4f;
+  }
+  else
+  {
+    if (cameraDistance > 0.0f)
+      cameramode_movebackward = true;
+    else if (cameraDistance > -70.0f)
+      cameraDistance += 0.1f;
+    else
+      cameraDistance += 0.4f;
+  }
+  camera3D_->SetPositionZ(cameraDistance);
+
+  XMFLOAT3 currentCameraRotation = camera3D_->GetRotation();
+
+  float oculusMotionX, oculusMotionY, oculusMotionZ;
+  OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
+  camera3D_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
+
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -505,35 +533,6 @@ bool GraphicsAPI::Frame()
 bool GraphicsAPI::Render()
 {
 	bool result;
-	static bool cameramode_movebackward = true ;
-
-	static float cameraDistance = 0.0f;
-
-	if (cameramode_movebackward)
-	{
-		if (cameraDistance < -100.0f)
-			cameramode_movebackward = false;
-		else if (cameraDistance > -30.0f)
-			cameraDistance -= 0.1f;
-		else
-			cameraDistance -= 0.4f;
-	}
-	else
-	{
-		if (cameraDistance > 0.0f)
-			cameramode_movebackward = true;
-		else if (cameraDistance > -70.0f)
-			cameraDistance += 0.1f;
-		else
-			cameraDistance += 0.4f;
-	}
-	camera3D_->SetPosition(camera3D_->GetPosition().x, camera3D_->GetPosition().y, cameraDistance);
-
-	XMFLOAT3 currentCameraRotation = camera3D_->GetRotation();
-
-	float oculusMotionX, oculusMotionY, oculusMotionZ;
-	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
-	camera3D_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -550,11 +549,10 @@ bool GraphicsAPI::Render()
 
 	if (!HMD_DISTORTION)
 	{
-		// Turn off the Z buffer to begin all 2D rendering.
+		// for 2D rendering
 		TurnZBufferOff();
 		// Render The Eye Window orthogonal to the screen
 		RenderEyeWindow(eyeWindowLeft_, renderTextureLeft_);
-		// Turn the Z buffer back on now that all 2D rendering has completed.
 		TurnZBufferOn();
 	}
 
@@ -618,7 +616,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 
 	// ******************************** || 2D RENDERING || *********************************
 
-	// Turn off the Z buffer for 2D rendering.
+	// for 2D rendering
 	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -657,21 +655,20 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	model_->Render(devicecontext_);
 
 	// rotation
-	XMMATRIX rotationMatrix = XMMatrixRotationY(modelRotation_);
+	XMMATRIX rotationMatrix = XMMatrixRotationZ(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
-	XMFLOAT3 oldCameraPos = camera3D_->GetPosition();
-	XMFLOAT3 oldCameraRot = camera3D_->GetRotation();
+  Camera::State oldCameraState = camera3D_->SaveState();
 	// left eye translation (Mono Eye (0,0,0);
-	camera3D_->SetPosition((oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
-  if (cam_id == 2 && HMD_DISTORTION)
-	{
-    camera3D_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
-	}
-  else if (cam_id == 2 && !HMD_DISTORTION)
+  camera3D_->SetPositionX(
+    cam_id == 1
+     ? oldCameraState.positionX_ - 0.032
+     : oldCameraState.positionX_ + 0.032);
+
+  if (cam_id == 2 && !HMD_DISTORTION)
   {
-    camera3D_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
+    camera3D_->SetPositionX(0.032);
   }
   // Generate the view matrix based on the camera's position.
   camera3D_->Render();
@@ -679,13 +676,11 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
 
-	camera3D_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
-	camera3D_->SetRotation(oldCameraRot.x, oldCameraRot.y, oldCameraRot.z);
-
 	camera3D_->GetViewMatrix(viewMatrix);
 	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoprojectionmatrix_,
 		model_->GetTexture());
 
+  camera3D_->RestoreState();
 	if (!result)
 	{
 		return false;

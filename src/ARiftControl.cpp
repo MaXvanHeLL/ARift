@@ -101,9 +101,10 @@ void ARiftControl::handleKey(char key)
 {
   switch (key)
   {
-    case 15: // carrige return
+    case 'r':
     {
       OculusHMD::instance()->Recenter();
+      std::cout << "recenter on current pose" << std::endl;
       break;
     }
     case 'w':

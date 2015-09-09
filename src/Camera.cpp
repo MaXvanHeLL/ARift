@@ -16,25 +16,28 @@ Camera::Camera()
 Camera::Camera(const Camera& other)
 {}
 
-Camera::Camera(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
+Camera::Camera(float positionX, float positionY, float positionZ, float rotationX, float rotationY, float rotationZ)
 {
-  positionX_ = x;
-  positionY_ = y;
-  positionZ_ = z;
+  positionX_ = positionX;
+  positionY_ = positionY;
+  positionZ_ = positionZ;
+
   rotationX_ = rotationX;
   rotationY_ = rotationY;
   rotationZ_ = rotationZ;
 }
 
 Camera::~Camera()
-{}
-
-
-void Camera::SetPosition(float x, float y, float z)
 {
-	positionX_ = x;
-	positionY_ = y;
-	positionZ_ = z;
+
+}
+
+
+void Camera::SetPosition(float positionX, float positionY, float positionZ)
+{
+  positionX_ = positionX;
+  positionY_ = positionY;
+  positionZ_ = positionZ;
 }
 
 
@@ -89,6 +92,30 @@ void Camera::Render()
 	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
 
 	return;
+}
+
+Camera::State Camera::SaveState()
+{
+  old_state_.positionX_ = positionX_;
+  old_state_.positionY_ = positionY_;
+  old_state_.positionZ_ = positionZ_;
+
+  old_state_.rotationX_ = rotationX_;
+  old_state_.rotationY_ = rotationY_;
+  old_state_.rotationZ_ = rotationZ_;
+
+  return old_state_;
+}
+
+void Camera::RestoreState()
+{
+  positionX_ = old_state_.positionX_;
+  positionY_ = old_state_.positionY_;
+  positionZ_ = old_state_.positionZ_;
+
+  rotationX_ = old_state_.rotationX_;
+  rotationY_ = old_state_.rotationY_;
+  rotationZ_ = old_state_.rotationZ_;
 }
 
 void Camera::GetViewMatrix(XMFLOAT4X4& viewMatrix)
