@@ -38,7 +38,8 @@ private:
 	float fieldOfView_;
 	float screenAspect_;
 
-	Camera* camera_;
+	Camera* camera3D_;
+  Camera* camera2D_;
 	Model* model_;
 	BitMap* bitmap_;
 	Shader* shader_;

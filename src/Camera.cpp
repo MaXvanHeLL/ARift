@@ -16,6 +16,15 @@ Camera::Camera()
 Camera::Camera(const Camera& other)
 {}
 
+Camera::Camera(float x, float y, float z, float rotationX, float rotationY, float rotationZ)
+{
+  positionX_ = x;
+  positionY_ = y;
+  positionZ_ = z;
+  rotationX_ = rotationX;
+  rotationY_ = rotationY;
+  rotationZ_ = rotationZ;
+}
 
 Camera::~Camera()
 {}
@@ -26,16 +35,14 @@ void Camera::SetPosition(float x, float y, float z)
 	positionX_ = x;
 	positionY_ = y;
 	positionZ_ = z;
-	return;
 }
 
 
-void Camera::SetRotation(float x, float y, float z)
+void Camera::SetRotation(float rotationX, float rotationY, float rotationZ)
 {
-	rotationX_ = x;
-	rotationY_ = y;
-	rotationZ_ = z;
-	return;
+  rotationX_ = rotationX;
+  rotationY_ = rotationY;
+  rotationZ_ = rotationZ;
 }
 
 XMFLOAT3 Camera::GetPosition()
@@ -87,5 +94,4 @@ void Camera::Render()
 void Camera::GetViewMatrix(XMFLOAT4X4& viewMatrix)
 {
 	viewMatrix = viewmatrix_;
-	return;
 }

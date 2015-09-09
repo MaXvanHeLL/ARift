@@ -10,10 +10,11 @@ class Camera
 public:
 	Camera();
 	Camera(const Camera&);
+  Camera(float x, float y, float z, float rotationX, float rotationY, float rotationZ);
 	~Camera();
 
-	void SetPosition(float, float, float);
-	void SetRotation(float, float, float);
+	void SetPosition(float x, float y, float z);
+  void SetRotation(float rotationX, float rotationY, float rotationZ);
 
 	XMFLOAT3 GetPosition();
 	XMFLOAT3 GetRotation();

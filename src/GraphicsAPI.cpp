@@ -23,7 +23,8 @@ GraphicsAPI::GraphicsAPI()
 	depthstencilview_ = 0;
 	rasterstate_ = 0;
 
-	camera_ = 0;
+  camera3D_ = 0;
+  camera2D_ = 0;
 	model_ = 0;
 	bitmap_ = 0;
 	shader_ = 0;
@@ -369,13 +370,15 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (FAILED(result)) 
     return false;
 
-	// Create the camera object.
-	camera_ = new Camera();
-	if (!camera_) 
+  // Create the 2D camera object and set initial pose.
+  camera2D_ = new Camera(0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f);
+  if (!camera2D_)
     return false;
 
-	// Set the initial position of the camera.
-	camera_->SetPosition(0.0f, 0.0f, -10.0f);
+	// Create the 3D camera object and set initial pose.
+  camera3D_ = new Camera(0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f);
+	if (!camera3D_) 
+    return false;
 
 	// Create the model object.
 	model_ = new Model();
@@ -524,13 +527,13 @@ bool GraphicsAPI::Render()
 		else
 			cameraDistance += 0.4f;
 	}
-	camera_->SetPosition(camera_->GetPosition().x, camera_->GetPosition().y, cameraDistance);
+	camera3D_->SetPosition(camera3D_->GetPosition().x, camera3D_->GetPosition().y, cameraDistance);
 
-	XMFLOAT3 currentCameraRotation = camera_->GetRotation();
+	XMFLOAT3 currentCameraRotation = camera3D_->GetRotation();
 
 	float oculusMotionX, oculusMotionY, oculusMotionZ;
 	OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
-	camera_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
+	camera3D_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 
 	if (HMD_DISTORTION && AR_HMD_ENABLED)
 		OculusHMD::instance()->StartFrames();
@@ -608,19 +611,14 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, stereoProjectionMatrix;
 	bool result;
 
-	// Generate the view matrix based on the camera's position.
-	camera_->Render();
-
-	// Get the world, view, and projection matrices from the camera and d3d objects.
-
-	camera_->GetViewMatrix(viewMatrix);
+	// Get the world, and projection matrices from the camera and d3d objects.
 	GetWorldMatrix(worldMatrix);
 	GetProjectionMatrix(projectionMatrix);
 	GetOrthoMatrix(orthoMatrix);
 
 	// ******************************** || 2D RENDERING || *********************************
 
-	// Turn off the Z buffer to begin all 2D rendering.
+	// Turn off the Z buffer for 2D rendering.
 	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -630,38 +628,29 @@ bool GraphicsAPI::RenderScene(int cam_id)
 		return false;
 	}
 	
-  Shader::UndistortionBuffer* undistBuffer = NULL;
-  if (cam_id == 1)
-  { 
-    undistBuffer = &(ariftcontrol_->left_cam_params_);
-  }
-  else
-  {
-    undistBuffer = &(ariftcontrol_->right_cam_params_);
-  }
+  Shader::UndistortionBuffer* undistBuffer = 
+    cam_id == 1
+    ? &(ariftcontrol_->left_cam_params_)
+    : &(ariftcontrol_->right_cam_params_);
+
   undistBuffer->width = (float)screenwidth_/2.0f;
   undistBuffer->height = (float)screenheight_;
 
   // Render the bitmap with the texture shader.
-	XMFLOAT3 oldRotation = camera_->GetRotation();
-	camera_->SetRotation(0.0f, 0.0f, 0.0f);
-	camera_->Render();
+  // Generate the view matrix based on the camera's position.
+  camera2D_->Render();
 	XMFLOAT4X4 cameraStreamMatrix;
-	camera_->GetViewMatrix(cameraStreamMatrix);
+	camera2D_->GetViewMatrix(cameraStreamMatrix);
 
 	result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, cameraStreamMatrix, orthoMatrix,
     bitmap_->GetTexture(), undistBuffer);
-
-	camera_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
 
   if (!result)
 	{
 		return false;
 	}
 
-	// Turn the Z buffer back on now that all 2D rendering has completed.
 	TurnZBufferOn();
-
 	//// ******************************** || 3D RENDERING || *********************************
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -672,27 +661,28 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
-	XMFLOAT3 oldCameraPos = camera_->GetPosition();
-	XMFLOAT3 oldCameraRot = camera_->GetRotation();
+	XMFLOAT3 oldCameraPos = camera3D_->GetPosition();
+	XMFLOAT3 oldCameraRot = camera3D_->GetRotation();
 	// left eye translation (Mono Eye (0,0,0);
-	camera_->SetPosition((oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
+	camera3D_->SetPosition((oldCameraPos.x - 0.032), oldCameraPos.y, oldCameraPos.z);
   if (cam_id == 2 && HMD_DISTORTION)
 	{
-    camera_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
+    camera3D_->SetPosition((oldCameraPos.x + 0.032), oldCameraPos.y, oldCameraPos.z);
 	}
   else if (cam_id == 2 && !HMD_DISTORTION)
   {
-    camera_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
+    camera3D_->SetPosition(0.032, oldCameraPos.y, oldCameraPos.z);
   }
-  camera_->Render();
+  // Generate the view matrix based on the camera's position.
+  camera3D_->Render();
 	// Render the 3D Model
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
 
-	camera_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
-	camera_->SetRotation(oldCameraRot.x, oldCameraRot.y, oldCameraRot.z);
+	camera3D_->SetPosition(oldCameraPos.x, oldCameraPos.y, oldCameraPos.z);
+	camera3D_->SetRotation(oldCameraRot.x, oldCameraRot.y, oldCameraRot.z);
 
-	camera_->GetViewMatrix(viewMatrix);
+	camera3D_->GetViewMatrix(viewMatrix);
 	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoprojectionmatrix_,
 		model_->GetTexture());
 
@@ -713,7 +703,7 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 
 	// Get the world, view, and ortho matrices from the camera and d3d objects.
 	GetWorldMatrix(worldMatrix);
-	camera_->GetViewMatrix(viewMatrix);
+	camera3D_->GetViewMatrix(viewMatrix);
 	GetOrthoMatrix(orthoMatrix);
 
 	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -733,17 +723,17 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 		return false;
 	}
 
-	XMFLOAT3 oldRotation = camera_->GetRotation();
-	camera_->SetRotation(0.0f, 0.0f, 0.0f);
-	camera_->Render();
+	XMFLOAT3 oldRotation = camera3D_->GetRotation();
+	camera3D_->SetRotation(0.0f, 0.0f, 0.0f);
+	camera3D_->Render();
 	XMFLOAT4X4 cameraStreamMatrix;
-	camera_->GetViewMatrix(cameraStreamMatrix);
+	camera3D_->GetViewMatrix(cameraStreamMatrix);
 	
 	// Render the debug window using the texture shader.
 	result = shader_->Render(devicecontext_, eyeWindow->GetIndexCount(), worldMatrix, cameraStreamMatrix,
 		orthoMatrix, renderTexture->GetShaderResourceView());
 
-	camera_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
+	camera3D_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
 	if (!result)
 	{
 		return false;
@@ -827,10 +817,10 @@ void GraphicsAPI::shutDownD3D()
 	}
 
 	// Release the camera object.
-	if (camera_)
+	if (camera3D_)
 	{
-		delete camera_;
-		camera_ = 0;
+		delete camera3D_;
+		camera3D_ = 0;
 	}
 
 	// Before shutting down set to windowed mode or when you release the swap chain it will throw an exception.
@@ -1012,7 +1002,7 @@ void GraphicsAPI::SetBackBufferRenderTarget()
 
 void GraphicsAPI::StereoProjectionTransformation(int camID)
 {
-	XMFLOAT3 position = camera_->GetPosition();
+	XMFLOAT3 position = camera3D_->GetPosition();
 	Matrix4f proj = ovrMatrix4f_Projection(OculusHMD::instance()->eyeRenderDesc_[camID-1].Fov, screenNear_, screenDepth_, false);
 	
 	stereoprojectionmatrix_._11 = proj.M[0][0];
