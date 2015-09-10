@@ -73,7 +73,7 @@ void Camera::Render()
 	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
-	pitch = rotationX_ * 0.0174532925f;
+	pitch = rotationX_ * 0.0174532925f; // 0.0174532925f == 2*pi/360
 	yaw = rotationY_ * 0.0174532925f;
 	roll = rotationZ_ * 0.0174532925f;
 

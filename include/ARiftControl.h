@@ -25,26 +25,26 @@ class ARiftControl
     void handleSave();
     void handleCameraAutoFeatures();
 
-    void start() {running = true;};
-    void stop() {running = false;};
-    bool keepRunning() {return running;};
+    void start() {running_ = true;};
+    void stop() {running_ = false;};
+    bool keepRunning() {return running_;};
 
-    std::string base_save_name;
+    std::string base_save_name_;
 
 
-		float virtualcameraX_translation = 0.0f;
-		float virtualcameraY_translation = 0.0f;
-		float virtualcameraZ_translation = 0.0f;
+		float virtualcameraX_translation_ = 0.0f;
+		float virtualcameraY_translation_ = 0.0f;
+		float virtualcameraZ_translation_ = 0.0f;
 
-    int wait_time = 30;
-    IDSuEyeInputHandler *cam_input = NULL;
+    int wait_time_ = 30;
+    IDSuEyeInputHandler *cam_input_ = NULL;
     Shader::UndistortionBuffer left_cam_params_;
     Shader::UndistortionBuffer right_cam_params_;
   protected:
   private:
-    bool running = false;
-    int write_counter = 0;
-    float step = 0.2f;
+    bool running_ = false;
+    int write_counter_ = 0;
+    float step_ = 0.2f;
 };
 
 #endif // ARIFTCONTROL_H

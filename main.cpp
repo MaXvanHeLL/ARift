@@ -5,9 +5,9 @@
 #include "include/GraphicsAPI.h"
 #include "include\Helpers.h"
 #include <iostream>
+#include <string>
 #include <windows.h>
 
-using namespace cv;
 using namespace std;
 // ********************************************************************************
 DWORD WINAPI directXHandling(LPVOID lpArg);
@@ -149,7 +149,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
     frame_count++;
     fps++;
 
-    arift_c->cam_input->grabFrames();
+    arift_c->cam_input_->grabFrames();
 		frame_return = dx11->Frame();
     
 	}

@@ -2,8 +2,12 @@
 #include "../include/ARiftControl.h"
 #include "../include/BitMap.h"
 #include "../include/OculusHMD.h"
+#include "../include/Texture.h"
+#include "../include/IDSuEyeInputHandler.h"
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <utility>
 
 using namespace DirectX;
 
@@ -25,7 +29,6 @@ GraphicsAPI::GraphicsAPI()
 
   camera3D_ = 0;
   camera2D_ = 0;
-	model_ = 0;
 	bitmap_ = 0;
 	shader_ = 0;
 
@@ -36,6 +39,8 @@ GraphicsAPI::GraphicsAPI()
 	renderTextureRight_ = 0;
 	eyeWindowRight_ = 0;
 
+  current_model_idx_ = -1;
+  models_Mutex_ = CreateMutex(NULL, FALSE, L"Models Mutex");
 	modelRotation_ = 0.0f;
 
 	screenDepth_ = 0.0f;
@@ -380,18 +385,67 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	if (!camera3D_) 
     return false;
 
-	// Create the model object.
-	model_ = new Model();
-  if (!model_) 
+  // Create the first model object.
+  Model* model = new Model();
+  if (!model)
     return false;
 
-	// Initialize the model object.
-	result = model_->Initialize(device_, "data/Cube.txt", L"data/companion_cube.dds");
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
-		return false;
-	}
+  // Initialize the 1. model object.
+  // result = model_->Initialize(device_, L"data/texture.dds");
+  result = model->Initialize(device_, "data/Cube.txt", L"data/texture.dds");
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
+    return false;
+  }
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  current_model_idx_ = 0;
+  ReleaseMutex(models_Mutex_);
+
+  // Create the second model object.
+  model = NULL;
+  model = new Model();
+  if (!model)
+    return false;
+
+  // Initialize the 2. model object and translate a little to the left and back
+  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds", 0.0, 0.0, -10.0);
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
+    return false;
+  }
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  ReleaseMutex(models_Mutex_);
+
+  // Create the 3. model object.
+  model = NULL;
+  model = new Model();
+  if (!model)
+    return false;
+
+  // Initialize the 3. model object and translate a little to the right and front
+  result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 0.0, 0.0, 10.0);
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
+    return false;
+  }
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  models_.push_back(model);
+  ReleaseMutex(models_Mutex_);
+
+  highlight_texture_ = new Texture();
+  if (!highlight_texture_)
+    return false;
+  result = highlight_texture_->Initialize(device_, L"data/selected_red.dds");
+  if (!result)
+  {
+    std::cout << "Could not load highlight texture. " << std::endl;
+    return false;
+  }
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
@@ -651,9 +705,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	TurnZBufferOn();
 	//// ******************************** || 3D RENDERING || *********************************
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	model_->Render(devicecontext_);
-
 	// rotation
 	XMMATRIX rotationMatrix = XMMatrixRotationZ(modelRotation_);
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
@@ -663,22 +714,43 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// left eye translation (Mono Eye (0,0,0);
   camera3D_->SetPositionX(
     cam_id == 1
-     ? oldCameraState.positionX_ - 0.032
-     : oldCameraState.positionX_ + 0.032);
+     ? oldCameraState.positionX_ - 0.032f
+     : oldCameraState.positionX_ + 0.032f);
 
   if (cam_id == 2 && !HMD_DISTORTION)
   {
-    camera3D_->SetPositionX(0.032);
+    camera3D_->SetPositionX(0.032f);
   }
   // Generate the view matrix based on the camera's position.
   camera3D_->Render();
-	// Render the 3D Model
+  camera3D_->GetViewMatrix(viewMatrix);
+
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
+  
+  // Render the 3D Models
+  if (models_.empty())
+    std::cout << "GraphicsAPI::RenderScene WARNING no models found. models_ is empty! " << std::endl;
+  int i = 0;
+  for (std::vector<Model*>::iterator model = models_.begin(); model != models_.end(); model++, i++)
+  {
+    // Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+    (*model)->Render(devicecontext_);
+    ID3D11ShaderResourceView* model_tex = (*model)->GetTexture();
 
-	camera3D_->GetViewMatrix(viewMatrix);
-	result = shader_->Render(devicecontext_, model_->GetIndexCount(), worldMatrix, viewMatrix, stereoprojectionmatrix_,
-		model_->GetTexture());
+    // calculate full transformation
+    XMMATRIX modelTransform = (*model)->GetModelTransformation();
+    //modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
+    XMStoreFloat4x4(&worldMatrix, modelTransform);
+    result = shader_->Render(devicecontext_, (*model)->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
+      model_tex);
+
+    if (!result)
+    {
+      std::cout << "GraphicsAPI::RenderScene ERROR could not render model " << i << std::endl;
+      return false;
+    }
+  }
 
   camera3D_->RestoreState();
 	if (!result)
@@ -803,20 +875,30 @@ void GraphicsAPI::shutDownD3D()
 		shader_ = 0;
 	}
 
-	// Release the model object.
-	if (model_)
-	{
-		model_->Shutdown();
-		delete model_;
-		model_ = 0;
-	}
+  // Release the model objects.
+  WaitForSingleObject(models_Mutex_, INFINITE);
+  while (models_.size() > 0)
+  {
+    Model* current_model = models_.back();
+    current_model->Shutdown();
+    delete current_model;
+    current_model = NULL;
+    models_.pop_back();
+  }
+  ReleaseMutex(models_Mutex_);
+  CloseHandle(models_Mutex_);
 
-	// Release the camera object.
+	// Release the camera objects.
 	if (camera3D_)
 	{
 		delete camera3D_;
 		camera3D_ = 0;
 	}
+  if (camera2D_)
+  {
+    delete camera2D_;
+    camera2D_ = 0;
+  }
 
 	// Before shutting down set to windowed mode or when you release the swap chain it will throw an exception.
 	if (swapchain_)

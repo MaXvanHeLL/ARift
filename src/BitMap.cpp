@@ -109,7 +109,7 @@ bool BitMap::Render(ID3D11DeviceContext* deviceContext, int positionX, int posit
 	
 	if (AR_HMD_ENABLED)
 	{
-		result = texture_->Update(deviceContext, arift_control->cam_input, cam_id);
+		result = texture_->Update(deviceContext, arift_control->cam_input_, cam_id);
 		if (!result)
 		{
 			std::cout << "Error: Could not Update Bitmap Object!" << std::endl;
@@ -387,7 +387,7 @@ bool BitMap::LoadCameraStream(ID3D11Device* device, ARiftControl* arift_control)
 	}
 
 	// Initialize the texture object.
-  result = texture_->InitCameraStream(device, arift_control->cam_input);
+  result = texture_->InitCameraStream(device, arift_control->cam_input_);
 	if (!result)
 	{
 		return false;

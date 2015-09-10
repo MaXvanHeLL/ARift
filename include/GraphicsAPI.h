@@ -8,6 +8,8 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <utility>
+#include <vector>
 #include "../include/Camera.h"
 #include "../include/Model.h"
 #include "../include/Shader.h"
@@ -18,6 +20,7 @@
 #define HMD_DISTORTION 1
 class BitMap;
 class ARiftControl;
+class Texture;
 // -------------------------------
 
 class GraphicsAPI
@@ -40,7 +43,10 @@ private:
 
 	Camera* camera3D_;
   Camera* camera2D_;
-	Model* model_;
+  std::vector<Model*> models_;
+  int current_model_idx_;
+  Texture* highlight_texture_ = NULL;
+
 	BitMap* bitmap_;
 	Shader* shader_;
 
@@ -54,6 +60,7 @@ private:
 	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          
 public:
+  HANDLE models_Mutex_;
 	GraphicsAPI();
 	virtual ~GraphicsAPI();
 	

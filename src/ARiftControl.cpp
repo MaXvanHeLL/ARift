@@ -1,15 +1,15 @@
 #include "../include/IDSuEyeInputHandler.h"
 #include "../include/ARiftControl.h"
 #include "../include/GraphicsAPI.h"
-#include "../include/Helpers.h"
 #include "../include/OculusHMD.h"
+#include "../include/Helpers.h"
+
 
 
 #include <iostream>
 
 #define GetCurrentDir _getcwd
 
-using namespace cv;
 
 ARiftControl::ARiftControl()
 {
@@ -68,7 +68,7 @@ ARiftControl::ARiftControl()
 ARiftControl::~ARiftControl()
 {
   //dtor
-  if(cam_input != NULL) delete cam_input;
+  if(cam_input_ != NULL) delete cam_input_;
 }
 
 void ARiftControl::init()
@@ -82,18 +82,18 @@ void ARiftControl::init()
   } else {
     std::cout << "Error retrieving working path." << std::endl << std::endl;
   }
-  base_save_name = getTimeString();
-  cam_input = new IDSuEyeInputHandler();
-  cam_input->openCams(CAM1,CAM2);
-  cam_input->retrieveFrame(CAM1);
-  cam_input->retrieveFrame(CAM2);
+  base_save_name_ = getTimeString();
+  cam_input_ = new IDSuEyeInputHandler();
+  cam_input_->openCams(CAM1,CAM2);
+  cam_input_->retrieveFrame(CAM1);
+  cam_input_->retrieveFrame(CAM2);
 
 }
 
 void ARiftControl::getImages()
 {
-  cam_input->retrieveFrame(CAM1);
-  cam_input->retrieveFrame(CAM2);
+  cam_input_->retrieveFrame(CAM1);
+  cam_input_->retrieveFrame(CAM2);
 
 }
 
@@ -109,88 +109,88 @@ void ARiftControl::handleKey(char key)
     }
     case 'w':
     {
-      left_cam_params_.Nyc += step;
-      right_cam_params_.Nyc -= step;
+      left_cam_params_.Nyc += step_;
+      right_cam_params_.Nyc -= step_;
       break;
     }
     case 'a':
     {
-      left_cam_params_.Nxc -= step;
-      right_cam_params_.Nxc += step;
+      left_cam_params_.Nxc -= step_;
+      right_cam_params_.Nxc += step_;
       break;
     }
     case 's':
     {
-      left_cam_params_.Nyc -= step;
-      right_cam_params_.Nyc += step;
+      left_cam_params_.Nyc -= step_;
+      right_cam_params_.Nyc += step_;
       break;
     }
     case 'd':
     {
-      left_cam_params_.Nxc += step;
-      right_cam_params_.Nxc -= step;
+      left_cam_params_.Nxc += step_;
+      right_cam_params_.Nxc -= step_;
       break;
     }
 
     case 'W':
     {
-      left_cam_params_.Nyc += step;
-      right_cam_params_.Nyc += step;
+      left_cam_params_.Nyc += step_;
+      right_cam_params_.Nyc += step_;
       break;
     }
     case 'A':
     {
-      left_cam_params_.Nxc -= step;
-      right_cam_params_.Nxc -= step;
+      left_cam_params_.Nxc -= step_;
+      right_cam_params_.Nxc -= step_;
       break;
     }
     case 'S':
     {
-      left_cam_params_.Nyc -= step;
-      right_cam_params_.Nyc -= step;
+      left_cam_params_.Nyc -= step_;
+      right_cam_params_.Nyc -= step_;
       break;
     }
     case 'D':
     {
-      left_cam_params_.Nxc += step;
-      right_cam_params_.Nxc += step;
+      left_cam_params_.Nxc += step_;
+      right_cam_params_.Nxc += step_;
       break;
     }
 		case 'Z':
 		{
-			left_cam_params_.z += step;
-			right_cam_params_.z += step;
+			left_cam_params_.z += step_;
+			right_cam_params_.z += step_;
 			break;
 		}
 		case 'z':
 		{
-			left_cam_params_.z -= step;
-			right_cam_params_.z -= step;
+			left_cam_params_.z -= step_;
+			right_cam_params_.z -= step_;
 			break;
 		}
     case '1':
     {
-      step = 0.1f;
+      step_ = 0.1f;
       break;
     }
     case '2':
     {
-      step = 0.2f;
+      step_ = 0.2f;
       break;
     }
     case '3':
     {
-      step = 0.5f;
+      step_ = 0.5f;
       break;
     }
     case '4':
     {
-      step = 1.0f;
+      step_ = 1.0f;
       break;
     }
     case '5':
     {
-      step = 5.0f;
+      step_ = 5.0f;
       break;
     }
     case 'o':
@@ -201,18 +201,18 @@ void ARiftControl::handleKey(char key)
     }
     case 'P':
     {
-      cam_input->changeAutoSensorSpeeds(step);
+      cam_input_->changeAutoSensorSpeeds(step_);
       break;
     }
     case 'p':
     {
-      cam_input->changeAutoSensorSpeeds(-step);
+      cam_input_->changeAutoSensorSpeeds(-step_);
       break;
     }
     case 'f':
     {
-      std::cout << " cam " << CAM1 << " has " << cam_input->getFrameRate(CAM1) << "frames / s  |";
-      std::cout << " cam " << CAM2 << " has " << cam_input->getFrameRate(CAM2) << "frames / s" << std::endl;
+      std::cout << " cam " << CAM1 << " has " << cam_input_->getFrameRate(CAM1) << "frames / s  |";
+      std::cout << " cam " << CAM2 << " has " << cam_input_->getFrameRate(CAM2) << "frames / s" << std::endl;
       break;
     }
     default:
