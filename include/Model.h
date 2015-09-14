@@ -10,7 +10,28 @@ using namespace DirectX;
 
 class Model
 {
+  public:
+    struct State {
+      float positionX_ = 0.0f;
+      float positionY_ = 0.0f;
+      float positionZ_ = 0.0f;
+
+      float rotationX_ = 0.0f;
+      float rotationY_ = 0.0f;
+      float rotationZ_ = 0.0f;
+
+      float scale_x_ = 1.0f;
+      float scale_y_ = 1.0f;
+      float scale_z_ = 1.0f;
+
+      bool autoRotate_ = false;
+    };
+
 	private:
+
+    Model::State oldState_;
+    Model::State currentState_;
+
 		ID3D11Buffer* vertexBuffer_;
 		ID3D11Buffer* indexBuffer_;
 		int vertexCount_;
@@ -52,20 +73,13 @@ class Model
     void Scale(float scale);
     void Scale(float scale_x, float scale_y, float scale_z);
     void Move(float x, float y, float z);
-    bool auto_rotate_ = false;
+    void SaveState();
+    void SetState(Model::State newState);
+    Model::State GetCurrentState() { return currentState_; };
+    void RestoreState();
+    bool autoRotate_ = false;
     XMMATRIX GetModelTransformation();
 	private:
-
-    float positionX_ = 0.0f;
-    float positionY_ = 0.0f;
-    float positionZ_ = 0.0f;
-    float rotationX_ = 0.0f;
-    float rotationY_ = 0.0f;
-    float rotationZ_ = 0.0f;
-    bool true_scale_ = true;
-    float scale_x_ = 1.0f;
-    float scale_y_ = 1.0f;
-    float scale_z_ = 1.0f;
 
 		bool InitializeBuffers(ID3D11Device*);
 

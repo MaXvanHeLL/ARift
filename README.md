@@ -1,14 +1,36 @@
 # ARift
 developing augmented reality version of the Oculus rift
-## Usage 
 
-- The zoom can be adjusted via 'z' and 'Z'.
-- The images can be moved with relation to each other using 'w','a','s','d'.
-- The images can be moved with relation to the screen using 'W','A','S','D'.
-- The movement rate can be set using the keys '1' (= 0.1 pixel/step), '2' (= 0.2 px/st , standart), '3' (= 0.5 px/st), '4' (= 1 px/st), '5' (= 5 px/st).
-- The current translations with respect to the image centers (one for each eye) can be written to console by 'o'.
-- The current frames per second can be written to console by pressing 'f'
-- The speed of auo sensore shutter can adjusted via 'p' (slower), 'P' (faster). Standard value is the maximum of 100. 
+## Usage
+There are 3 user input modes: DEFAULT, MODEL, WORLD
+Upon startup the input mode is set to DEFAULT.
+Some keys perform the same action independent of the current user mode.
+Some keys have different behavior in differet input modes.
+
+The following key mapping is indipendent of the input mode:
+- 'm' changes the input mode 
+      planned changes to a model are discarded
+      (DEFAULT -> MODEL -> WORLD ->  DEFAULT) 
+      (no action if last key was identical)
+- '1'-'6' selects the step size for other actions
+- '+','-' multiplies / divides the stepsize by 10
+- 'f' write camera frame rates to console
+- 'P','p' increase/decrease camera auto sensor speed
+- 'o' print out left and right camera stream position and zoom as well as world translation offset
+
+Below the input mode dependent keymapping is documented:
+* DEFAULT
+- 'w','a','s','d' change relative position of the camera feeds on both eyes
+- 'q','e' change zoom of both camera feeds
+- 'r' recenter the virtual world on the current head pose
+* MODEL
+- 'w','a','s','d','q','e' change 3D position of currently highlighted virtual model
+- 'W','A','S','D','Q','E' change 3D rotation of currently highlighted virtual model
+- 'Backspace' reset current change to model
+- 'Carriage return' apply current change to model permanently
+- ',' , '.' select previous/next model and reset unsaved change before 
+* WORLD
+- 'w','a','s','d','q','e' change 3D position of all models
 
 ## Specifications of the development environments
 

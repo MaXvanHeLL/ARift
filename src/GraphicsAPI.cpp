@@ -40,7 +40,7 @@ GraphicsAPI::GraphicsAPI()
 	eyeWindowRight_ = 0;
 
   current_model_idx_ = -1;
-  models_Mutex_ = CreateMutex(NULL, FALSE, L"Models Mutex");
+  modelsMutex_ = CreateMutex(NULL, FALSE, L"Models Mutex");
 	modelRotation_ = 0.0f;
 
 	screenDepth_ = 0.0f;
@@ -51,6 +51,9 @@ GraphicsAPI::GraphicsAPI()
 
 GraphicsAPI::~GraphicsAPI()
 {
+  WaitForSingleObject(modelsMutex_, INFINITE);
+  ariftcontrol_->graphicsAPI_ = NULL;
+  ReleaseMutex(modelsMutex_);
 	shutDownD3D();
 }
 
@@ -398,10 +401,10 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
     return false;
   }
-  WaitForSingleObject(models_Mutex_, INFINITE);
+  WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
   current_model_idx_ = 0;
-  ReleaseMutex(models_Mutex_);
+  ReleaseMutex(modelsMutex_);
 
   // Create the second model object.
   model = NULL;
@@ -416,9 +419,9 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
     return false;
   }
-  WaitForSingleObject(models_Mutex_, INFINITE);
+  WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
-  ReleaseMutex(models_Mutex_);
+  ReleaseMutex(modelsMutex_);
 
   // Create the 3. model object.
   model = NULL;
@@ -433,9 +436,9 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
     return false;
   }
-  WaitForSingleObject(models_Mutex_, INFINITE);
+  WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
-  ReleaseMutex(models_Mutex_);
+  ReleaseMutex(modelsMutex_);
 
   highlight_texture_ = new Texture();
   if (!highlight_texture_)
@@ -541,32 +544,8 @@ bool GraphicsAPI::Frame()
 {
 	bool result;
 
-	// rotation
-	modelRotation_ += (float)XM_PI * 0.01f;
-	if (modelRotation_ > 360.0f)
-		modelRotation_ -= 360.0f;
-
-  static float cameraDistance = 0.0f;
-  static bool cameramode_movebackward = true;
-  if (cameramode_movebackward)
-  {
-    if (cameraDistance < -100.0f)
-      cameramode_movebackward = false;
-    else if (cameraDistance > -30.0f)
-      cameraDistance -= 0.1f;
-    else
-      cameraDistance -= 0.4f;
-  }
-  else
-  {
-    if (cameraDistance > 0.0f)
-      cameramode_movebackward = true;
-    else if (cameraDistance > -70.0f)
-      cameraDistance += 0.1f;
-    else
-      cameraDistance += 0.4f;
-  }
-  camera3D_->SetPositionZ(cameraDistance);
+	
+  camera3D_->SetPositionZ(-10.0f);
 
   XMFLOAT3 currentCameraRotation = camera3D_->GetRotation();
 
@@ -683,8 +662,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	
   Shader::UndistortionBuffer* undistBuffer = 
     cam_id == 1
-    ? &(ariftcontrol_->left_cam_params_)
-    : &(ariftcontrol_->right_cam_params_);
+    ? &(ariftcontrol_->leftCameraParameters_)
+    : &(ariftcontrol_->rightCameraParameters_);
 
   undistBuffer->width = (float)screenWidth_/2.0f;
   undistBuffer->height = (float)screenHeight_;
@@ -713,10 +692,11 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
   Camera::State oldCameraState = camera3D_->SaveState();
 	// left eye translation (Mono Eye (0,0,0);
+  float interPupillaryDistance = (0.064f + ariftcontrol_->interPupillaryOffset_);
   camera3D_->SetPositionX(
     cam_id == 1
-     ? oldCameraState.positionX_ - 0.032f
-     : oldCameraState.positionX_ + 0.032f);
+    ? oldCameraState.positionX_ - interPupillaryDistance / 2.0f
+    : oldCameraState.positionX_ + interPupillaryDistance / 2.0f);
 
   if (cam_id == 2 && !HMD_DISTORTION)
   {
@@ -730,6 +710,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
   
   // Render the 3D Models
+  XMMATRIX worldTranslationMatrix = XMMatrixTranslation(ariftcontrol_->worldOffsetX_, ariftcontrol_->worldOffsetY_, ariftcontrol_->worldOffsetZ_);
   if (models_.empty())
     std::cout << "GraphicsAPI::RenderScene WARNING no models found. models_ is empty! " << std::endl;
   int i = 0;
@@ -737,11 +718,21 @@ bool GraphicsAPI::RenderScene(int cam_id)
   {
     // Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
     (*model)->Render(devicecontext_);
-    ID3D11ShaderResourceView* model_tex = (*model)->GetTexture();
+    ID3D11ShaderResourceView* model_tex = NULL;
+    // highlight model(s) according to ariftcontrols settings
+    if ((ariftcontrol_->inputMode_ == ARiftControl::InputMode::MODEL && i == current_model_idx_) // one model
+      || ariftcontrol_->inputMode_ == ARiftControl::InputMode::WORLD) // all models
+    {
+      model_tex = highlight_texture_->GetTexture();
+    }
+    else // no highlighting
+    {
+      model_tex = (*model)->GetTexture();
+    }
 
     // calculate full transformation
     XMMATRIX modelTransform = (*model)->GetModelTransformation();
-    //modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
+    modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
     XMStoreFloat4x4(&worldMatrix, modelTransform);
     result = shader_->Render(devicecontext_, (*model)->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
       model_tex);
@@ -877,7 +868,7 @@ void GraphicsAPI::shutDownD3D()
 	}
 
   // Release the model objects.
-  WaitForSingleObject(models_Mutex_, INFINITE);
+  WaitForSingleObject(modelsMutex_, INFINITE);
   while (models_.size() > 0)
   {
     Model* current_model = models_.back();
@@ -886,8 +877,8 @@ void GraphicsAPI::shutDownD3D()
     current_model = NULL;
     models_.pop_back();
   }
-  ReleaseMutex(models_Mutex_);
-  CloseHandle(models_Mutex_);
+  ReleaseMutex(modelsMutex_);
+  CloseHandle(modelsMutex_);
 
 	// Release the camera objects.
 	if (camera3D_)
@@ -1102,4 +1093,42 @@ void GraphicsAPI::StereoProjectionTransformation(int camID)
 	stereoprojectionmatrix_._24 = proj.M[3][1];
 	stereoprojectionmatrix_._34 = proj.M[3][2];
 	stereoprojectionmatrix_._44 = proj.M[3][3];
+}
+
+int GraphicsAPI::SetNextModelActive()
+{
+  std::cout << " SetNextModelActive waiting for mutex " << std::endl;
+  int new_current_model_idx = -1;
+  WaitForSingleObject(modelsMutex_, INFINITE);
+  new_current_model_idx = current_model_idx_ = (current_model_idx_ + 1) % models_.size();
+  ReleaseMutex(modelsMutex_);
+  std::cout << "SetNextModelActive current model idx " << current_model_idx_ << std::endl;
+  return new_current_model_idx;
+}
+
+int GraphicsAPI::SetPreviousModelActive()
+{
+  std::cout << " SetPreviousModelActive waiting for mutex " << std::endl;
+  int new_current_model_idx = -1;
+  WaitForSingleObject(modelsMutex_, INFINITE);
+  new_current_model_idx = current_model_idx_ = (current_model_idx_ - 1) % models_.size();
+  ReleaseMutex(modelsMutex_);
+  std::cout << "SetPreviousModelActive current model idx " << current_model_idx_ << std::endl;
+  return new_current_model_idx;
+}
+
+Model::State GraphicsAPI::GetCurrentModelState()
+{
+  Model::State currentState;
+  WaitForSingleObject(modelsMutex_, INFINITE);
+  currentState = models_[current_model_idx_]->GetCurrentState();
+  ReleaseMutex(modelsMutex_);
+  return currentState;
+}
+
+void GraphicsAPI::SetCurrentModelState(Model::State newState)
+{
+  WaitForSingleObject(modelsMutex_, INFINITE);
+  models_[current_model_idx_]->SetState(newState);
+  ReleaseMutex(modelsMutex_);
 }

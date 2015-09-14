@@ -70,17 +70,15 @@ bool Model::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* texture
   if (!result)
     return false;
 
+  oldState_ = currentState_;
   return true;
 }
 
 void Model::Move(float x, float y, float z)
 {
-  for (int i = 0; i < vertexCount_; i++)
-  {
-    modeltype_[i].x += x;
-    modeltype_[i].y += y;
-    modeltype_[i].z += z;
-  }
+  currentState_.positionX_ += x;
+  currentState_.positionY_ += y;
+  currentState_.positionZ_ += z;
 }
 
 bool Model::ReInitializeBuffers(ID3D11Device* device)
@@ -129,11 +127,11 @@ ID3D11ShaderResourceView* Model::GetTexture()
 XMMATRIX Model::GetModelTransformation()
 {
   // scaling
-  XMMATRIX scalingMatrix = XMMatrixScaling(scale_x_, scale_y_, scale_z_);
+  XMMATRIX scalingMatrix = XMMatrixScaling(currentState_.scale_x_, currentState_.scale_y_, currentState_.scale_z_);
   // rotation
-  XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotationX_, rotationY_, rotationZ_);
+  XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(currentState_.rotationX_, currentState_.rotationY_, currentState_.rotationZ_);
   // translation
-  XMMATRIX translationMatrix = XMMatrixTranslation(positionX_, positionY_, positionZ_);
+  XMMATRIX translationMatrix = XMMatrixTranslation(currentState_.positionX_, currentState_.positionY_, currentState_.positionZ_);
   XMMATRIX modelTransform = XMMatrixMultiply(scalingMatrix, rotationMatrix);
   modelTransform = XMMatrixMultiply(modelTransform, translationMatrix);
   return modelTransform;
@@ -146,10 +144,24 @@ void Model::Scale(float scale)
 
 void Model::Scale(float scale_x, float scale_y, float scale_z)
 {
-  scale_x_ = scale_x;
-  scale_y_ = scale_y;
-  scale_z_ = scale_z;
-  true_scale_ = false;
+  currentState_.scale_x_ = scale_x;
+  currentState_.scale_y_ = scale_y;
+  currentState_.scale_z_ = scale_z;
+}
+
+void Model::SaveState()
+{
+  oldState_ = currentState_;
+}
+
+void Model::RestoreState()
+{
+  currentState_ = oldState_;
+}
+
+void Model::SetState(Model::State newState)
+{
+  currentState_ = newState;
 }
 
 bool Model::InitializeBuffers(ID3D11Device* device)

@@ -15,6 +15,7 @@
 #include "../include/Shader.h"
 #include "../include/EyeWindow.h"
 #include "../include/RenderTexture.h"
+#include "../include/OculusHMD.h"
 
 #define AR_HMD_ENABLED 1
 #define HMD_DISTORTION 1
@@ -44,8 +45,12 @@ private:
 	Camera* camera3D_;
   Camera* camera2D_;
   std::vector<Model*> models_;
-  int current_model_idx_;
+  int current_model_idx_ = 0;
   Texture* highlight_texture_ = NULL;
+
+  float world_offset_x_ = 0.0f;
+  float world_offset_y_ = 0.0f;
+  float world_offset_z_ = 0.0f;
 
 	BitMap* bitmap_;
 	Shader* shader_;
@@ -60,7 +65,7 @@ private:
 	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
          
 public:
-  HANDLE models_Mutex_;
+  HANDLE modelsMutex_;
 	GraphicsAPI();
 	virtual ~GraphicsAPI();
 	
@@ -73,6 +78,11 @@ public:
 
 	void BeginScene(float, float, float, float);
 	void EndScene();
+
+  int SetNextModelActive();
+  int SetPreviousModelActive();
+  Model::State GetCurrentModelState();
+  void SetCurrentModelState(Model::State newState);
 
 	// used for 2D (Bitmaps) - 3D (Models) Rendering on Screen
 	void TurnZBufferOn();

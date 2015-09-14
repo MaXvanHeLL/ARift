@@ -4,74 +4,78 @@
 #include "../include/OculusHMD.h"
 #include "../include/Helpers.h"
 
-
-
+#include <chrono>
+#include <ctime>
 #include <iostream>
+#include <math.h>
 
 #define GetCurrentDir _getcwd
 
 
 ARiftControl::ARiftControl()
 {
-  // Write read in from file for this
+  // TODO
+  // these calibrations needs to be recomputed with ocamcalib
+  // currently the vertical distortion is way larger than the horizintal one
+  // Write / read from file for this
   if (HMD_DISTORTION)
   {
-    left_cam_params_.Nxc = -112.4f;
-    left_cam_params_.Nyc = 67.2f;
-    left_cam_params_.z = -177.0f;
+    leftCameraParameters_.Nxc = -112.4f;
+    leftCameraParameters_.Nyc = 67.2f;
+    leftCameraParameters_.z = -177.0f;
   }
   else
   {
-    left_cam_params_.Nxc = -39.0f;
-    left_cam_params_.Nyc = 90.0f;
-    left_cam_params_.z = -250.0f;
+    leftCameraParameters_.Nxc = -39.0f;
+    leftCameraParameters_.Nyc = 90.0f;
+    leftCameraParameters_.z = -250.0f;
   }
-  left_cam_params_.p6 = 0.0f;
-  left_cam_params_.p5 = 16.264f;
-  left_cam_params_.p4 = 109.7055f;
-  left_cam_params_.p3 = 289.2309f;
-  left_cam_params_.p2 = 372.8583f;
-  left_cam_params_.p1 = 654.9667f;
-  left_cam_params_.p0 = 717.4737f;
-  left_cam_params_.c = 0.9999f;
-  left_cam_params_.d = -0.00019449f;
-  left_cam_params_.e = -0.00030843f;
-  left_cam_params_.xc = 214.4453f;
-  left_cam_params_.yc = 353.3091f;
+  leftCameraParameters_.p6 = 0.0f;
+  leftCameraParameters_.p5 = 16.264f;
+  leftCameraParameters_.p4 = 109.7055f;
+  leftCameraParameters_.p3 = 289.2309f;
+  leftCameraParameters_.p2 = 372.8583f;
+  leftCameraParameters_.p1 = 654.9667f;
+  leftCameraParameters_.p0 = 717.4737f;
+  leftCameraParameters_.c = 0.9999f;
+  leftCameraParameters_.d = -0.00019449f;
+  leftCameraParameters_.e = -0.00030843f;
+  leftCameraParameters_.xc = 214.4453f;
+  leftCameraParameters_.yc = 353.3091f;
 
   if (HMD_DISTORTION)
   {
-    right_cam_params_.Nxc = 112.4f;
-    right_cam_params_.Nyc = 67.2f;
-    right_cam_params_.z = -177.0f;
+    rightCameraParameters_.Nxc = 112.4f;
+    rightCameraParameters_.Nyc = 67.2f;
+    rightCameraParameters_.z = -177.0f;
   }
   else
   {
-    right_cam_params_.Nxc = 79.0f;
-    right_cam_params_.Nyc = 94.0f;
-    right_cam_params_.z = -250.0f;
+    rightCameraParameters_.Nxc = 79.0f;
+    rightCameraParameters_.Nyc = 94.0f;
+    rightCameraParameters_.z = -250.0f;
   }
-  right_cam_params_.p6 = 50.2189f;
-  right_cam_params_.p5 = 313.8636f;
-  right_cam_params_.p4 = 759.1147f;
-  right_cam_params_.p3 = 864.7065f;
-  right_cam_params_.p2 = 420.4562f;
-  right_cam_params_.p1 = 438.6404f;
-  right_cam_params_.p0 = 628.5998f;
-  right_cam_params_.c = 0.9993f;
-  right_cam_params_.d =  0.000046388f;
-  right_cam_params_.e = -0.000052631f;
-  right_cam_params_.xc = 238.1835f;
-  right_cam_params_.yc = 391.6032f;
+  rightCameraParameters_.p6 = 50.2189f;
+  rightCameraParameters_.p5 = 313.8636f;
+  rightCameraParameters_.p4 = 759.1147f;
+  rightCameraParameters_.p3 = 864.7065f;
+  rightCameraParameters_.p2 = 420.4562f;
+  rightCameraParameters_.p1 = 438.6404f;
+  rightCameraParameters_.p0 = 628.5998f;
+  rightCameraParameters_.c = 0.9993f;
+  rightCameraParameters_.d =  0.000046388f;
+  rightCameraParameters_.e = -0.000052631f;
+  rightCameraParameters_.xc = 238.1835f;
+  rightCameraParameters_.yc = 391.6032f;
 }
 
 ARiftControl::~ARiftControl()
 {
   //dtor
-  if(cam_input_ != NULL) delete cam_input_;
+  if(camInput_ != NULL) delete camInput_;
 }
 
-void ARiftControl::init()
+void ARiftControl::init(GraphicsAPI* graphicsAPI)
 {
   char cCurrentPath[FILENAME_MAX];
 
@@ -82,142 +86,476 @@ void ARiftControl::init()
   } else {
     std::cout << "Error retrieving working path." << std::endl << std::endl;
   }
-  base_save_name_ = getTimeString();
-  cam_input_ = new IDSuEyeInputHandler();
-  cam_input_->openCams(CAM1,CAM2);
-  cam_input_->retrieveFrame(CAM1);
-  cam_input_->retrieveFrame(CAM2);
-
+  baseSaveName_ = getTimeString();
+  camInput_ = new IDSuEyeInputHandler();
+  camInput_->openCams(CAM1,CAM2);
+  camInput_->retrieveFrame(CAM1);
+  camInput_->retrieveFrame(CAM2);
+  this->graphicsAPI_ = graphicsAPI;
 }
 
 void ARiftControl::getImages()
 {
-  cam_input_->retrieveFrame(CAM1);
-  cam_input_->retrieveFrame(CAM2);
+  camInput_->retrieveFrame(CAM1);
+  camInput_->retrieveFrame(CAM2);
 
 }
 
 void ARiftControl::handleKey(char key)
 {
+  if (graphicsAPI_ == NULL)
+  {
+    std::cout << "graphicsAPI unknown disable user input" << std::endl;
+    return;
+  }
+  std::cout << "key '" << (unsigned char)key << "' " << (int)key << std::endl;
   switch (key)
   {
+    case 'm':
+    {
+      if (lastKey_ == 'm') // ignore long/repeated keypress and requre last key to be different
+        break;
+
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          inputMode_ = InputMode::MODEL;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          // forget new model state if not promted by 'CR' before
+          newModelState_ = oldModelState_;
+          graphicsAPI_->SetCurrentModelState(oldModelState_);
+          inputMode_ = InputMode::WORLD;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          inputMode_ = InputMode::CAMERA;
+          //break; // TODO check if we need CAMERA input mode at all
+        }
+        case InputMode::CAMERA:
+        {
+          inputMode_ = InputMode::DEFAULT;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode " << (int)inputMode_ << " setting to default" << std::endl;
+          inputMode_ = InputMode::DEFAULT;
+          break;
+        }
+      }
+      std::cout << "Model changing mode is now " << inputMode_ << std::endl;
+      break;
+    }
+    case (8): // DEL
+    {
+      // revert model state to original
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_ = oldModelState_;
+        graphicsAPI_->SetCurrentModelState(oldModelState_);
+      }
+    }
+    case (13): // CR
+    {
+      // forget old model state and keep changes
+      if (inputMode_ == InputMode::MODEL)
+      {
+        oldModelState_ = newModelState_;
+        graphicsAPI_->SetCurrentModelState(newModelState_);
+      }
+      break;
+    }
+    case '.':
+    {
+      if (inputMode_ == InputMode::MODEL)
+      {
+        // forget new model state if not promted by 'CR' before
+        newModelState_ = oldModelState_;
+        graphicsAPI_->SetCurrentModelState(oldModelState_);
+        // set next model as current model
+        graphicsAPI_->SetNextModelActive();
+        newModelState_ = graphicsAPI_->GetCurrentModelState();
+        oldModelState_ = newModelState_;
+      }
+      break;
+    }
+    case ',':
+    {
+      if (inputMode_ == InputMode::MODEL)
+      {
+        // forget new model state if not promted by 'CR' before
+        newModelState_ = oldModelState_;
+        graphicsAPI_->SetCurrentModelState(oldModelState_);
+        // set previous model as current model
+        graphicsAPI_->SetPreviousModelActive();
+        newModelState_ = graphicsAPI_->GetCurrentModelState();
+        oldModelState_ = newModelState_;
+      }
+      break;
+    }
     case 'r':
     {
-      OculusHMD::instance()->Recenter();
-      std::cout << "recenter on current pose" << std::endl;
+      if (inputMode_ == InputMode::DEFAULT)
+      {
+        OculusHMD::instance()->Recenter();
+        std::cout << "recenter on current pose" << std::endl;
+      }
+      // ignore long keypress and requre last key to be different
+      if (inputMode_ == InputMode::MODEL && lastKey_ != 'r')
+      {
+        newModelState_.autoRotate_ = newModelState_.autoRotate_;
+        std::cout << "model auto rotate is " << newModelState_.autoRotate_ << std::endl;
+      }
+      break;
+    }
+    case 't':
+    {
+      //if (lastKey_ == 't') // ignore long keypress and requre last key to be different
+      //  break;
+      //if (inputMode_ == InputMode::MODEL)
+      //{
+      //  model_auto_translate_ = !model_auto_translate_;
+      //  std::cout << "model auto translate is " << model_auto_translate_ << std::endl;
+      //}
       break;
     }
     case 'w':
     {
-      left_cam_params_.Nyc += step_;
-      right_cam_params_.Nyc -= step_;
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nyc += step_;
+          rightCameraParameters_.Nyc -= step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.positionY_ += step_;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          worldOffsetY_ += step_;
+          break;
+        }
+        case InputMode::CAMERA:
+        {
+          cameraOffsetY_ += step_;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
+      }
       break;
     }
     case 'a':
     {
-      left_cam_params_.Nxc -= step_;
-      right_cam_params_.Nxc += step_;
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nxc -= step_;
+          rightCameraParameters_.Nxc += step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.positionX_ -= step_;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          worldOffsetX_ -= step_;
+          break;
+        }
+        case InputMode::CAMERA:
+        {
+          cameraOffsetX_ -= step_;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
+      }
       break;
     }
     case 's':
     {
-      left_cam_params_.Nyc -= step_;
-      right_cam_params_.Nyc += step_;
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nyc -= step_;
+          rightCameraParameters_.Nyc += step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.positionY_ -= step_;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          worldOffsetY_ -= step_;
+          break;
+        }
+        case InputMode::CAMERA:
+        {
+          cameraOffsetY_ -= step_;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
+      }
       break;
     }
     case 'd':
     {
-      left_cam_params_.Nxc += step_;
-      right_cam_params_.Nxc -= step_;
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nxc += step_;
+          rightCameraParameters_.Nxc -= step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.positionX_ += step_;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          worldOffsetX_ += step_;
+          break;
+        }
+        case InputMode::CAMERA:
+        {
+          cameraOffsetX_ += step_;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
+      }
       break;
     }
-
+    case 'q':
+    {
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.z += step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.positionZ_ += step_;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          worldOffsetZ_ += step_;
+          break;
+        }
+        case InputMode::CAMERA:
+        {
+          cameraOffsetZ_ += step_;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
+      }
+      break;
+    }
+    case 'e':
+    {
+      switch (inputMode_)
+      {
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.z -= step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.positionZ_ -= step_;
+          break;
+        }
+        case InputMode::WORLD:
+        {
+          worldOffsetZ_ -= step_;
+          break;
+        }
+        case InputMode::CAMERA:
+        {
+          cameraOffsetZ_ -= step_;
+          break;
+        }
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
+      }
+      break;
+    }
     case 'W':
     {
-      left_cam_params_.Nyc += step_;
-      right_cam_params_.Nyc += step_;
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_.rotationY_ += step_;
+      }
       break;
     }
     case 'A':
     {
-      left_cam_params_.Nxc -= step_;
-      right_cam_params_.Nxc -= step_;
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_.rotationX_ -= step_;
+      }
       break;
     }
     case 'S':
     {
-      left_cam_params_.Nyc -= step_;
-      right_cam_params_.Nyc -= step_;
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_.rotationY_ -= step_;
+      }
       break;
     }
     case 'D':
     {
-      left_cam_params_.Nxc += step_;
-      right_cam_params_.Nxc += step_;
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_.rotationX_ += step_;
+      }
       break;
     }
-		case 'Z':
-		{
-			left_cam_params_.z += step_;
-			right_cam_params_.z += step_;
-			break;
-		}
-		case 'z':
-		{
-			left_cam_params_.z -= step_;
-			right_cam_params_.z -= step_;
-			break;
-		}
+    case 'Q':
+    {
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_.rotationZ_ += step_;
+      }
+      break;
+    }
+    case 'E':
+    {
+      if (inputMode_ == InputMode::MODEL)
+      {
+        newModelState_.rotationZ_ -= step_;
+      }
+      break;
+    }
+    case 'c':
+    {
+      interPupillaryOffset_ -= step_ * 0.1f;
+      break;
+    }
+    case 'C':
+    {
+      interPupillaryOffset_ += step_ * 0.1f;
+      break;
+    }
+    case '+':
+    {
+      step_ *= 10.0f;
+      std::cout << "step_ " << step_ << std::endl;
+      break;
+    }
+    case '-':
+    {
+      step_ /= 10.0f;
+      std::cout << "step_ " << step_ << std::endl;
+      break;
+    }
     case '1':
     {
-      step_ = 0.1f;
+      step_ = 1.0f;
+      std::cout << "step_ " << step_ << std::endl;
       break;
     }
     case '2':
     {
-      step_ = 0.2f;
+      step_ = 2.0f;
+      std::cout << "step_ " << step_ << std::endl;
       break;
     }
     case '3':
     {
-      step_ = 0.5f;
+      step_ = 4.0f;
+      std::cout << "step_ " << step_ << std::endl;
       break;
     }
     case '4':
     {
-      step_ = 1.0f;
+      step_ = 6.0f;
+      std::cout << "step_ " << step_ << std::endl;
       break;
     }
     case '5':
     {
-      step_ = 5.0f;
+      step_ = 8.0f;
+      std::cout << "step_ " << step_ << std::endl;
+      break;
+    }
+    case '6':
+    {
+      step_ = 10.0f;
+      std::cout << "step_ " << step_ << std::endl;
       break;
     }
     case 'o':
     {
-      std::cout << "(x, y, z) left:  (" << left_cam_params_.Nxc << ", " << left_cam_params_.Nyc << ", " << left_cam_params_.z << " ) ";
-      std::cout << " right: (" << right_cam_params_.Nxc << ", " << right_cam_params_.Nyc << ", " << right_cam_params_.z << " ) " << std::endl;
+      std::cout << "(x, y, z) left:  (" << leftCameraParameters_.Nxc << ", " << leftCameraParameters_.Nyc << ", " << leftCameraParameters_.z << " ) ";
+      std::cout << " right: (" << rightCameraParameters_.Nxc << ", " << rightCameraParameters_.Nyc << ", " << rightCameraParameters_.z << " ) " << std::endl;
+      std::cout << "world translation offset (x,y,z): (" << worldOffsetX_ << ", " << worldOffsetY_ << ", " << worldOffsetZ_ << " ) " << std::endl;
       break;
     }
     case 'P':
     {
-      cam_input_->changeAutoSensorSpeeds(step_);
+      camInput_->changeAutoSensorSpeeds(step_);
       break;
     }
     case 'p':
     {
-      cam_input_->changeAutoSensorSpeeds(-step_);
+      camInput_->changeAutoSensorSpeeds(-step_);
       break;
     }
     case 'f':
     {
-      std::cout << " cam " << CAM1 << " has " << cam_input_->getFrameRate(CAM1) << "frames / s  |";
-      std::cout << " cam " << CAM2 << " has " << cam_input_->getFrameRate(CAM2) << "frames / s" << std::endl;
+      std::cout << " cam " << CAM1 << " has " << camInput_->getFrameRate(CAM1) << "frames / s  |";
+      std::cout << " cam " << CAM2 << " has " << camInput_->getFrameRate(CAM2) << "frames / s" << std::endl;
       break;
     }
     default:
       break;
   }
+  lastKey_ = key;
+  // write newModtelState so that it will be rendered for the user
+  if (inputMode_ == InputMode::MODEL)
+    graphicsAPI_->SetCurrentModelState(newModelState_);
 }
 
 void ARiftControl::hanldeFlip()

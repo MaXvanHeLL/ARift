@@ -30,7 +30,7 @@ int main(int, char**)
 
   if (AR_HMD_ENABLED)
   {
-	  cont.init();
+    cont.init(dx11);
     std::cout << "init done" << std::endl;
   }  
 
@@ -149,7 +149,7 @@ DWORD WINAPI directXHandling(LPVOID lpArg)
     frame_count++;
     fps++;
 
-    arift_c->cam_input_->grabFrames();
+    arift_c->camInput_->grabFrames();
 		frame_return = dx11->Frame();
     
 	}
