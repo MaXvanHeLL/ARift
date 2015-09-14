@@ -3,7 +3,6 @@
 #include "uEye.h"
 #include <vector>
 #include <utility>
-//#include <opencv2/core/core.hpp>
 
 #define CAMERA_CHANNELS 4
 #define CAMERA_WIDTH 752

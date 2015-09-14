@@ -96,8 +96,8 @@ public:
 	HWND window_;
 	WNDCLASSEX window_class_;
 	LPCWSTR applicationName_;
-	unsigned int screenwidth_;
-	unsigned int screenheight_;
+	unsigned int screenWidth_;
+	unsigned int screenHeight_;
 
 	// Direct X stuff
 	bool vsync_enabled_;

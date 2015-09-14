@@ -11,10 +11,10 @@ using namespace DirectX;
 class Model
 {
 	private:
-		ID3D11Buffer* vertexbuffer_;
-		ID3D11Buffer* indexbuffer_;
-		int vertexcount_;
-		int indexcount_;
+		ID3D11Buffer* vertexBuffer_;
+		ID3D11Buffer* indexBuffer_;
+		int vertexCount_;
+		int indexCount_;
 		Texture* texture_;
 
 		struct VertexType

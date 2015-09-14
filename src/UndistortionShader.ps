@@ -62,10 +62,6 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   float theta4;
   float rho;
   float eps = pow(0.1f, 13);
-  // Translation only
-  //mappedPoint.x = input.tex.x + Nxc / width;
-  //mappedPoint.y = input.tex.y + Nyc / height;
-
   row = (input.tex.x - 0.5)*width + Nxc;
   col = (input.tex.y - 0.5)*height + Nyc;
   norm = sqrt(row*row + col*col);
@@ -76,8 +72,8 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   theta = atan(z / norm);
   theta2 = theta*theta;
   theta4 = theta2*theta2;
-  //    p0 + p1*theta + p2*theta^2 + p3*theta^3 + p4*theta^4 + p5*theta^5 + p6*theta^6
-  rho = p0 + p1*theta + p2*theta2 + p3*theta2*theta + p4*theta4 + p5*theta4*theta + p6*theta4*theta2;
+  //    p0 + p1*theta + p2*theta^2 + p3*theta^3      + p4*theta^4 + p5*theta^5      + p6*theta^6
+  rho = p0 + p1*theta + p2*theta2  + p3*theta2*theta + p4*theta4  + p5*theta4*theta + p6*theta4*theta2;
   col = (col / norm)*rho;
   row = (row / norm)*rho;
   col = col*c + row*d + xc;
@@ -86,18 +82,8 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   mappedPoint.x = row / height;
   textureColor = shaderTexture.Sample(SampleType, mappedPoint);
 
-  // no wrap
+  // no wrapping, set border region black
   if ((mappedPoint.x < 0.0f || mappedPoint.x > 1.0f) || (mappedPoint.y < 0.0f || mappedPoint.y > 1.0f))
     textureColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-  // DEBUG
-  //if (mappedPoint.x < 0.0f)
-  //  textureColor.r =  0.25;
-  //if (mappedPoint.y < 0.0f)
-  //  textureColor.g =  0.25;
-
-  //if (mappedPoint.y > 1.0f)
-  //  textureColor.g = 1.0;
-  //if (mappedPoint.x > 1.0f)
-  //  textureColor.r = 1.0;
   return textureColor;
 }

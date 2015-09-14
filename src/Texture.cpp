@@ -41,9 +41,6 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 	ZeroMemory(&tdesc, sizeof(tdesc));
 	ZeroMemory(&srInitData, sizeof(srInitData));
 	ZeroMemory(&srDesc, sizeof(srDesc));
-
-	// NOTE: Just for dirty Synchronisation. If Camera Stream works, doing better solution for this..
-	// Sleep(500);
 	
 	tdesc.ArraySize = 1;
 	tdesc.BindFlags =      D3D11_BIND_SHADER_RESOURCE;

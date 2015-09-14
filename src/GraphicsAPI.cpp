@@ -65,8 +65,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	ariftcontrol_ = arift_control;
 
-	screenwidth_ =  screenWidth;
-	screenheight_ = screenHeight;
+	screenWidth_ =  screenWidth;
+	screenHeight_ = screenHeight;
 
 	HRESULT result;
 	IDXGIFactory* factory;
@@ -409,7 +409,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (!model)
     return false;
 
-  // Initialize the 2. model object and translate a little to the left and back
+  // Initialize the 2. model object and translate
   result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds", 0.0, 0.0, -10.0);
   if (!result)
   {
@@ -426,7 +426,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (!model)
     return false;
 
-  // Initialize the 3. model object and translate a little to the right and front
+  // Initialize the 3. model object and translate
   result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 0.0, 0.0, 10.0);
   if (!result)
   {
@@ -454,7 +454,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	
 	// Initialize the bitmap object.
 	if (AR_HMD_ENABLED)
-		result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
+		//result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control, screenWidth,  screenHeight);
+    result = bitmap_->InitializeCameras(device_, screenWidth, screenHeight, arift_control);
 	else
 		result = bitmap_->Initialize(device_, screenWidth, screenHeight, L"data/texture.dds", screenWidth, screenHeight);
 
@@ -674,7 +675,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	TurnZBufferOff();
 
 	// Put the bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	result = bitmap_->Render(devicecontext_, 0, 0, ariftcontrol_, cam_id);
+	result = bitmap_->Render(devicecontext_, ariftcontrol_, cam_id);
 	if (!result)
 	{
 		return false;
@@ -685,8 +686,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
     ? &(ariftcontrol_->left_cam_params_)
     : &(ariftcontrol_->right_cam_params_);
 
-  undistBuffer->width = (float)screenwidth_/2.0f;
-  undistBuffer->height = (float)screenheight_;
+  undistBuffer->width = (float)screenWidth_/2.0f;
+  undistBuffer->height = (float)screenHeight_;
 
   // Render the bitmap with the texture shader.
   // Generate the view matrix based on the camera's position.
@@ -781,7 +782,7 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 	}
 	else if (eye == 1)
 	{
-		result = eyeWindow->Render(devicecontext_, screenwidth_ / 2, 0);
+		result = eyeWindow->Render(devicecontext_, screenWidth_ / 2, 0);
 		eye = 0;
 	}
 

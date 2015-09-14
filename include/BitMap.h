@@ -8,6 +8,7 @@
 #include <DirectXMath.h>
 #include "Texture.h"
 #include "GraphicsAPI.h"
+#include "IDSuEyeInputHandler.h"
 
 using namespace DirectX;
 
@@ -17,14 +18,15 @@ class Texture;
 class BitMap
 {
 private:
-	ID3D11Buffer* vertexbuffer_;
-	ID3D11Buffer* indexbuffer_;
-	int vertexcount_, indexcount_;
+	ID3D11Buffer* vertexBuffer_;
+	ID3D11Buffer* indexBuffer_;
+	int vertexCount_, indexCount_;
 	Texture* texture_;
 
-	int screenwidth_, screenheight_;
-	int bitmapwidth_, bitmapheight_;
-	int previousposX_, previousposY_;
+	int screenWidth_, screenHeight_;
+	int bitmapWidth_, bitmapHeight_;
+	int previousPosX_, previousPosY_;
+  double scale_ = 0.0f;
 
 	struct VertexType
 	{
@@ -38,9 +40,11 @@ public:
 	~BitMap();
 
 	bool Initialize(ID3D11Device*, int, int, WCHAR*, int, int);
-	bool InitializeCameras(ID3D11Device*, int, int, ARiftControl*, int, int);
+  bool InitializeCameras(ID3D11Device* device, int screenWidth, int screenHeight, ARiftControl* arift_control,
+                         int bitmapWidth = CAMERA_WIDTH, int bitmapHeight = CAMERA_HEIGHT);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, int, ARiftControl*, int);
+  bool Render(ID3D11DeviceContext* deviceContext, ARiftControl* ariftControl, int camId);
+  bool Render(ID3D11DeviceContext* deviceContext, ARiftControl* ariftControl, int camId, int positionX, int positionY);
 
 	int GetIndexCount();
 	ID3D11ShaderResourceView* GetTexture(); 
