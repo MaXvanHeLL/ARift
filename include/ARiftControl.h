@@ -47,9 +47,9 @@ class ARiftControl
     Model::State oldModelState_;
     Model::State newModelState_;
 
-    float worldOffsetX_ = 0.0f;
-    float worldOffsetY_ = 0.0f;
-    float worldOffsetZ_ = 0.0f;
+    float worldOffsetX_ = -2.4f;
+    float worldOffsetY_ = 4.6f;
+    float worldOffsetZ_ = 9.2f;
 
     float cameraOffsetX_ = 0.0f;
     float cameraOffsetY_ = 0.0f;
@@ -63,7 +63,10 @@ class ARiftControl
     bool running_ = false;
     int writeCounter_ = 0;
     float step_ = 0.2f;
-    char lastKey_ = 0;
+    char lastKey_ = 0; 
+    std::chrono::time_point<std::chrono::system_clock> lastKeyTime;
+    std::chrono::time_point<std::chrono::system_clock> programStartTime;
+    std::chrono::duration<double> minimumKeyInputDelay;
 };
 
 #endif // ARIFTCONTROL_H

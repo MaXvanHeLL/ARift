@@ -67,6 +67,10 @@ ARiftControl::ARiftControl()
   rightCameraParameters_.e = -0.000052631f;
   rightCameraParameters_.xc = 238.1835f;
   rightCameraParameters_.yc = 391.6032f;
+
+  lastKeyTime = std::chrono::system_clock::now();
+  programStartTime = lastKeyTime;
+  minimumKeyInputDelay = std::chrono::duration<double>(0.05); // seconds
 }
 
 ARiftControl::~ARiftControl()
@@ -108,14 +112,18 @@ void ARiftControl::handleKey(char key)
     std::cout << "graphicsAPI unknown disable user input" << std::endl;
     return;
   }
-  std::cout << "key '" << (unsigned char)key << "' " << (int)key << std::endl;
+  std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
+  std::chrono::duration<double> timeSinceLastKey = currentTime - lastKeyTime;
+  std::cout << "time total: " << std::chrono::duration<double>(currentTime - programStartTime).count();
+  std::cout << " since: " << timeSinceLastKey.count() << " key " << (int)key << std::endl;
   switch (key)
   {
     case 'm':
     {
-      if (lastKey_ == 'm') // ignore long/repeated keypress and requre last key to be different
+      // ignore long/fast repeating keypress
+      if (lastKey_ == 'm' && timeSinceLastKey < minimumKeyInputDelay)
         break;
-
+      lastKeyTime = std::chrono::system_clock::now();
       switch (inputMode_)
       {
         case InputMode::DEFAULT:
@@ -172,6 +180,10 @@ void ARiftControl::handleKey(char key)
     }
     case '.':
     {
+      // ignore long/fast repeating keypress
+      if (lastKey_ == '.' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
+      lastKeyTime = std::chrono::system_clock::now();
       if (inputMode_ == InputMode::MODEL)
       {
         // forget new model state if not promted by 'CR' before
@@ -186,6 +198,10 @@ void ARiftControl::handleKey(char key)
     }
     case ',':
     {
+      // ignore long/fast repeating keypress
+      if (lastKey_ == ',' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
+      lastKeyTime = std::chrono::system_clock::now();
       if (inputMode_ == InputMode::MODEL)
       {
         // forget new model state if not promted by 'CR' before
@@ -205,11 +221,14 @@ void ARiftControl::handleKey(char key)
         OculusHMD::instance()->Recenter();
         std::cout << "recenter on current pose" << std::endl;
       }
-      // ignore long keypress and requre last key to be different
+      // ignore long/fast repeating keypress
+      if (lastKey_ == 'r' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
       if (inputMode_ == InputMode::MODEL && lastKey_ != 'r')
       {
         newModelState_.autoRotate_ = newModelState_.autoRotate_;
         std::cout << "model auto rotate is " << newModelState_.autoRotate_ << std::endl;
+        lastKeyTime = std::chrono::system_clock::now();
       }
       break;
     }
@@ -480,14 +499,22 @@ void ARiftControl::handleKey(char key)
     }
     case '+':
     {
+      // ignore long/fast repeating keypress
+      if (lastKey_ == '+' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
       step_ *= 10.0f;
       std::cout << "step_ " << step_ << std::endl;
+      lastKeyTime = std::chrono::system_clock::now();
       break;
     }
     case '-':
     {
+      // ignore long/fast repeating keypress
+      if (lastKey_ == '-' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
       step_ /= 10.0f;
       std::cout << "step_ " << step_ << std::endl;
+      lastKeyTime = std::chrono::system_clock::now();
       break;
     }
     case '1':
@@ -528,9 +555,13 @@ void ARiftControl::handleKey(char key)
     }
     case 'o':
     {
+      // ignore long/fast repeating keypress
+      if (lastKey_ == 'o' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
       std::cout << "(x, y, z) left:  (" << leftCameraParameters_.Nxc << ", " << leftCameraParameters_.Nyc << ", " << leftCameraParameters_.z << " ) ";
       std::cout << " right: (" << rightCameraParameters_.Nxc << ", " << rightCameraParameters_.Nyc << ", " << rightCameraParameters_.z << " ) " << std::endl;
       std::cout << "world translation offset (x,y,z): (" << worldOffsetX_ << ", " << worldOffsetY_ << ", " << worldOffsetZ_ << " ) " << std::endl;
+      lastKeyTime = std::chrono::system_clock::now();
       break;
     }
     case 'P':
@@ -545,8 +576,12 @@ void ARiftControl::handleKey(char key)
     }
     case 'f':
     {
+      // ignore long/fast repeating keypress
+      if (lastKey_ == 'f' && timeSinceLastKey < minimumKeyInputDelay)
+        break;
       std::cout << " cam " << CAM1 << " has " << camInput_->getFrameRate(CAM1) << "frames / s  |";
       std::cout << " cam " << CAM2 << " has " << camInput_->getFrameRate(CAM2) << "frames / s" << std::endl;
+      lastKeyTime = std::chrono::system_clock::now();
       break;
     }
     default:
