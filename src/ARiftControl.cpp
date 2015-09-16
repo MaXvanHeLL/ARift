@@ -30,18 +30,23 @@ ARiftControl::ARiftControl()
     leftCameraParameters_.Nyc = 90.0f;
     leftCameraParameters_.z = -250.0f;
   }
-  leftCameraParameters_.p6 = 0.0f;
-  leftCameraParameters_.p5 = 16.264f;
-  leftCameraParameters_.p4 = 109.7055f;
-  leftCameraParameters_.p3 = 289.2309f;
-  leftCameraParameters_.p2 = 372.8583f;
-  leftCameraParameters_.p1 = 654.9667f;
-  leftCameraParameters_.p0 = 717.4737f;
-  leftCameraParameters_.c = 0.9999f;
-  leftCameraParameters_.d = -0.00019449f;
-  leftCameraParameters_.e = -0.00030843f;
-  leftCameraParameters_.xc = 214.4453f;
-  leftCameraParameters_.yc = 353.3091f;
+  leftCameraParameters_.p9 = 0.030943828391667e+04;
+  leftCameraParameters_.p8 = 0.282942249820711e+04;
+  leftCameraParameters_.p7 = 1.150239951453818e+04;
+  leftCameraParameters_.p6 = 2.755836619048961e+04;
+  leftCameraParameters_.p5 = 4.338342090721455e+04;
+  leftCameraParameters_.p4 = 4.700973643667896e+04;
+  leftCameraParameters_.p3 = 3.520272074605963e+04;
+  leftCameraParameters_.p2 = 1.746733371991807e+04;
+  leftCameraParameters_.p1 = 0.555549279942498e+04;
+  leftCameraParameters_.p0 = 0.132980078899012e+04;
+  leftCameraParameters_.c = 1.000374008613590;
+  leftCameraParameters_.d = -9.611375125204626e-05;
+  leftCameraParameters_.e = -1.127978103886716e-04;
+  leftCameraParameters_.xc = 2.119393300155207e+02;
+  leftCameraParameters_.yc = 3.546241749915297e+02;
+  leftCameraParameters_.height = 752.0f;
+  leftCameraParameters_.width = 480.0f;
 
   if (HMD_DISTORTION)
   {
@@ -55,6 +60,9 @@ ARiftControl::ARiftControl()
     rightCameraParameters_.Nyc = 94.0f;
     rightCameraParameters_.z = -250.0f;
   }
+  rightCameraParameters_.p9 = 0.0;
+  rightCameraParameters_.p8 = 0.0;
+  rightCameraParameters_.p7 = 0.0;
   rightCameraParameters_.p6 = 50.2189f;
   rightCameraParameters_.p5 = 313.8636f;
   rightCameraParameters_.p4 = 759.1147f;
@@ -67,6 +75,8 @@ ARiftControl::ARiftControl()
   rightCameraParameters_.e = -0.000052631f;
   rightCameraParameters_.xc = 238.1835f;
   rightCameraParameters_.yc = 391.6032f;
+  rightCameraParameters_.width = 752.0f;
+  rightCameraParameters_.height = 480.0f;
 
   lastKeyTime = std::chrono::system_clock::now();
   programStartTime = lastKeyTime;
@@ -382,6 +392,7 @@ void ARiftControl::handleKey(char key)
         case InputMode::DEFAULT:
         {
           leftCameraParameters_.z += step_;
+          rightCameraParameters_.z -= step_;
           break;
         }
         case InputMode::MODEL:
@@ -414,6 +425,7 @@ void ARiftControl::handleKey(char key)
         case InputMode::DEFAULT:
         {
           leftCameraParameters_.z -= step_;
+          rightCameraParameters_.z += step_;
           break;
         }
         case InputMode::MODEL:
@@ -441,49 +453,163 @@ void ARiftControl::handleKey(char key)
     }
     case 'W':
     {
-      if (inputMode_ == InputMode::MODEL)
+      switch (inputMode_)
       {
-        newModelState_.rotationY_ += step_;
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nyc += step_;
+          rightCameraParameters_.Nyc += step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.rotationY_ += step_;
+          break;
+        }
+        case InputMode::WORLD:
+          break;
+        case InputMode::CAMERA:
+          break;
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
       }
       break;
     }
     case 'A':
     {
-      if (inputMode_ == InputMode::MODEL)
+      switch (inputMode_)
       {
-        newModelState_.rotationX_ -= step_;
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nxc += step_;
+          rightCameraParameters_.Nxc += step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.rotationX_ -= step_;
+          break;
+        }
+        case InputMode::WORLD:
+          break;
+        case InputMode::CAMERA:
+          break;
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
       }
       break;
     }
     case 'S':
     {
-      if (inputMode_ == InputMode::MODEL)
+      switch (inputMode_)
       {
-        newModelState_.rotationY_ -= step_;
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nyc -= step_;
+          rightCameraParameters_.Nyc -= step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.rotationY_ -= step_;
+          break;
+        }
+        case InputMode::WORLD:
+          break;
+        case InputMode::CAMERA:
+          break;
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
       }
       break;
     }
     case 'D':
     {
-      if (inputMode_ == InputMode::MODEL)
+      switch (inputMode_)
       {
-        newModelState_.rotationX_ += step_;
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.Nxc -= step_;
+          rightCameraParameters_.Nxc -= step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.rotationX_ += step_;
+          break;
+        }
+        case InputMode::WORLD:
+          break;
+        case InputMode::CAMERA:
+          break;
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
       }
       break;
     }
     case 'Q':
     {
-      if (inputMode_ == InputMode::MODEL)
+      switch (inputMode_)
       {
-        newModelState_.rotationZ_ += step_;
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.z += step_;
+          rightCameraParameters_.z += step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.rotationZ_ += step_;
+          break;
+        }
+        case InputMode::WORLD:
+          break;
+        case InputMode::CAMERA:
+          break;
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
       }
       break;
     }
     case 'E':
     {
-      if (inputMode_ == InputMode::MODEL)
+      switch (inputMode_)
       {
-        newModelState_.rotationZ_ -= step_;
+        case InputMode::DEFAULT:
+        {
+          leftCameraParameters_.z -= step_;
+          rightCameraParameters_.z -= step_;
+          break;
+        }
+        case InputMode::MODEL:
+        {
+          newModelState_.rotationZ_ -= step_;
+          break;
+        }
+        case InputMode::WORLD:
+          break;
+        case InputMode::CAMERA:
+          break;
+        default:
+        {
+          std::cout << "Unknown input mode" << std::endl;
+          break;
+        }
       }
       break;
     }

@@ -26,6 +26,10 @@ cbuffer UndistortionBuffer
   
   float p5;
   float p6;
+  float p7;
+
+  float p8;
+  float p9;
   float c;
   float d;
   
@@ -60,6 +64,8 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   float theta;
   float theta2;
   float theta4;
+  float theta6;
+  float theta8;
   float rho;
   float eps = pow(0.1f, 13);
   row = (input.tex.x - 0.5)*width + Nxc;
@@ -72,8 +78,10 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   theta = atan(z / norm);
   theta2 = theta*theta;
   theta4 = theta2*theta2;
+  theta6 = theta4*theta2;
+  theta8 = theta4*theta4;
   //    p0 + p1*theta + p2*theta^2 + p3*theta^3      + p4*theta^4 + p5*theta^5      + p6*theta^6
-  rho = p0 + p1*theta + p2*theta2  + p3*theta2*theta + p4*theta4  + p5*theta4*theta + p6*theta4*theta2;
+  rho = p0 + p1*theta + p2*theta2  + p3*theta2*theta + p4*theta4  + p5*theta4*theta + p6*theta6 + p7*theta6*theta + p8*theta8 + p9*theta8*theta;
   col = (col / norm)*rho;
   row = (row / norm)*rho;
   col = col*c + row*d + xc;

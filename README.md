@@ -5,11 +5,11 @@ developing augmented reality version of the Oculus rift
 There are 3 user input modes: DEFAULT, MODEL, WORLD
 Upon startup the input mode is set to DEFAULT.
 Some keys perform the same action independent of the current user mode.
-Some keys have different behavior in differet input modes.
+Some keys result in different behavior depending on the active input mode.
 
 The following key mapping is indipendent of the input mode:
 - 'm' changes the input mode 
-      planned changes to a model are discarded
+      planned changes to a model are discarded upon mode switch
       (DEFAULT -> MODEL -> WORLD ->  DEFAULT) 
       (no action if last key was identical)
 - '1'-'6' selects the step size for other actions
@@ -21,7 +21,9 @@ The following key mapping is indipendent of the input mode:
 Below the input mode dependent keymapping is documented:
 * DEFAULT
 - 'w','a','s','d' change relative position of the camera feeds on both eyes
-- 'q','e' change zoom of both camera feeds
+- 'q','e' change relative zoom of both camera feeds
+- 'W','A','S','D' change absolute position of both camer feeds
+- 'Q','E' change absolute zoom of both camera feeds
 - 'r' recenter the virtual world on the current head pose
 * MODEL
 - 'w','a','s','d','q','e' change 3D position of currently highlighted virtual model
