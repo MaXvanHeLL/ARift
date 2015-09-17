@@ -68,7 +68,12 @@ float4 UndistortionShader(PixelInputType input) : SV_TARGET
   float theta8;
   float rho;
   float eps = pow(0.1f, 13);
-  row = (input.tex.x - 0.5)*width + Nxc;
+  // This aspect correction is a dirty hotfix for the real problem. 
+  // When there is time someone should find the real problem.
+  // I believe that it has to do with diffrence between the given 
+  // aspect ratio of the texture to the oculus framework and what it expects
+  float aspect_correction = 1.4025f;
+  row = (input.tex.x - 0.5)*width/aspect_correction + Nxc;
   col = (input.tex.y - 0.5)*height + Nyc;
   norm = sqrt(row*row + col*col);
   if (norm < eps)

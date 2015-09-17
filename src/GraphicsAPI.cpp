@@ -333,7 +333,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Setup the projection matrix.
 	fieldOfView = (float)XM_PI / 4.0f;
-	screenAspect = (float)screenWidth / (float)screenHeight;
+  screenAspect = (float)screenWidth / (float)screenHeight;
 
 	// Create the [Monoscope]projection matrix for 3D rendering.
 	XMMATRIX projectionMatrix_XmMat = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);

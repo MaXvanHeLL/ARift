@@ -20,7 +20,7 @@ ARiftControl::ARiftControl()
   // Write / read from file for this
   if (HMD_DISTORTION)
   {
-    leftCameraParameters_.Nxc = -112.4f;
+    leftCameraParameters_.Nxc = -79.4f;
     leftCameraParameters_.Nyc = 67.2f;
     leftCameraParameters_.z = -177.0f;
   }
@@ -50,7 +50,7 @@ ARiftControl::ARiftControl()
 
   if (HMD_DISTORTION)
   {
-    rightCameraParameters_.Nxc = 112.4f;
+    rightCameraParameters_.Nxc = 79.4f;
     rightCameraParameters_.Nyc = 67.2f;
     rightCameraParameters_.z = -177.0f;
   }
