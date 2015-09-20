@@ -302,13 +302,13 @@ bool BitMap::UpdateBuffers(ID3D11DeviceContext* deviceContext, int positionX, in
 	left = (float)((screenWidth_ / 2) * -1) + (float)positionX;
 
 	// Calculate the screen coordinates of the right side of the bitmap.
-	right = left + (float)bitmapWidth_ * scale_;
+  right = float( left + (float)bitmapWidth_ * scale_);
 
 	// Calculate the screen coordinates of the top of the bitmap.
 	top = (float)(screenHeight_ / 2) - (float)positionY;
 
 	// Calculate the screen coordinates of the bottom of the bitmap.
-  bottom = top - (float)bitmapHeight_ * scale_;
+  bottom = float(top - (float)bitmapHeight_ * scale_);
 
 	// Create the vertex array.
 	vertices = new VertexType[vertexCount_];

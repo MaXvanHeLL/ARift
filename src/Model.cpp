@@ -1,6 +1,8 @@
 #include "../include/Model.h"
 #include <iostream>
+#include <string>
 #include <fstream>
+#include <vector>
 #include <dxgi.h>
 #include <d3dcommon.h>
 #include <d3d11.h>
@@ -30,7 +32,7 @@ bool Model::Initialize(ID3D11Device* device, char* modelFilename, WCHAR* texture
 	bool result;
 
 	// Load in the model data,
-	result = LoadModel(modelFilename);
+  result = LoadModel(modelFilename);
 	if (!result)
 	{
 		return false;
@@ -272,63 +274,239 @@ bool Model::LoadTexture(ID3D11Device* device, WCHAR* filename)
 bool Model::LoadModel(char* filename)
 {
 	ifstream fin;
-	char input;
-	int i;
-
+  bool returnValue;
 
 	// Open the model file.
 	fin.open(filename);
 
 	// If it could not open the file then exit.
-	if (fin.fail())
+	if (filename && fin.fail())
 	{
+    std::cout << "Error: could not open model file " << filename << std::endl;
 		return false;
 	}
 
-	// Read up to the value of vertex count.
-	fin.get(input);
-	while (input != ':')
-	{
-		fin.get(input);
-	}
+  // Close the model file.
+  fin.close();
 
-	// Read in the vertex count.
-	fin >> vertexCount_;
-
-	// Set the number of indices to be the same as the vertex count.
-	indexCount_ = vertexCount_;
-
-	// Create the model using the vertex count that was read in.
-	modeltype_ = new ModelType[vertexCount_];
-	if (!modeltype_)
-	{
-		return false;
-	}
-
-	// Read up to the beginning of the data.
-	fin.get(input);
-	while (input != ':')
-	{
-		fin.get(input);
-	}
-	fin.get(input);
-	fin.get(input);
-
-	// Read in the vertex data.
-	for (i = 0; i<vertexCount_; i++)
-	{
-		fin >> modeltype_[i].x >> modeltype_[i].y >> modeltype_[i].z;
-		fin >> modeltype_[i].tu >> modeltype_[i].tv;
-	  fin >> modeltype_[i].nx >> modeltype_[i].ny >> modeltype_[i].nz;
-	}
-
-	// Close the model file.
-	fin.close();
-
+  std::string filenameString = std::string(filename);
+  std::string fileExtension = filenameString.substr((filenameString.length() - 4), filenameString.length());
+  if (fileExtension == ".obj")
+  {
+    std::cout << "Reading model from *.obj file" << std::endl;
+    returnValue = ReadObjFile(filename);
+  }
+  else // assume it is our custom format
+  {
+    returnValue = ReadCustomTxt(filename);
+  }
 	return true;
 }
 
+bool Model::ReadObjFile(char* filename)
+{
+  ifstream fin;
+  
+  // Open the model file.
+  fin.open(filename);
 
+  // If it could not open the file then exit.
+  if (filename && fin.fail())
+  {
+    std::cout << "Error: could not open model file " << filename << std::endl;
+    return false;
+  }
+  const int bufferSize = 256;
+  char buffer[bufferSize];
+  vector<Vertex3D> vertices;
+  vector<Vertex3D> normals;
+  vector<Vertex3D> textureCorrdinates;
+  vector<Face> faces;
+  // read in data
+  int readLines = 0;
+  while (fin.good())
+  {
+    fin.getline(buffer, bufferSize);
+    readLines++;
+    bool faceFound = false;
+    vector<Vertex3D>* currentVector = NULL;
+    // check for EOF
+    if (fin.gcount() == 0)
+      continue;
+    char* block = strtok(buffer, " ");
+    if (strncmp(block, "f", 1) == 0)
+    {
+      // found a face definition
+      faceFound = true;
+    }
+    else if (strncmp(block, "vn", 3) == 0)
+    {
+      // found a normal vector
+      currentVector = &normals;
+    }
+    else if (strncmp(block, "vt", 3) == 0)
+    {
+      // found texture coordinates
+      currentVector = &textureCorrdinates;
+    }
+    else if (strncmp(block, "v", 1) == 0)
+    {
+      // found a vertex
+      currentVector = &vertices;
+    }
+    else
+    {
+      // found nothing of interest to us in this line
+      continue;
+    }
+    float rawData[9];
+    int i = 0;
+    for (i = 0; i < 9 && block != NULL; i++)
+    {
+      block = strtok(NULL, " /");
+      if (block != NULL)
+        rawData[i] = (float)atof(block);
+    }
+    if (faceFound)
+    {
+      Face newFace;
+      newFace.hasNormals = i > 4;
+      newFace.hasTextures = i > 7;
+      int k, j;
+      for (k = j = 0; j < 3; j++)
+      {
+        newFace.vertexIndices[j] = (int)rawData[k++] - 1;
+        if (newFace.hasTextures)
+          newFace.textureIndices[j] = (int)rawData[k++] - 1;
+        if (newFace.hasNormals)
+          newFace.normalIndices[j] = (int)rawData[k++] - 1;
+      }
+      faces.push_back(newFace);
+    }
+    else
+    {
+      if (i > 4)
+      {
+        rawData[0] = rawData[0] / rawData[3];
+        rawData[1] = rawData[1] / rawData[3];
+        if (i > 3)
+          rawData[2] = rawData[2] / rawData[3];
+      }
+      Vertex3D newData;
+      newData.x = rawData[0];
+      newData.y = rawData[1];
+      if (i > 3)
+        newData.z = rawData[2];
+
+      currentVector->push_back(newData);
+    }
+  }
+  fin.close();
+  // convert to our Model format
+  // each face should be a triangle so we need 3 modeltypes each
+  indexCount_ = vertexCount_ = (faces.size() * 3);
+  if (indexCount_ == 0)
+  {
+    std::cout << "Model file '" << filename 
+              << "' was not in wavefront object format or did not contain any faces/triangles." << std::endl;
+    return false;
+  }
+  modeltype_ = new ModelType[vertexCount_];
+  int vertexCounter = 0;
+  for (unsigned int faceCount = 0; faceCount < faces.size(); faceCount++)
+  {
+    Face currentFace = faces[faceCount];
+    for (int i = 0; i < 3; i++)
+    {
+      modeltype_[vertexCounter].x = vertices[currentFace.vertexIndices[i]].x;
+      modeltype_[vertexCounter].y = vertices[currentFace.vertexIndices[i]].y;
+      modeltype_[vertexCounter].z = vertices[currentFace.vertexIndices[i]].z;
+      if (currentFace.hasTextures)
+      {
+        modeltype_[vertexCounter].tu = textureCorrdinates[currentFace.textureIndices[i]].x;
+        modeltype_[vertexCounter].tv = textureCorrdinates[currentFace.textureIndices[i]].y;
+      }
+      else
+      {
+        modeltype_[vertexCounter].tu = i == 1;
+        modeltype_[vertexCounter].tv = i == 2;
+      }
+      if (currentFace.hasNormals)
+      {
+        modeltype_[vertexCounter].nx = normals[currentFace.normalIndices[i]].x;
+        modeltype_[vertexCounter].ny = normals[currentFace.normalIndices[i]].y;
+        modeltype_[vertexCounter].nz = normals[currentFace.normalIndices[i]].z;
+        double norm = sqrt(modeltype_[vertexCounter].nx * modeltype_[vertexCounter].nx
+                         + modeltype_[vertexCounter].ny * modeltype_[vertexCounter].ny
+                         + modeltype_[vertexCounter].nz * modeltype_[vertexCounter].nz);
+        modeltype_[vertexCounter].nx = (float)modeltype_[vertexCounter].nx / norm;
+        modeltype_[vertexCounter].ny = (float)modeltype_[vertexCounter].ny / norm;
+        modeltype_[vertexCounter].nz = (float)modeltype_[vertexCounter].nz / norm;
+      }
+      vertexCounter++;
+    }
+  }
+  return false;
+}
+
+bool Model::ReadCustomTxt(char* filename)
+{
+  ifstream fin;
+
+  // Open the model file.
+  fin.open(filename);
+
+  // If it could not open the file then exit.
+  if (filename && fin.fail())
+  {
+    std::cout << "Error: could not open model file " << filename << std::endl;
+    return false;
+  }
+
+  char input;
+  int i;
+  // Read up to the value of vertex count.
+  fin.get(input);
+  while (input != ':')
+  {
+    fin.get(input);
+  }
+
+  // Read in the vertex count.
+  fin >> vertexCount_;
+
+  // Set the number of indices to be the same as the vertex count.
+  indexCount_ = vertexCount_;
+
+  // Create the model using the vertex count that was read in.
+  modeltype_ = new ModelType[vertexCount_];
+  if (!modeltype_)
+  {
+    return false;
+  }
+
+  // Read up to the beginning of the data.
+  fin.get(input);
+  while (input != ':')
+  {
+    fin.get(input);
+  }
+  fin.get(input);
+  fin.get(input);
+
+  // Read in the vertex data.
+  for (i = 0; i<vertexCount_; i++)
+  {
+    fin >> modeltype_[i].x >> modeltype_[i].y >> modeltype_[i].z;
+    fin.get(input);
+    fin >> modeltype_[i].tu >> modeltype_[i].tv;
+    fin.get(input);
+    fin >> modeltype_[i].nx >> modeltype_[i].ny >> modeltype_[i].nz;
+    fin.get(input);
+  }
+  fin.close();
+  return true;
+}
 
 void Model::ShutdownBuffers()
 {

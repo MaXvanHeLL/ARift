@@ -4,6 +4,7 @@
 #include "../include/OculusHMD.h"
 #include "../include/Texture.h"
 #include "../include/IDSuEyeInputHandler.h"
+#include <d3dcommon.h>
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -439,6 +440,25 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(modelsMutex_);
+
+  // Create the 4. model object the teapot
+  model = NULL;
+  model = new Model();
+  if (!model)
+    return false;
+
+  // Initialize the 3. model object and translate
+  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/grass.dds", 10.0, -10.0, 0.0);
+  if (!result)
+  {
+    MessageBox(hwnd, L"Could not initialize the model 4. object.", L"Error", MB_OK);
+    return false;
+  }
+  model->Scale(4);
+  WaitForSingleObject(modelsMutex_, INFINITE);
+  models_.push_back(model);
+  ReleaseMutex(modelsMutex_);
+
 
   highlight_texture_ = new Texture();
   if (!highlight_texture_)
