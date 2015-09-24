@@ -711,13 +711,13 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
-  Camera::State oldCameraState = camera3D_->SaveState();
+  Camera::Pose oldCameraPose = camera3D_->SavePose();
 	// left eye translation (Mono Eye (0,0,0);
   float interPupillaryDistance = (0.064f + ariftcontrol_->interPupillaryOffset_);
   camera3D_->SetPositionX(
     cam_id == 1
-    ? oldCameraState.positionX_ - interPupillaryDistance / 2.0f
-    : oldCameraState.positionX_ + interPupillaryDistance / 2.0f);
+    ? oldCameraPose.positionX_ - interPupillaryDistance / 2.0f
+    : oldCameraPose.positionX_ + interPupillaryDistance / 2.0f);
 
   if (cam_id == 2 && !HMD_DISTORTION)
   {
@@ -765,7 +765,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
     }
   }
 
-  camera3D_->RestoreState();
+  camera3D_->RestorePose();
 	if (!result)
 	{
 		return false;
@@ -778,12 +778,11 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 {
 	static int eye = 0;
 
-	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMFLOAT4X4 worldMatrix, projectionMatrix, orthoMatrix;
 	HRESULT result;
 
 	// Get the world, view, and ortho matrices from the camera and d3d objects.
 	GetWorldMatrix(worldMatrix);
-	camera3D_->GetViewMatrix(viewMatrix);
 	GetOrthoMatrix(orthoMatrix);
 
 	// Put the debug window vertex and index buffers on the graphics pipeline to prepare them for drawing.
@@ -1092,7 +1091,6 @@ void GraphicsAPI::SetBackBufferRenderTarget()
 
 void GraphicsAPI::StereoProjectionTransformation(int camID)
 {
-	XMFLOAT3 position = camera3D_->GetPosition();
 	Matrix4f proj = ovrMatrix4f_Projection(OculusHMD::instance()->eyeRenderDesc_[camID-1].Fov, screenNear_, screenDepth_, false);
 	
 	stereoprojectionmatrix_._11 = proj.M[0][0];

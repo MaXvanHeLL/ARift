@@ -344,7 +344,7 @@ bool Model::ReadObjFile(char* filename)
     {
 
       std::cout << "Could not convert file '" << filename << "'. File too complex." << std::endl;
-      return;
+      return false;
     }
     else if (strncmp(block, "f", 1) == 0)
     {
@@ -451,14 +451,14 @@ bool Model::ReadObjFile(char* filename)
         double norm = sqrt(modeltype_[vertexCounter].nx * modeltype_[vertexCounter].nx
                          + modeltype_[vertexCounter].ny * modeltype_[vertexCounter].ny
                          + modeltype_[vertexCounter].nz * modeltype_[vertexCounter].nz);
-        modeltype_[vertexCounter].nx = (float)modeltype_[vertexCounter].nx / norm;
-        modeltype_[vertexCounter].ny = (float)modeltype_[vertexCounter].ny / norm;
-        modeltype_[vertexCounter].nz = (float)modeltype_[vertexCounter].nz / norm;
+        modeltype_[vertexCounter].nx = (float)(modeltype_[vertexCounter].nx / norm);
+        modeltype_[vertexCounter].ny = (float)(modeltype_[vertexCounter].ny / norm);
+        modeltype_[vertexCounter].nz = (float)(modeltype_[vertexCounter].nz / norm);
       }
       vertexCounter++;
     }
   }
-  return false;
+  return true;
 }
 
 bool Model::ReadCustomTxt(char* filename)

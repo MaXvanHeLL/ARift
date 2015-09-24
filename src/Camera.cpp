@@ -3,13 +3,13 @@
 
 Camera::Camera()
 {
-	positionX_ = 0.0f;
-	positionY_ = 0.0f;
-	positionZ_ = 0.0f;
+	currentPose_.positionX_ = 0.0f;
+	currentPose_.positionY_ = 0.0f;
+	currentPose_.positionZ_ = 0.0f;
 
-	rotationX_ = 0.0f;
-	rotationY_ = 0.0f;
-	rotationZ_ = 0.0f;
+	currentPose_.rotationX_ = 0.0f;
+	currentPose_.rotationY_ = 0.0f;
+  currentPose_.rotationZ_ = 0.0f;
 }
 
 
@@ -18,13 +18,13 @@ Camera::Camera(const Camera& other)
 
 Camera::Camera(float positionX, float positionY, float positionZ, float rotationX, float rotationY, float rotationZ)
 {
-  positionX_ = positionX;
-  positionY_ = positionY;
-  positionZ_ = positionZ;
+  currentPose_.positionX_ = positionX;
+  currentPose_.positionY_ = positionY;
+  currentPose_.positionZ_ = positionZ;
 
-  rotationX_ = rotationX;
-  rotationY_ = rotationY;
-  rotationZ_ = rotationZ;
+  currentPose_.rotationX_ = rotationX;
+  currentPose_.rotationY_ = rotationY;
+  currentPose_.rotationZ_ = rotationZ;
 }
 
 Camera::~Camera()
@@ -35,28 +35,28 @@ Camera::~Camera()
 
 void Camera::SetPosition(float positionX, float positionY, float positionZ)
 {
-  positionX_ = positionX;
-  positionY_ = positionY;
-  positionZ_ = positionZ;
+  currentPose_.positionX_ = positionX;
+  currentPose_.positionY_ = positionY;
+  currentPose_.positionZ_ = positionZ;
 }
 
 
 void Camera::SetRotation(float rotationX, float rotationY, float rotationZ)
 {
-  rotationX_ = rotationX;
-  rotationY_ = rotationY;
-  rotationZ_ = rotationZ;
+  currentPose_.rotationX_ = rotationX;
+  currentPose_.rotationY_ = rotationY;
+  currentPose_.rotationZ_ = rotationZ;
 }
 
 XMFLOAT3 Camera::GetPosition()
 {
-	return XMFLOAT3(positionX_, positionY_, positionZ_);
+  return XMFLOAT3(currentPose_.positionX_, currentPose_.positionY_, currentPose_.positionZ_);
 }
 
 
 XMFLOAT3 Camera::GetRotation()
 {
-	return XMFLOAT3(rotationX_, rotationY_, rotationZ_);
+  return XMFLOAT3(currentPose_.rotationX_, currentPose_.rotationY_, currentPose_.rotationZ_);
 }
 
 void Camera::Render()
@@ -68,14 +68,14 @@ void Camera::Render()
 	// Setup the vector that points upwards.
 	XMVECTOR up = XMVectorSet(0.0, 1.0, 0.0, 1.0);
 	// Setup the position of the camera in the world.
-	XMVECTOR position = XMVectorSet(positionX_, positionY_, positionZ_, 1.0f);
+  XMVECTOR position = XMVectorSet(currentPose_.positionX_, currentPose_.positionY_, currentPose_.positionZ_, 1.0f);
 	// Setup where the camera is looking by default.
 	XMVECTOR lookAt = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Set the yaw (Y axis), pitch (X axis), and roll (Z axis) rotations in radians.
-	pitch = rotationX_ * 0.0174532925f; // 0.0174532925f == 2*pi/360
-	yaw = rotationY_ * 0.0174532925f;
-	roll = rotationZ_ * 0.0174532925f;
+	pitch = currentPose_.rotationX_ * 0.0174532925f; // 0.0174532925f == 2*pi/360
+  yaw = currentPose_.rotationY_ * 0.0174532925f;
+  roll = currentPose_.rotationZ_ * 0.0174532925f;
 
 	// Create the rotation matrix from the yaw, pitch, and roll values.
 	rotationMatrix = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
@@ -92,28 +92,28 @@ void Camera::Render()
 	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
 }
 
-Camera::State Camera::SaveState()
+Camera::Pose Camera::SavePose()
 {
-  old_state_.positionX_ = positionX_;
-  old_state_.positionY_ = positionY_;
-  old_state_.positionZ_ = positionZ_;
+  oldPose_.positionX_ = currentPose_.positionX_;
+  oldPose_.positionY_ = currentPose_.positionY_;
+  oldPose_.positionZ_ = currentPose_.positionZ_;
 
-  old_state_.rotationX_ = rotationX_;
-  old_state_.rotationY_ = rotationY_;
-  old_state_.rotationZ_ = rotationZ_;
+  oldPose_.rotationX_ = currentPose_.rotationX_;
+  oldPose_.rotationY_ = currentPose_.rotationY_;
+  oldPose_.rotationZ_ = currentPose_.rotationZ_;
 
-  return old_state_;
+  return oldPose_;
 }
 
-void Camera::RestoreState()
+void Camera::RestorePose()
 {
-  positionX_ = old_state_.positionX_;
-  positionY_ = old_state_.positionY_;
-  positionZ_ = old_state_.positionZ_;
+  currentPose_.positionX_ = oldPose_.positionX_;
+  currentPose_.positionY_ = oldPose_.positionY_;
+  currentPose_.positionZ_ = oldPose_.positionZ_;
 
-  rotationX_ = old_state_.rotationX_;
-  rotationY_ = old_state_.rotationY_;
-  rotationZ_ = old_state_.rotationZ_;
+  currentPose_.rotationX_ = oldPose_.rotationX_;
+  currentPose_.rotationY_ = oldPose_.rotationY_;
+  currentPose_.rotationZ_ = oldPose_.rotationZ_;
 }
 
 void Camera::GetViewMatrix(XMFLOAT4X4& viewMatrix)
