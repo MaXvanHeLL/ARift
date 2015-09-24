@@ -80,7 +80,7 @@ ARiftControl::ARiftControl()
 
   lastKeyTime = std::chrono::system_clock::now();
   programStartTime = lastKeyTime;
-  minimumKeyInputDelay = std::chrono::duration<double>(0.05); // seconds
+  minimumKeyInputDelay = std::chrono::duration<double>(0.1); // seconds
 }
 
 ARiftControl::~ARiftControl()
@@ -152,7 +152,7 @@ void ARiftControl::handleKey(char key)
         case InputMode::WORLD:
         {
           inputMode_ = InputMode::CAMERA;
-          //break; // TODO check if we need CAMERA input mode at all
+          break;
         }
         case InputMode::CAMERA:
         {
@@ -275,7 +275,7 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
-          cameraOffsetY_ += step_;
+          headToEyeOffsetY_ += step_ * 0.01f;
           break;
         }
         default:
@@ -308,7 +308,7 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
-          cameraOffsetX_ -= step_;
+          headToEyeOffsetX_ -= step_* 0.01f;
           break;
         }
         default:
@@ -341,7 +341,7 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
-          cameraOffsetY_ -= step_;
+          headToEyeOffsetY_ -= step_* 0.01f;
           break;
         }
         default:
@@ -374,7 +374,7 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
-          cameraOffsetX_ += step_;
+          headToEyeOffsetX_ += step_* 0.01f;
           break;
         }
         default:
@@ -407,7 +407,7 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
-          cameraOffsetZ_ += step_;
+          headToEyeOffsetZ_ += step_* 0.01f;
           break;
         }
         default:
@@ -440,7 +440,7 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
-          cameraOffsetZ_ -= step_;
+          headToEyeOffsetZ_ -= step_* 0.01f;
           break;
         }
         default:
@@ -687,6 +687,7 @@ void ARiftControl::handleKey(char key)
       std::cout << "(x, y, z) left:  (" << leftCameraParameters_.Nxc << ", " << leftCameraParameters_.Nyc << ", " << leftCameraParameters_.z << " ) ";
       std::cout << " right: (" << rightCameraParameters_.Nxc << ", " << rightCameraParameters_.Nyc << ", " << rightCameraParameters_.z << " ) " << std::endl;
       std::cout << "world translation offset (x,y,z): (" << worldOffsetX_ << ", " << worldOffsetY_ << ", " << worldOffsetZ_ << " ) " << std::endl;
+      std::cout << "head to eye offset (x,y,z): (" << headToEyeOffsetX_ << ", " << headToEyeOffsetY_ << ", " << headToEyeOffsetZ_ << " ) " << std::endl;
       lastKeyTime = std::chrono::system_clock::now();
       break;
     }

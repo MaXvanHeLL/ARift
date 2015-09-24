@@ -719,10 +719,10 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
   Camera::Pose oldCameraPose = camera3D_->SavePose();
 	// left eye translation (Mono Eye (0,0,0);
-  float interPupillaryDistance = (0.064f + ariftcontrol_->interPupillaryOffset_);
   // set head center to eye center offset
-  headCamera_->headToEyeOffset_.positionX_ = interPupillaryDistance / 2.0f; // left / right
-  headCamera_->headToEyeOffset_.positionZ_ = interPupillaryDistance;
+  headCamera_->headToEyeOffset_.positionX_ = ariftcontrol_->headToEyeOffsetX_; // left / right
+  headCamera_->headToEyeOffset_.positionY_ = ariftcontrol_->headToEyeOffsetY_;
+  headCamera_->headToEyeOffset_.positionZ_ = ariftcontrol_->headToEyeOffsetZ_;
   // Generate the view matrix based on the camera's position.
   headCamera_->RenderEye(cam_id == 1);
   headCamera_->GetViewMatrix(viewMatrix);
