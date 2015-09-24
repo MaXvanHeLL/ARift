@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 #include "../include/Camera.h"
+#include "../include/HeadCamera.h"
 #include "../include/Model.h"
 #include "../include/Shader.h"
 #include "../include/EyeWindow.h"
@@ -44,6 +45,7 @@ private:
 
 	Camera* camera3D_;
   Camera* camera2D_;
+  HeadCamera* headCamera_;
   std::vector<Model*> models_;
   int current_model_idx_ = 0;
   Texture* highlight_texture_ = NULL;

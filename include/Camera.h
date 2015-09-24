@@ -16,7 +16,7 @@ public:
 	Camera();
 	Camera(const Camera&);
   Camera(float positionX, float positionY, float positionZ, float rotationX, float rotationY, float rotationZ);
-	~Camera();
+	virtual ~Camera();
 
   void SetPosition(float positionX, float positionY, float positionZ);
   void SetPositionX(float positionX) { currentPose_.positionX_ = positionX; }
@@ -37,7 +37,7 @@ public:
   Camera::Pose SavePose();
   void RestorePose();
 
-private:
+protected:
 	XMFLOAT4X4 viewmatrix_;
   Camera::Pose currentPose_;
   Camera::Pose oldPose_;

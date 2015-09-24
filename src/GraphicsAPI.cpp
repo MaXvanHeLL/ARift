@@ -28,6 +28,7 @@ GraphicsAPI::GraphicsAPI()
 	depthstencilview_ = 0;
 	rasterstate_ = 0;
 
+  headCamera_ = 0;
   camera3D_ = 0;
   camera2D_ = 0;
 	bitmap_ = 0;
@@ -385,8 +386,12 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
 	// Create the 3D camera object and set initial pose.
+  headCamera_ = new HeadCamera(0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f);
+  if (!headCamera_)
+    return false;
+  // Create the 3D camera object and set initial pose.
   camera3D_ = new Camera(0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f);
-	if (!camera3D_) 
+  if (!camera3D_)
     return false;
 
   // Create the first model object.
@@ -568,12 +573,13 @@ bool GraphicsAPI::Frame()
 	
   camera3D_->SetPositionZ(-10.0f);
 
-  XMFLOAT3 currentCameraRotation = camera3D_->GetRotation();
-
   float oculusMotionX, oculusMotionY, oculusMotionZ;
   OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
   camera3D_->SetRotation(-oculusMotionX, -oculusMotionY, oculusMotionZ);
 
+  headCamera_->headToEyeOffset_.rotationX_ = -oculusMotionX;
+  headCamera_->headToEyeOffset_.rotationY_ = -oculusMotionY;
+  headCamera_->headToEyeOffset_.rotationZ_ = oculusMotionZ;
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -714,18 +720,12 @@ bool GraphicsAPI::RenderScene(int cam_id)
   Camera::Pose oldCameraPose = camera3D_->SavePose();
 	// left eye translation (Mono Eye (0,0,0);
   float interPupillaryDistance = (0.064f + ariftcontrol_->interPupillaryOffset_);
-  camera3D_->SetPositionX(
-    cam_id == 1
-    ? oldCameraPose.positionX_ - interPupillaryDistance / 2.0f
-    : oldCameraPose.positionX_ + interPupillaryDistance / 2.0f);
-
-  if (cam_id == 2 && !HMD_DISTORTION)
-  {
-    camera3D_->SetPositionX(0.032f);
-  }
+  // set head center to eye center offset
+  headCamera_->headToEyeOffset_.positionX_ = interPupillaryDistance / 2.0f; // left / right
+  headCamera_->headToEyeOffset_.positionZ_ = interPupillaryDistance;
   // Generate the view matrix based on the camera's position.
-  camera3D_->Render();
-  camera3D_->GetViewMatrix(viewMatrix);
+  headCamera_->RenderEye(cam_id == 1);
+  headCamera_->GetViewMatrix(viewMatrix);
 
 	StereoProjectionTransformation(cam_id);
 	GetStereoProjectionMatrix(stereoProjectionMatrix);
@@ -765,7 +765,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
     }
   }
 
-  camera3D_->RestorePose();
 	if (!result)
 	{
 		return false;
@@ -901,6 +900,11 @@ void GraphicsAPI::shutDownD3D()
   CloseHandle(modelsMutex_);
 
 	// Release the camera objects.
+  if (headCamera_)
+  {
+    delete headCamera_;
+    headCamera_ = 0;
+  }
 	if (camera3D_)
 	{
 		delete camera3D_;
