@@ -52,8 +52,8 @@ class ARiftControl
     float worldOffsetZ_ = 9.2f;
 
     float headToEyeOffsetX_ = 0.032f;
-    float headToEyeOffsetY_ = 0.0f;
-    float headToEyeOffsetZ_ = 0.0f;
+    float headToEyeOffsetY_ = -0.28f;
+    float headToEyeOffsetZ_ = 0.936f;
     float interPupillaryOffset_ = 0.064f;
 
     InputMode inputMode_ = InputMode::DEFAULT;

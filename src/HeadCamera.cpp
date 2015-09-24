@@ -57,7 +57,7 @@ void HeadCamera::RenderEye(bool isLeftEye)
   lookAt = position + lookAt;
 
   // Finally create the view matrix from the three updated vectors.
-  XMMATRIX viewMatrix_XmMat = XMMatrixLookAtLH(position, lookAt, up);
+  XMMATRIX viewMatrix_XmMat = XMMatrixLookAtLH(position + headToEyePositionOffset, lookAt, up);
   XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
 
 }
