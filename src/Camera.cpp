@@ -90,8 +90,6 @@ void Camera::Render()
 	// Finally create the view matrix from the three updated vectors.
 	XMMATRIX viewMatrix_XmMat = XMMatrixLookAtLH(position, lookAt, up);
 	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
-
-	return;
 }
 
 Camera::State Camera::SaveState()

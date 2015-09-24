@@ -448,7 +448,8 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 3. model object and translate
-  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/grass.dds", 10.0, -10.0, 0.0);
+  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/ceramic_texture_by_themarchello-d3jkaw8.dds", 10.0, -10.0, 0.0);
+  //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);  //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 4. object.", L"Error", MB_OK);

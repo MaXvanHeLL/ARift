@@ -302,7 +302,12 @@ bool Model::LoadModel(char* filename)
   }
 	return true;
 }
-
+// Function to read in wavefront object files.
+// Currently only very simple files can be read in by this function
+// Restrictions:
+// - Files may only contain one part
+// - Textures are ignored, they need to be loaded manually
+// - Materials are ignored
 bool Model::ReadObjFile(char* filename)
 {
   ifstream fin;
@@ -334,7 +339,14 @@ bool Model::ReadObjFile(char* filename)
     if (fin.gcount() == 0)
       continue;
     char* block = strtok(buffer, " ");
-    if (strncmp(block, "f", 1) == 0)
+    if (strncmp(block, "g", 1) == 0
+      || strncmp(block, "usemtl", 6) == 0)
+    {
+
+      std::cout << "Could not convert file '" << filename << "'. File too complex." << std::endl;
+      return;
+    }
+    else if (strncmp(block, "f", 1) == 0)
     {
       // found a face definition
       faceFound = true;
