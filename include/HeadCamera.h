@@ -9,6 +9,6 @@ public:
   virtual ~HeadCamera();
   void RenderEye(bool isLeftEye);
 
-  Camera::Pose headToEyeOffset_;
+  Camera::Pose3D headToEyeOffset_;
 };
 

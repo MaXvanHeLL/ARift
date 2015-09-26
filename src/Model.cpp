@@ -7,6 +7,7 @@
 #include <d3dcommon.h>
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include <chrono>
 
 using namespace std;
 
@@ -128,6 +129,9 @@ ID3D11ShaderResourceView* Model::GetTexture()
 
 XMMATRIX Model::GetModelTransformation()
 {
+  if (isAnimated_ && animationRunning_)
+    Animate();
+
   // scaling
   XMMATRIX scalingMatrix = XMMatrixScaling(currentState_.scale_x_, currentState_.scale_y_, currentState_.scale_z_);
   // rotation
@@ -518,6 +522,80 @@ bool Model::ReadCustomTxt(char* filename)
   }
   fin.close();
   return true;
+}
+
+void Model::AddKeyFrame(Camera::Pose3D newKeyFrame, std::chrono::duration<double> timeSinceLastFrame)
+{
+  std::chrono::duration<double> timeSinceAnimationStart = timeSinceLastFrame;
+  if (timeSinceLastFrame.count() < 0)
+  {
+    std::cout << "Model:: WARNING animation time may not be negative taking absolute value instead" << std::endl;
+    timeSinceLastFrame = -timeSinceLastFrame;
+  }
+  if (!keyFrames_.empty())
+  {
+    timeSinceAnimationStart = timeSinceLastFrame + keyFrames_.back().second;
+  }
+  keyFrames_.push_back(std::make_pair(newKeyFrame, timeSinceAnimationStart));
+  if (keyFrames_.size() >= 2)
+  {
+    isAnimated_ = true;
+  }
+}
+
+void Model::StartAnimation()
+{
+  if (!isAnimated_)
+  {
+    std::cout << "Model: WARNING Cannot animate, not enough key frames." << std::endl;
+    return;
+  }
+  animationRunning_ = true;
+  animationStartTime_ = std::chrono::system_clock::now();
+  
+}
+
+void Model::StopAnimation()
+{
+  animationRunning_ = false;
+}
+
+void Model::Animate()
+{
+  if (!isAnimated_)
+  {
+    std::cout << "Model: WARNING cannot animate model not enough key Frames" << std::endl;
+    return;
+  }
+  std::chrono::duration<double> timeSinceAnimationStart = std::chrono::system_clock::now() - animationStartTime_;
+  while (timeSinceAnimationStart > keyFrames_.back().second)
+  {
+    timeSinceAnimationStart = timeSinceAnimationStart - keyFrames_.back().second;
+  }
+  // find the closest two key frames
+  std::vector<std::pair<Camera::Pose3D, std::chrono::duration<double> > >::iterator nextFrame;
+  std::vector<std::pair<Camera::Pose3D, std::chrono::duration<double> > >::iterator previousFrame;  
+  for (
+    previousFrame = keyFrames_.begin(), nextFrame = keyFrames_.begin(), nextFrame++;
+    nextFrame != keyFrames_.end() && nextFrame->second < timeSinceAnimationStart;
+  nextFrame++,previousFrame++)
+  {}
+  if (nextFrame == keyFrames_.end())
+  {
+    std::cout << "Model: WARNING animate had an error" << std::endl;
+    return;
+  }
+  std::chrono::duration<double> timeSinceLastFrame = (timeSinceAnimationStart - previousFrame->second);
+  std::chrono::duration<double> timeBetweenFrames = nextFrame->second - (previousFrame->second);
+  double relativeCompletion = timeSinceLastFrame.count() / timeBetweenFrames.count();
+
+  currentState_.rotationX_ = (float)(previousFrame->first.rotationX_ * (1 - relativeCompletion) + nextFrame->first.rotationX_ * relativeCompletion);
+  currentState_.rotationY_ = (float)(previousFrame->first.rotationY_ * (1 - relativeCompletion) + nextFrame->first.rotationY_ * relativeCompletion);
+  currentState_.rotationZ_ = (float)(previousFrame->first.rotationZ_ * (1 - relativeCompletion) + nextFrame->first.rotationZ_ * relativeCompletion);
+  
+  currentState_.positionX_ = (float)(previousFrame->first.positionX_ * (1 - relativeCompletion) + nextFrame->first.positionX_ * relativeCompletion);
+  currentState_.positionY_ = (float)(previousFrame->first.positionY_ * (1 - relativeCompletion) + nextFrame->first.positionY_ * relativeCompletion);
+  currentState_.positionZ_ = (float)(previousFrame->first.positionZ_ * (1 - relativeCompletion) + nextFrame->first.positionZ_ * relativeCompletion);
 }
 
 void Model::ShutdownBuffers()

@@ -8,7 +8,7 @@ using namespace DirectX;
 class Camera
 {
 public:
-  struct Pose {
+  struct Pose3D {
     float positionX_, positionY_, positionZ_;
     float rotationX_, rotationY_, rotationZ_;
   };
@@ -34,13 +34,13 @@ public:
 	void Render();
   void RenderEyeCamera();
 	void GetViewMatrix(XMFLOAT4X4&);
-  Camera::Pose SavePose();
+  Camera::Pose3D SavePose();
   void RestorePose();
 
 protected:
 	XMFLOAT4X4 viewmatrix_;
-  Camera::Pose currentPose_;
-  Camera::Pose oldPose_;
+  Camera::Pose3D currentPose_;
+  Camera::Pose3D oldPose_;
 };
 
 #endif

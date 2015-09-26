@@ -4,7 +4,10 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <fstream>
+#include "Camera.h"
 #include "Texture.h"
+#include <chrono>
+#include <vector>
 
 using namespace DirectX;
 class Model
@@ -70,7 +73,10 @@ private:
   };
 
   ModelType* modeltype_;
-
+  std::vector<std::pair<Camera::Pose3D, std::chrono::duration<double> > > keyFrames_;
+  std::chrono::time_point<std::chrono::system_clock> animationStartTime_;
+  bool isAnimated_ = false;
+  bool animationRunning_ = false;
 public:
   Model();
   Model(const Model&);
@@ -95,8 +101,13 @@ public:
   void SetState(Model::State newState);
   Model::State GetCurrentState() { return currentState_; };
   void RestoreState();
-  bool autoRotate_ = false;
   XMMATRIX GetModelTransformation();
+  void AddKeyFrame(
+    Camera::Pose3D newKeyFrame,
+    std::chrono::duration<double> timeSinceLastFrame = std::chrono::duration<double>(2)); // default 2 second
+  void StartAnimation();
+  void StopAnimation();
+  void Animate();
 private:
 
   bool InitializeBuffers(ID3D11Device*);

@@ -9,6 +9,7 @@
 #include <cmath>
 #include <vector>
 #include <utility>
+#include <math.h>
 
 using namespace DirectX;
 
@@ -452,7 +453,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (!model)
     return false;
 
-  // Initialize the 3. model object and translate
+  // Initialize the 4. model object and translate
   result = model->Initialize(device_, "data/wt_teapot.obj", L"data/ceramic_texture_by_themarchello-d3jkaw8.dds", 10.0, -10.0, 0.0);
   //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);  //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);
   if (!result)
@@ -461,6 +462,40 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
   }
   model->Scale(4);
+  Camera::Pose3D keyFrame1;
+  keyFrame1.positionX_ =  20.0f;
+  keyFrame1.positionY_ =  10.0f;
+
+  keyFrame1.positionZ_ =  10.0f;
+  keyFrame1.rotationX_ =   0.0f;
+  keyFrame1.rotationY_ =   0.0f;
+  keyFrame1.rotationZ_ =   0.0f;
+  Camera::Pose3D keyFrame2 = keyFrame1;
+  Camera::Pose3D keyFrame3 = keyFrame1;
+  Camera::Pose3D keyFrame4 = keyFrame1;
+  Camera::Pose3D keyFrame5 = keyFrame1;
+  keyFrame2.positionX_ = -20.0f;
+  keyFrame2.positionY_ =  10.0f;
+  keyFrame2.rotationX_ =  XM_PI;
+  
+  keyFrame3.positionX_ = -20.0f;
+  keyFrame3.positionY_ = -10.0f;
+  keyFrame3.rotationX_ = XM_PI;
+  keyFrame3.rotationY_ = XM_PI;
+
+  keyFrame4.positionX_ =  20.0f;
+  keyFrame4.positionY_ = -10.0f;
+  keyFrame4.rotationX_ =  0.0f;
+  keyFrame4.rotationY_ = XM_PI;
+
+  keyFrame5.positionX_ =  20.0f;
+  keyFrame5.positionY_ =  10.0f;
+  model->AddKeyFrame(keyFrame1, std::chrono::duration<double>(0));
+  model->AddKeyFrame(keyFrame2, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrame3, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrame4, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrame5, std::chrono::duration<double>(3));
+  model->StartAnimation();
   WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(modelsMutex_);
@@ -717,7 +752,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
-  Camera::Pose oldCameraPose = camera3D_->SavePose();
+  Camera::Pose3D oldCameraPose = camera3D_->SavePose();
 	// left eye translation (Mono Eye (0,0,0);
   // set head center to eye center offset
   headCamera_->headToEyeOffset_.positionX_ = ariftcontrol_->headToEyeOffsetX_; // left / right

@@ -92,7 +92,7 @@ void Camera::Render()
 	XMStoreFloat4x4(&viewmatrix_, viewMatrix_XmMat);
 }
 
-Camera::Pose Camera::SavePose()
+Camera::Pose3D Camera::SavePose()
 {
   oldPose_.positionX_ = currentPose_.positionX_;
   oldPose_.positionY_ = currentPose_.positionY_;
