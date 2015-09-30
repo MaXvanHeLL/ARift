@@ -44,7 +44,6 @@ GraphicsAPI::GraphicsAPI()
 
   current_model_idx_ = -1;
   modelsMutex_ = CreateMutex(NULL, FALSE, L"Models Mutex");
-	modelRotation_ = 0.0f;
 
 	screenDepth_ = 0.0f;
 	screenNear_ = 0.0f;
@@ -390,6 +389,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   headCamera_ = new HeadCamera(0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f);
   if (!headCamera_)
     return false;
+
   // Create the 3D camera object and set initial pose.
   camera3D_ = new Camera(0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f);
   if (!camera3D_)
@@ -426,6 +426,25 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
     return false;
   }
+  Camera::Pose3D keyFrameBox1;
+  keyFrameBox1.positionX_ = 0.0f;
+  keyFrameBox1.positionY_ = 0.0f;
+  keyFrameBox1.positionZ_ = -10.0f;
+  keyFrameBox1.rotationX_ = 0.0f;
+  keyFrameBox1.rotationY_ = 0.0f;
+  keyFrameBox1.rotationZ_ = 0.0f;
+  Camera::Pose3D keyFrameBox2 = keyFrameBox1;
+  Camera::Pose3D keyFrameBox3 = keyFrameBox1;
+  keyFrameBox2.rotationX_ = XM_PI;
+  keyFrameBox2.rotationY_ = XM_PI;
+  keyFrameBox2.rotationZ_ = XM_PI;
+  keyFrameBox3.rotationX_ = XM_2PI;
+  keyFrameBox3.rotationY_ = XM_2PI;
+  keyFrameBox3.rotationZ_ = XM_2PI;
+  model->AddKeyFrame(keyFrameBox1, std::chrono::duration<double>(0));
+  model->AddKeyFrame(keyFrameBox2, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrameBox3, std::chrono::duration<double>(3));
+  model->StartAnimation();
   WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(modelsMutex_);
@@ -462,39 +481,38 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
   }
   model->Scale(4);
-  Camera::Pose3D keyFrame1;
-  keyFrame1.positionX_ =  20.0f;
-  keyFrame1.positionY_ =  10.0f;
-
-  keyFrame1.positionZ_ =  10.0f;
-  keyFrame1.rotationX_ =   0.0f;
-  keyFrame1.rotationY_ =   0.0f;
-  keyFrame1.rotationZ_ =   0.0f;
-  Camera::Pose3D keyFrame2 = keyFrame1;
-  Camera::Pose3D keyFrame3 = keyFrame1;
-  Camera::Pose3D keyFrame4 = keyFrame1;
-  Camera::Pose3D keyFrame5 = keyFrame1;
-  keyFrame2.positionX_ = -20.0f;
-  keyFrame2.positionY_ =  10.0f;
-  keyFrame2.rotationX_ =  XM_PI;
+  Camera::Pose3D keyFrameTeapot1;
+  keyFrameTeapot1.positionX_ =  20.0f;
+  keyFrameTeapot1.positionY_ =  10.0f;
+  keyFrameTeapot1.positionZ_ =  10.0f;
+  keyFrameTeapot1.rotationX_ =   0.0f;
+  keyFrameTeapot1.rotationY_ =   0.0f;
+  keyFrameTeapot1.rotationZ_ =   0.0f;
+  Camera::Pose3D keyFrameTeapot2 = keyFrameTeapot1;
+  Camera::Pose3D keyFrameTeapot3 = keyFrameTeapot1;
+  Camera::Pose3D keyFrameTeapot4 = keyFrameTeapot1;
+  Camera::Pose3D keyFrameTeapot5 = keyFrameTeapot1;
+  keyFrameTeapot2.positionX_ = -20.0f;
+  keyFrameTeapot2.positionY_ =  10.0f;
+  keyFrameTeapot2.rotationX_ =  XM_PI;
   
-  keyFrame3.positionX_ = -20.0f;
-  keyFrame3.positionY_ = -10.0f;
-  keyFrame3.rotationX_ = XM_PI;
-  keyFrame3.rotationY_ = XM_PI;
+  keyFrameTeapot3.positionX_ = -20.0f;
+  keyFrameTeapot3.positionY_ = -10.0f;
+  keyFrameTeapot3.rotationX_ = XM_PI;
+  keyFrameTeapot3.rotationY_ = XM_PI;
 
-  keyFrame4.positionX_ =  20.0f;
-  keyFrame4.positionY_ = -10.0f;
-  keyFrame4.rotationX_ =  0.0f;
-  keyFrame4.rotationY_ = XM_PI;
+  keyFrameTeapot4.positionX_ =  20.0f;
+  keyFrameTeapot4.positionY_ = -10.0f;
+  keyFrameTeapot4.rotationX_ =  0.0f;
+  keyFrameTeapot4.rotationY_ = XM_PI;
 
-  keyFrame5.positionX_ =  20.0f;
-  keyFrame5.positionY_ =  10.0f;
-  model->AddKeyFrame(keyFrame1, std::chrono::duration<double>(0));
-  model->AddKeyFrame(keyFrame2, std::chrono::duration<double>(3));
-  model->AddKeyFrame(keyFrame3, std::chrono::duration<double>(3));
-  model->AddKeyFrame(keyFrame4, std::chrono::duration<double>(3));
-  model->AddKeyFrame(keyFrame5, std::chrono::duration<double>(3));
+  keyFrameTeapot5.positionX_ =  20.0f;
+  keyFrameTeapot5.positionY_ =  10.0f;
+  model->AddKeyFrame(keyFrameTeapot1, std::chrono::duration<double>(0));
+  model->AddKeyFrame(keyFrameTeapot2, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrameTeapot3, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrameTeapot4, std::chrono::duration<double>(3));
+  model->AddKeyFrame(keyFrameTeapot5, std::chrono::duration<double>(3));
   model->StartAnimation();
   WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
@@ -510,6 +528,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     std::cout << "Could not load highlight texture. " << std::endl;
     return false;
   }
+
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
@@ -747,9 +766,6 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	TurnZBufferOn();
 	//// ******************************** || 3D RENDERING || *********************************
 
-	// rotation
-	XMMATRIX rotationMatrix = XMMatrixRotationZ(modelRotation_);
-	XMStoreFloat4x4(&worldMatrix, rotationMatrix);
 
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
   Camera::Pose3D oldCameraPose = camera3D_->SavePose();
@@ -758,6 +774,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
   headCamera_->headToEyeOffset_.positionX_ = ariftcontrol_->headToEyeOffsetX_; // left / right
   headCamera_->headToEyeOffset_.positionY_ = ariftcontrol_->headToEyeOffsetY_;
   headCamera_->headToEyeOffset_.positionZ_ = ariftcontrol_->headToEyeOffsetZ_;
+  headCamera_->SetPosition(ariftcontrol_->cameraPositionX_, ariftcontrol_->cameraPositionY_, ariftcontrol_->cameraPositionZ_);
   // Generate the view matrix based on the camera's position.
   headCamera_->RenderEye(cam_id == 1);
   headCamera_->GetViewMatrix(viewMatrix);
@@ -949,6 +966,11 @@ void GraphicsAPI::shutDownD3D()
   {
     delete camera2D_;
     camera2D_ = 0;
+  }
+  if (highlight_texture_)
+  {
+    delete highlight_texture_;
+    highlight_texture_ = NULL;
   }
 
 	// Before shutting down set to windowed mode or when you release the swap chain it will throw an exception.

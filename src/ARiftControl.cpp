@@ -156,6 +156,11 @@ void ARiftControl::handleKey(char key)
         }
         case InputMode::CAMERA:
         {
+          inputMode_ = InputMode::MOVEMENT;
+          break;
+        }
+        case InputMode::MOVEMENT:
+        {
           inputMode_ = InputMode::DEFAULT;
           break;
         }
@@ -278,6 +283,11 @@ void ARiftControl::handleKey(char key)
           headToEyeOffsetY_ += step_ * 0.01f;
           break;
         }
+        case InputMode::MOVEMENT:
+        {
+          cameraPositionY_ += step_ ;
+          break;
+        }
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -309,6 +319,11 @@ void ARiftControl::handleKey(char key)
         case InputMode::CAMERA:
         {
           headToEyeOffsetX_ -= step_* 0.01f;
+          break;
+        }
+        case InputMode::MOVEMENT:
+        {
+          cameraPositionX_ -= step_;
           break;
         }
         default:
@@ -344,6 +359,11 @@ void ARiftControl::handleKey(char key)
           headToEyeOffsetY_ -= step_* 0.01f;
           break;
         }
+        case InputMode::MOVEMENT:
+        {
+          cameraPositionY_ -= step_;
+          break;
+        }
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -375,6 +395,11 @@ void ARiftControl::handleKey(char key)
         case InputMode::CAMERA:
         {
           headToEyeOffsetX_ += step_* 0.01f;
+          break;
+        }
+        case InputMode::MOVEMENT:
+        {
+          cameraPositionX_ += step_;
           break;
         }
         default:
@@ -410,6 +435,11 @@ void ARiftControl::handleKey(char key)
           headToEyeOffsetZ_ += step_* 0.01f;
           break;
         }
+        case InputMode::MOVEMENT:
+        {
+          cameraPositionZ_ += step_;
+          break;
+        }
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -443,6 +473,11 @@ void ARiftControl::handleKey(char key)
           headToEyeOffsetZ_ -= step_* 0.01f;
           break;
         }
+        case InputMode::MOVEMENT:
+        {
+          cameraPositionZ_ -= step_;
+          break;
+        }
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -469,6 +504,8 @@ void ARiftControl::handleKey(char key)
         case InputMode::WORLD:
           break;
         case InputMode::CAMERA:
+          break;
+        case InputMode::MOVEMENT:
           break;
         default:
         {
@@ -497,6 +534,8 @@ void ARiftControl::handleKey(char key)
           break;
         case InputMode::CAMERA:
           break;
+        case InputMode::MOVEMENT:
+          break;
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -523,6 +562,8 @@ void ARiftControl::handleKey(char key)
         case InputMode::WORLD:
           break;
         case InputMode::CAMERA:
+          break;
+        case InputMode::MOVEMENT:
           break;
         default:
         {
@@ -551,6 +592,8 @@ void ARiftControl::handleKey(char key)
           break;
         case InputMode::CAMERA:
           break;
+        case InputMode::MOVEMENT:
+          break;
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -578,6 +621,8 @@ void ARiftControl::handleKey(char key)
           break;
         case InputMode::CAMERA:
           break;
+        case InputMode::MOVEMENT:
+          break;
         default:
         {
           std::cout << "Unknown input mode" << std::endl;
@@ -604,6 +649,8 @@ void ARiftControl::handleKey(char key)
         case InputMode::WORLD:
           break;
         case InputMode::CAMERA:
+          break;
+        case InputMode::MOVEMENT:
           break;
         default:
         {

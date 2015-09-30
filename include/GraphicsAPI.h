@@ -59,8 +59,6 @@ private:
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
-	float modelRotation_;
-
 	// used for Eye Rendering
 	bool RenderToTexture(RenderTexture*,int);
 	bool RenderScene(int cam_id);

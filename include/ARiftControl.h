@@ -21,7 +21,7 @@
 class ARiftControl
 {
   public:
-    enum InputMode { DEFAULT = 0, MODEL = 1, WORLD = 2, CAMERA = 3 };
+    enum InputMode { DEFAULT = 0, MODEL = 1, WORLD = 2, CAMERA = 3, MOVEMENT = 4};
 
     ARiftControl();
     virtual ~ARiftControl();
@@ -55,6 +55,10 @@ class ARiftControl
     float headToEyeOffsetY_ = -0.28f;
     float headToEyeOffsetZ_ = 0.936f;
     float interPupillaryOffset_ = 0.064f;
+    
+    float cameraPositionX_ = 0.0f;
+    float cameraPositionY_ = 0.0f;
+    float cameraPositionZ_ = -10.0f;
 
     InputMode inputMode_ = InputMode::DEFAULT;
     GraphicsAPI* graphicsAPI_ = NULL;
