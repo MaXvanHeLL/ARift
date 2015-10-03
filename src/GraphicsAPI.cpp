@@ -396,14 +396,116 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   if (!camera3D_)
     return false;
 
+	// Create the Arcwing model object.
+	Model* model = new Model();
+	if (!model)
+		return false;
+
+	// Initialize the Arcwing model object.
+	result = model->Initialize(device_, "data/arcwing.txt", L"data/starship2.dds", 2.5, -10.0, 500.0);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the Arcwing. object.", L"Error", MB_OK);
+		return false;
+	}
+	model->Scale(0.06);
+	Camera::Pose3D keyFrameArcwing1;
+	keyFrameArcwing1.positionX_ = 2.5;
+	keyFrameArcwing1.positionY_ = -10.0;
+	keyFrameArcwing1.positionZ_ = 500.0;
+	keyFrameArcwing1.rotationX_ = 0.0;
+	keyFrameArcwing1.rotationY_ = 0.0;
+	keyFrameArcwing1.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameArcwing2 = keyFrameArcwing1;
+	keyFrameArcwing2.positionZ_ = 400.0;
+	Camera::Pose3D keyFrameArcwing3 = keyFrameArcwing2;
+	keyFrameArcwing3.positionZ_ = 350.0;
+	keyFrameArcwing3.rotationZ_ = XM_PI * 2;
+	Camera::Pose3D keyFrameArcwing4 = keyFrameArcwing3;
+	keyFrameArcwing4.positionZ_ = 300.0;
+	Camera::Pose3D keyFrameArcwing5 = keyFrameArcwing4;
+	keyFrameArcwing5.positionZ_ = 200.0;
+	keyFrameArcwing5.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameArcwing6 = keyFrameArcwing5;
+	keyFrameArcwing6.positionZ_ = 20.0;
+	Camera::Pose3D keyFrameArcwing7 = keyFrameArcwing6;
+	keyFrameArcwing7.positionX_ = -2.5;
+	keyFrameArcwing7.positionY_ = 25.0;
+	keyFrameArcwing7.positionZ_ = 0.0;
+	keyFrameArcwing7.rotationX_ = 0.5;
+	keyFrameArcwing7.rotationZ_ = 0.5;
+	Camera::Pose3D keyFrameArcwing8 = keyFrameArcwing7;
+	keyFrameArcwing8.positionX_ = 0.0;
+	keyFrameArcwing8.positionY_ = 55.0;
+	keyFrameArcwing8.positionZ_ = -30.0;
+	keyFrameArcwing8.rotationX_ = 0.0;
+	keyFrameArcwing8.rotationY_ = 0.0;
+	keyFrameArcwing8.rotationZ_ = XM_PI;
+	Camera::Pose3D keyFrameArcwing9 = keyFrameArcwing8;
+	keyFrameArcwing9.positionX_ = 2.5;
+	keyFrameArcwing9.positionY_ = 80.0;
+	keyFrameArcwing9.positionZ_ = -60.0;
+	keyFrameArcwing9.rotationX_ = -XM_PI/4;
+	Camera::Pose3D keyFrameArcwing10 = keyFrameArcwing9;
+	keyFrameArcwing10.positionY_ = 60.0;
+	keyFrameArcwing10.positionZ_ = -80.0;
+	keyFrameArcwing10.rotationX_ = -XM_PI / 2;
+	Camera::Pose3D keyFrameArcwing11 = keyFrameArcwing10;
+	keyFrameArcwing11.positionY_ = -100.0;
+	keyFrameArcwing11.positionZ_ = -80.0;
+	Camera::Pose3D keyFrameArcwing12 = keyFrameArcwing11;
+	keyFrameArcwing12.positionY_ = -130.0;
+	keyFrameArcwing12.positionZ_ = -60.0;
+	keyFrameArcwing12.rotationX_ = -XM_PI;
+	Camera::Pose3D keyFrameArcwing13 = keyFrameArcwing12;
+	keyFrameArcwing13.positionX_ = -200.0;
+	keyFrameArcwing13.positionY_ = 400.0;
+	keyFrameArcwing13.positionZ_ = 1200.0;
+	keyFrameArcwing13.rotationZ_ = XM_PI / 4;
+	model->AddKeyFrame(keyFrameArcwing1, std::chrono::duration<double>(6));
+	model->AddKeyFrame(keyFrameArcwing2, std::chrono::duration<double>(6));
+	model->AddKeyFrame(keyFrameArcwing3, std::chrono::duration<double>(6));
+	model->AddKeyFrame(keyFrameArcwing4, std::chrono::duration<double>(6));	
+	model->AddKeyFrame(keyFrameArcwing5, std::chrono::duration<double>(6));
+	model->AddKeyFrame(keyFrameArcwing6, std::chrono::duration<double>(5));
+	model->AddKeyFrame(keyFrameArcwing7, std::chrono::duration<double>(3));
+	model->AddKeyFrame(keyFrameArcwing8, std::chrono::duration<double>(3));
+	model->AddKeyFrame(keyFrameArcwing9, std::chrono::duration<double>(3));
+	model->AddKeyFrame(keyFrameArcwing10, std::chrono::duration<double>(2));
+	model->AddKeyFrame(keyFrameArcwing11, std::chrono::duration<double>(8));
+	model->AddKeyFrame(keyFrameArcwing12, std::chrono::duration<double>(3));
+	model->AddKeyFrame(keyFrameArcwing13, std::chrono::duration<double>(20));
+	model->StartAnimation();
+	WaitForSingleObject(modelsMutex_, INFINITE);
+	models_.push_back(model);
+	current_model_idx_ = 0;
+	ReleaseMutex(modelsMutex_);
+
+	// Create the FARM model object.
+	model = new Model();
+	if (!model)
+		return false;
+	// Initialize the FARM model object.
+	// result = model_->Initialize(device_, L"data/texture.dds");
+	result = model->Initialize(device_, "data/Farm.txt", L"data/wood.dds", 0.0, -5.0, -50.0);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
+		return false;
+	}
+	WaitForSingleObject(modelsMutex_, INFINITE);
+	models_.push_back(model);
+	current_model_idx_ = 0;
+	ReleaseMutex(modelsMutex_);
+
   // Create the first model object.
-  Model* model = new Model();
+  model = new Model();
   if (!model)
     return false;
 
   // Initialize the 1. model object.
   // result = model_->Initialize(device_, L"data/texture.dds");
-  result = model->Initialize(device_, "data/Cube.txt", L"data/starship2.dds");
+	result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 0.0, -5.0, -15.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
@@ -421,7 +523,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 2. model object and translate
-  result = model->Initialize(device_, "data/Cube.txt", L"data/diamond.dds", 0.0, 0.0, -10.0);
+  result = model->Initialize(device_, "data/Cube.txt", L"data/companion_cube.dds", 0.0, -5.0, -10.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
@@ -457,7 +559,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 3. model object and translate
-  result = model->Initialize(device_, "data/Cube.txt", L"data/grass.dds", 0.0, 0.0, 10.0);
+  result = model->Initialize(device_, "data/Cube.txt", L"data/diamond.dds", 0.0, 0.0, 10.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
@@ -474,15 +576,15 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 4. model object and translate
-  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/companion_cube.dds", 10.0, -10.0, 0.0);
+  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/teapot_texture.dds", 10.0, -10.0, 0.0);
   //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);  //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 4. object.", L"Error", MB_OK);
     return false;
   }
-	std::cout << "aaaaaall cool. " << std::endl;
-  model->Scale(4);
+
+  model->Scale(6);
   Camera::Pose3D keyFrameTeapot1;
   keyFrameTeapot1.positionX_ =  20.0f;
   keyFrameTeapot1.positionY_ =  10.0f;
@@ -516,10 +618,10 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   model->AddKeyFrame(keyFrameTeapot4, std::chrono::duration<double>(3));
   model->AddKeyFrame(keyFrameTeapot5, std::chrono::duration<double>(3));
   model->StartAnimation();
+
   WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(modelsMutex_);
-
 
   highlight_texture_ = new Texture();
   if (!highlight_texture_)

@@ -1,10 +1,12 @@
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 
-#include <d3d11.h>
-
-#include <DirectXMath.h>
+# include <d3d11.h>
+# include <DirectXMath.h>
+// Debug
 # include <DDSTextureLoader.h>
+// Release
+// # include "../include/DDSTextureLoader.h"
 class IDSuEyeInputHandler;
 using namespace DirectX;
 
