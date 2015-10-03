@@ -34,6 +34,7 @@ GraphicsAPI::GraphicsAPI()
   camera2D_ = 0;
 	bitmap_ = 0;
 	shader_ = 0;
+	illumination_ = 0;
 
 	depthDisabledStencilState_ = 0;
 
@@ -402,7 +403,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
   // Initialize the 1. model object.
   // result = model_->Initialize(device_, L"data/texture.dds");
-  result = model->Initialize(device_, "data/Cube.txt", L"data/texture.dds");
+  result = model->Initialize(device_, "data/Cube.txt", L"data/starship2.dds");
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
@@ -420,7 +421,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 2. model object and translate
-  result = model->Initialize(device_, "data/Cube.txt", L"data/box_0.dds", 0.0, 0.0, -10.0);
+  result = model->Initialize(device_, "data/Cube.txt", L"data/diamond.dds", 0.0, 0.0, -10.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 2. object.", L"Error", MB_OK);
@@ -473,13 +474,14 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 4. model object and translate
-  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/ceramic_texture_by_themarchello-d3jkaw8.dds", 10.0, -10.0, 0.0);
+  result = model->Initialize(device_, "data/wt_teapot.obj", L"data/companion_cube.dds", 10.0, -10.0, 0.0);
   //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);  //result = model->Initialize(device_, "data/USSEnterpriseAmbassadorClass.obj", L"data/Aztec2Spec.dds", 10.0, -10.0, 0.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 4. object.", L"Error", MB_OK);
     return false;
   }
+	std::cout << "aaaaaall cool. " << std::endl;
   model->Scale(4);
   Camera::Pose3D keyFrameTeapot1;
   keyFrameTeapot1.positionX_ =  20.0f;
@@ -522,13 +524,12 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
   highlight_texture_ = new Texture();
   if (!highlight_texture_)
     return false;
-  result = highlight_texture_->Initialize(device_, L"data/selected_red.dds");
+  result = highlight_texture_->Initialize(device_, L"data/lucky.dds");
   if (!result)
   {
     std::cout << "Could not load highlight texture. " << std::endl;
     return false;
   }
-
 
 	// Create the bitmap object.
 	bitmap_ = new BitMap();
@@ -599,7 +600,6 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 	// ----------------------------------------------------------------------
 
-
 	// Create the texture shader object.
 	shader_ = new Shader();
 	if (!shader_)
@@ -616,6 +616,18 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
   std::cout << "Compiling Shaders done" << std::endl;
+
+	// Create the Lightning object.
+	illumination_ = new Lightning();
+	if (!illumination_)
+	{
+		return false;
+	}
+
+	// Initialize the Lightning object.
+	illumination_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	illumination_->SetDirection(0.0f, 0.0f, 1.0f);
+
 	return true;
 }
 
@@ -756,7 +768,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	camera2D_->GetViewMatrix(cameraStreamMatrix);
 
 	result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, cameraStreamMatrix, orthoMatrix,
-    bitmap_->GetTexture(), undistBuffer);
+    bitmap_->GetTexture(), undistBuffer, illumination_->GetDirection(), illumination_->GetDiffuseColor());
 
   if (!result)
 	{
@@ -764,8 +776,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	}
 
 	TurnZBufferOn();
-	//// ******************************** || 3D RENDERING || *********************************
 
+	//// ******************************** || 3D RENDERING || *********************************
 
 	// Translate 2nd virtual camera with idp 62cm on x-axis.
   Camera::Pose3D oldCameraPose = camera3D_->SavePose();
@@ -808,7 +820,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
     modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
     XMStoreFloat4x4(&worldMatrix, modelTransform);
     result = shader_->Render(devicecontext_, (*model)->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
-      model_tex);
+			model_tex, illumination_->GetDirection(), illumination_->GetDiffuseColor());
 
     if (!result)
     {
@@ -861,7 +873,7 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 	
 	// Render the debug window using the texture shader.
 	result = shader_->Render(devicecontext_, eyeWindow->GetIndexCount(), worldMatrix, cameraStreamMatrix,
-		orthoMatrix, renderTexture->GetShaderResourceView());
+		orthoMatrix, renderTexture->GetShaderResourceView(), illumination_->GetDirection(), illumination_->GetDiffuseColor());
 
 	camera3D_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
 	if (!result)
@@ -875,6 +887,12 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 
 void GraphicsAPI::shutDownD3D()
 {
+	// Release the Lightning object.
+	if (illumination_)
+	{
+		delete illumination_;
+		illumination_ = 0;
+	}
 
 	// Release the debug window object.
 	if (eyeWindowRight_)

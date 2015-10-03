@@ -17,6 +17,7 @@
 #include "../include/EyeWindow.h"
 #include "../include/RenderTexture.h"
 #include "../include/OculusHMD.h"
+#include "../include/Lightning.h"
 
 #define AR_HMD_ENABLED 1
 #define HMD_DISTORTION 1
@@ -56,6 +57,7 @@ private:
 
 	BitMap* bitmap_;
 	Shader* shader_;
+	Lightning* illumination_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 

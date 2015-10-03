@@ -4,7 +4,7 @@
 #include <d3d11.h>
 
 #include <DirectXMath.h>
-#include <DDSTextureLoader.h>
+# include <DDSTextureLoader.h>
 class IDSuEyeInputHandler;
 using namespace DirectX;
 

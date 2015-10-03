@@ -197,7 +197,7 @@ bool Model::InitializeBuffers(ID3D11Device* device)
 	{
 		vertices[i].position = XMFLOAT3(modeltype_[i].x, modeltype_[i].y, modeltype_[i].z);
 		vertices[i].texture = XMFLOAT2(modeltype_[i].tu, modeltype_[i].tv);
-		// vertices[i].normal = XMFLOAT3(modeltype_[i].nx, modeltype_[i].ny, modeltype_[i].nz);
+		vertices[i].normal = XMFLOAT3(modeltype_[i].nx, modeltype_[i].ny, modeltype_[i].nz);
 
 		indices[i] = i;
 	}
@@ -344,7 +344,8 @@ bool Model::ReadObjFile(char* filename)
       continue;
     char* block = strtok(buffer, " ");
     if (strncmp(block, "g", 1) == 0
-      || strncmp(block, "usemtl", 6) == 0)
+
+ 			 || strncmp(block, "usemtl", 6) == 0)
     {
 
       std::cout << "Could not convert file '" << filename << "'. File too complex." << std::endl;

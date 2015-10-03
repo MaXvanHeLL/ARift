@@ -21,12 +21,20 @@ class Shader
 		ID3D11Buffer* matrixbuffer_;
     ID3D11Buffer* undistortionBuffer_;
 		ID3D11SamplerState* samplestate_;
+		ID3D11Buffer* lightBuffer_;
 
 		struct MatrixBufferType
 		{
 			XMFLOAT4X4 world;
 			XMFLOAT4X4 view;
 			XMFLOAT4X4 projection;
+		};
+
+		struct LightBufferType
+		{
+			XMFLOAT4 diffuseColor;
+			XMFLOAT3 lightDirection;
+			float padding;  // Added extra padding so structure is a multiple of 16 for CreateBuffer function requirements.
 		};
 
 	public:
@@ -54,15 +62,15 @@ class Shader
 
 		bool Initialize(ID3D11Device*, HWND);
 		void Shutdown();
-    bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*, UndistortionBuffer*);
-    bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*);
+    bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*, UndistortionBuffer*, XMFLOAT3, XMFLOAT4);
+		bool Render(ID3D11DeviceContext*, int, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
 
 	private:
 		bool InitializeShader(ID3D11Device*, HWND, WCHAR*, WCHAR*,WCHAR*);
 		void ShutdownShader();
 		void OutputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
 
-		bool SetShaderParameters(ID3D11DeviceContext*, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*);
+		bool SetShaderParameters(ID3D11DeviceContext*, XMFLOAT4X4, XMFLOAT4X4, XMFLOAT4X4, ID3D11ShaderResourceView*, XMFLOAT3, XMFLOAT4);
     bool SetUndistortionParameters(ID3D11DeviceContext*, UndistortionBuffer*);
 		void RenderShader(ID3D11DeviceContext*, int, bool);
 };
