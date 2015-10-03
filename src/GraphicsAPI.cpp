@@ -625,8 +625,9 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	}
 
 	// Initialize the Lightning object.
+	illumination_->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 	illumination_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	illumination_->SetDirection(0.0f, 0.0f, 1.0f);
+	illumination_->SetDirection(0.2f, -1.0f, 1.0f);
 
 	return true;
 }
@@ -768,7 +769,8 @@ bool GraphicsAPI::RenderScene(int cam_id)
 	camera2D_->GetViewMatrix(cameraStreamMatrix);
 
 	result = shader_->Render(devicecontext_, bitmap_->GetIndexCount(), worldMatrix, cameraStreamMatrix, orthoMatrix,
-    bitmap_->GetTexture(), undistBuffer, illumination_->GetDirection(), illumination_->GetDiffuseColor());
+    bitmap_->GetTexture(), undistBuffer, illumination_->GetDirection(), illumination_->GetDiffuseColor(),
+		illumination_->GetAmbientColor());
 
   if (!result)
 	{
@@ -820,7 +822,7 @@ bool GraphicsAPI::RenderScene(int cam_id)
     modelTransform = XMMatrixMultiply(modelTransform, worldTranslationMatrix);
     XMStoreFloat4x4(&worldMatrix, modelTransform);
     result = shader_->Render(devicecontext_, (*model)->GetIndexCount(), worldMatrix, viewMatrix, stereoProjectionMatrix,
-			model_tex, illumination_->GetDirection(), illumination_->GetDiffuseColor());
+			model_tex, illumination_->GetDirection(), illumination_->GetDiffuseColor(), illumination_->GetAmbientColor());
 
     if (!result)
     {
@@ -873,7 +875,8 @@ bool GraphicsAPI::RenderEyeWindow(EyeWindow* eyeWindow, RenderTexture* renderTex
 	
 	// Render the debug window using the texture shader.
 	result = shader_->Render(devicecontext_, eyeWindow->GetIndexCount(), worldMatrix, cameraStreamMatrix,
-		orthoMatrix, renderTexture->GetShaderResourceView(), illumination_->GetDirection(), illumination_->GetDiffuseColor());
+		orthoMatrix, renderTexture->GetShaderResourceView(), illumination_->GetDirection(), 
+		illumination_->GetDiffuseColor(), illumination_->GetAmbientColor());
 
 	camera3D_->SetRotation(oldRotation.x, oldRotation.y, oldRotation.z);
 	if (!result)

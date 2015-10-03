@@ -12,6 +12,13 @@ Lightning::~Lightning()
 {}
 
 
+void Lightning::SetAmbientColor(float red, float green, float blue, float alpha)
+{
+	ambientColor_ = XMFLOAT4(red, green, blue, alpha);
+	return;
+}
+
+
 void Lightning::SetDiffuseColor(float red, float green, float blue, float alpha)
 {
 	diffuseColor_ = XMFLOAT4(red, green, blue, alpha);
@@ -23,6 +30,12 @@ void Lightning::SetDirection(float x, float y, float z)
 {
 	direction_ = XMFLOAT3(x, y, z);
 	return;
+}
+
+
+XMFLOAT4 Lightning::GetAmbientColor()
+{
+	return ambientColor_;
 }
 
 
