@@ -408,7 +408,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		MessageBox(hwnd, L"Could not initialize the Arcwing. object.", L"Error", MB_OK);
 		return false;
 	}
-	model->Scale(0.06);
+	model->Scale(0.075);
 	Camera::Pose3D keyFrameArcwing1;
 	keyFrameArcwing1.positionX_ = 2.5;
 	keyFrameArcwing1.positionY_ = -10.0;
@@ -462,10 +462,44 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	keyFrameArcwing13.positionY_ = 400.0;
 	keyFrameArcwing13.positionZ_ = 1200.0;
 	keyFrameArcwing13.rotationZ_ = XM_PI / 4;
-	model->AddKeyFrame(keyFrameArcwing1, std::chrono::duration<double>(6));
-	model->AddKeyFrame(keyFrameArcwing2, std::chrono::duration<double>(6));
-	model->AddKeyFrame(keyFrameArcwing3, std::chrono::duration<double>(6));
-	model->AddKeyFrame(keyFrameArcwing4, std::chrono::duration<double>(6));	
+	
+	/*
+	model->Scale(0.5);
+	Camera::Pose3D keyFrameArcwing1;
+	keyFrameArcwing1.positionX_ = 2.5;
+	keyFrameArcwing1.positionY_ = -10.0;
+	keyFrameArcwing1.positionZ_ = 500.0;
+	keyFrameArcwing1.rotationX_ = 0.0;
+	keyFrameArcwing1.rotationY_ = 0.0;
+	keyFrameArcwing1.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameArcwing2 = keyFrameArcwing1;
+	keyFrameArcwing2.positionZ_ = 400.0;
+	Camera::Pose3D keyFrameArcwing3 = keyFrameArcwing2;
+	keyFrameArcwing3.positionZ_ = 350.0;
+	keyFrameArcwing3.rotationZ_ = XM_PI * 2;
+	Camera::Pose3D keyFrameArcwing4 = keyFrameArcwing3;
+	keyFrameArcwing4.positionZ_ = -200.0;
+	Camera::Pose3D keyFrameArcwing5 = keyFrameArcwing4;
+	keyFrameArcwing5.positionZ_ = -450.0;
+	keyFrameArcwing5.positionX_ = 300.0;
+	keyFrameArcwing5.positionY_ = 500.0;
+	keyFrameArcwing5.rotationX_ = 1.0;
+	// keyFrameArcwing5.rotationZ_ = 1.0;
+	Camera::Pose3D keyFrameArcwing6 = keyFrameArcwing5;
+	keyFrameArcwing6.positionY_ = 800.0;
+	keyFrameArcwing6.positionZ_ = 100.0;
+	keyFrameArcwing6.rotationX_ = XM_PI;
+	Camera::Pose3D keyFrameArcwing7 = keyFrameArcwing6;
+	keyFrameArcwing7.positionX_ = -50;
+	keyFrameArcwing7.positionZ_ = 250.0;
+	keyFrameArcwing7.positionY_ = -200.0;
+	keyFrameArcwing7.rotationX_ = XM_PI  + XM_PI / 2;
+	keyFrameArcwing7.rotationZ_ = -1.0;
+	*/
+	model->AddKeyFrame(keyFrameArcwing1, std::chrono::duration<double>(0));
+	model->AddKeyFrame(keyFrameArcwing2, std::chrono::duration<double>(5));
+	model->AddKeyFrame(keyFrameArcwing3, std::chrono::duration<double>(5));
+	model->AddKeyFrame(keyFrameArcwing4, std::chrono::duration<double>(8));	
 	model->AddKeyFrame(keyFrameArcwing5, std::chrono::duration<double>(6));
 	model->AddKeyFrame(keyFrameArcwing6, std::chrono::duration<double>(5));
 	model->AddKeyFrame(keyFrameArcwing7, std::chrono::duration<double>(3));
@@ -474,7 +508,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	model->AddKeyFrame(keyFrameArcwing10, std::chrono::duration<double>(2));
 	model->AddKeyFrame(keyFrameArcwing11, std::chrono::duration<double>(8));
 	model->AddKeyFrame(keyFrameArcwing12, std::chrono::duration<double>(3));
-	model->AddKeyFrame(keyFrameArcwing13, std::chrono::duration<double>(20));
+	model->AddKeyFrame(keyFrameArcwing13, std::chrono::duration<double>(15));
 	model->StartAnimation();
 	WaitForSingleObject(modelsMutex_, INFINITE);
 	models_.push_back(model);
@@ -487,12 +521,34 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	// Initialize the FARM model object.
 	// result = model_->Initialize(device_, L"data/texture.dds");
-	result = model->Initialize(device_, "data/Farm.txt", L"data/wood.dds", 0.0, -5.0, -50.0);
+	result = model->Initialize(device_, "data/godzilla.txt", L"data/godzilla.dds", 2.5, -30.0, -200.0);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
 		return false;
 	}
+	model->Scale(1.5);
+	Camera::Pose3D keyFrameGodzilla1;
+	keyFrameGodzilla1.positionX_ = 2.5;
+	keyFrameGodzilla1.positionZ_ = -200.0;
+	keyFrameGodzilla1.positionY_ = -30.0;
+	keyFrameGodzilla1.rotationX_ = 0.0;
+	keyFrameGodzilla1.rotationY_ = XM_PI;
+	keyFrameGodzilla1.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameGodzilla2 = keyFrameGodzilla1;
+	keyFrameGodzilla2.rotationY_ = XM_PI * 3;
+	Camera::Pose3D keyFrameGodzilla3 = keyFrameGodzilla2;
+	keyFrameGodzilla3.positionY_ = -250.0;
+	Camera::Pose3D keyFrameGodzilla4 = keyFrameGodzilla3;
+	keyFrameGodzilla4.positionZ_ = -120.0;
+
+  model->AddKeyFrame(keyFrameGodzilla1, std::chrono::duration<double>(0));
+	model->AddKeyFrame(keyFrameGodzilla2, std::chrono::duration<double>(8));
+	model->AddKeyFrame(keyFrameGodzilla3, std::chrono::duration<double>(3));
+	model->AddKeyFrame(keyFrameGodzilla4, std::chrono::duration<double>(13));
+
+	model->StartAnimation();
+
 	WaitForSingleObject(modelsMutex_, INFINITE);
 	models_.push_back(model);
 	current_model_idx_ = 0;
@@ -559,12 +615,13 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
     return false;
 
   // Initialize the 3. model object and translate
-  result = model->Initialize(device_, "data/Cube.txt", L"data/diamond.dds", 0.0, 0.0, 10.0);
+  result = model->Initialize(device_, "data/Cube.txt", L"data/brick.dds", 10.5, -8.0, -20.0);
   if (!result)
   {
     MessageBox(hwnd, L"Could not initialize the model 3. object.", L"Error", MB_OK);
     return false;
   }
+	model->Scale(1.5);
   WaitForSingleObject(modelsMutex_, INFINITE);
   models_.push_back(model);
   ReleaseMutex(modelsMutex_);
@@ -729,7 +786,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Initialize the Lightning object.
 	illumination_->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 	illumination_->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	illumination_->SetDirection(0.2f, -1.0f, 1.0f);
+	illumination_->SetDirection(-1.0f, -1.0f, -1.0f);
 
 	return true;
 }
