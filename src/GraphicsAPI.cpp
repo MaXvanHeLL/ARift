@@ -409,22 +409,22 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 	model->Scale(2.5);
-	Camera::Pose3D keyFrameArcwing1;
-	keyFrameArcwing1.positionX_ = -900;
-	keyFrameArcwing1.positionY_ = -30.0;
-	keyFrameArcwing1.positionZ_ = 800;
-	keyFrameArcwing1.rotationX_ = 0.0;
-	keyFrameArcwing1.rotationY_ = 0.0;
-	keyFrameArcwing1.rotationZ_ = 0.0;
-	Camera::Pose3D keyFrameArcwing2 = keyFrameArcwing1;
-	keyFrameArcwing2.positionZ_ = -800.0;
-	keyFrameArcwing2.positionX_ = 100.0;
-	keyFrameArcwing2.rotationY_ = -1.0;
-	Camera::Pose3D keyFrameArcwing3 = keyFrameArcwing2;
-	keyFrameArcwing3.positionZ_ = 800.0;
-	keyFrameArcwing3.positionX_ = 400.0;
-	keyFrameArcwing3.positionY_ = 400.0;
-	keyFrameArcwing3.rotationY_ = -3.0;
+	Camera::Pose3D keyFrameStarship1;
+	keyFrameStarship1.positionX_ = -900;
+	keyFrameStarship1.positionY_ = -30.0;
+	keyFrameStarship1.positionZ_ = 800;
+	keyFrameStarship1.rotationX_ = 0.0;
+	keyFrameStarship1.rotationY_ = 0.0;
+	keyFrameStarship1.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameStarship2 = keyFrameStarship1;
+	keyFrameStarship2.positionZ_ = -800.0;
+	keyFrameStarship2.positionX_ = 100.0;
+	keyFrameStarship2.rotationY_ = -1.0;
+	Camera::Pose3D keyFrameStarship3 = keyFrameStarship2;
+	keyFrameStarship3.positionZ_ = 800.0;
+	keyFrameStarship3.positionX_ = 400.0;
+	keyFrameStarship3.positionY_ = 400.0;
+	keyFrameStarship3.rotationY_ = -3.0;
 
 	// model->Scale(0.075);
 	// model->Scale(400);
@@ -483,9 +483,9 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	keyFrameArcwing13.positionZ_ = 1200.0;
 	keyFrameArcwing13.rotationZ_ = XM_PI / 4;
 	*/
-	model->AddKeyFrame(keyFrameArcwing1, std::chrono::duration<double>(0));
-	model->AddKeyFrame(keyFrameArcwing2, std::chrono::duration<double>(30));
-	model->AddKeyFrame(keyFrameArcwing3, std::chrono::duration<double>(30));
+	model->AddKeyFrame(keyFrameStarship1, std::chrono::duration<double>(0));
+	model->AddKeyFrame(keyFrameStarship2, std::chrono::duration<double>(30));
+	model->AddKeyFrame(keyFrameStarship3, std::chrono::duration<double>(30));
 	// model->AddKeyFrame(keyFrameArcwing4, std::chrono::duration<double>(8));	
 	// model->AddKeyFrame(keyFrameArcwing5, std::chrono::duration<double>(6));
 	// model->AddKeyFrame(keyFrameArcwing6, std::chrono::duration<double>(5));
@@ -502,7 +502,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	current_model_idx_ = 0;
 	ReleaseMutex(modelsMutex_);
 
-	// Create the FARM model object.
+	// Create the GODZILLA model object.
 	model = new Model();
 	if (!model)
 		return false;
@@ -549,6 +549,96 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 	models_.push_back(model);
 	current_model_idx_ = 0;
 	ReleaseMutex(modelsMutex_);
+
+	// FLYING OBJECT
+	// Create the first model object.
+	model = new Model();
+	if (!model)
+		return false;
+
+	// Initialize the Arcwing. model object.
+	// result = model_->Initialize(device_, L"data/texture.dds");
+	result = model->Initialize(device_, "data/arcwing.txt", L"data/starship6.dds", -2.2, -6.2, -31.5);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
+		return false;
+	}
+	model->Scale(0.03);
+	Camera::Pose3D keyFrameArcwing1;
+	keyFrameArcwing1.positionX_ = 2.5;
+	keyFrameArcwing1.positionY_ = -10.0;
+	keyFrameArcwing1.positionZ_ = 200.0;
+	keyFrameArcwing1.rotationX_ = 0.0;
+	keyFrameArcwing1.rotationY_ = 0.0;
+	keyFrameArcwing1.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameArcwing2 = keyFrameArcwing1;
+	keyFrameArcwing2.positionZ_ = 400.0;
+	Camera::Pose3D keyFrameArcwing3 = keyFrameArcwing2;
+	keyFrameArcwing3.positionZ_ = 350.0;
+	keyFrameArcwing3.rotationZ_ = XM_PI * 2;
+	Camera::Pose3D keyFrameArcwing4 = keyFrameArcwing3;
+	keyFrameArcwing4.positionZ_ = 300.0;
+	Camera::Pose3D keyFrameArcwing5 = keyFrameArcwing4;
+	keyFrameArcwing5.positionZ_ = 200.0;
+	keyFrameArcwing5.rotationZ_ = 0.0;
+	Camera::Pose3D keyFrameArcwing6 = keyFrameArcwing5;
+	keyFrameArcwing6.positionZ_ = 20.0;
+	Camera::Pose3D keyFrameArcwing7 = keyFrameArcwing6;
+	keyFrameArcwing7.positionX_ = 5.0; // -2.5
+	keyFrameArcwing7.positionY_ = 25.0;
+	keyFrameArcwing7.positionZ_ = 0.0;
+	keyFrameArcwing7.rotationX_ = 0.5; 
+	keyFrameArcwing7.rotationZ_ = -0.5; // 0.5
+	Camera::Pose3D keyFrameArcwing8 = keyFrameArcwing7;
+	keyFrameArcwing8.positionX_ = 20.5;
+	keyFrameArcwing8.positionY_ = 55.0;
+	keyFrameArcwing8.positionZ_ = -30.0;
+	keyFrameArcwing8.rotationX_ = 0.0;
+	keyFrameArcwing8.rotationY_ = 0.0;
+	keyFrameArcwing8.rotationZ_ = -XM_PI; // XM_PI
+	Camera::Pose3D keyFrameArcwing9 = keyFrameArcwing8;
+	keyFrameArcwing9.positionX_ = 40.0; // 2.5
+	keyFrameArcwing9.positionY_ = 80.0;
+	keyFrameArcwing9.positionZ_ = -60.0;
+	keyFrameArcwing9.rotationX_ = -XM_PI / 4; //-XM_PI / 4
+	Camera::Pose3D keyFrameArcwing10 = keyFrameArcwing9;
+	keyFrameArcwing10.positionY_ = 60.0;
+	keyFrameArcwing10.positionZ_ = -80.0;
+	keyFrameArcwing10.rotationX_ = -XM_PI / 2; // -XM_PI / 2
+	Camera::Pose3D keyFrameArcwing11 = keyFrameArcwing10;
+	keyFrameArcwing11.positionY_ = -100.0;
+	keyFrameArcwing11.positionZ_ = -80.0;
+	Camera::Pose3D keyFrameArcwing12 = keyFrameArcwing11;
+	keyFrameArcwing12.positionY_ = -130.0;
+	keyFrameArcwing12.positionZ_ = -60.0;
+	keyFrameArcwing12.rotationX_ = -XM_PI; // -XM_PI
+	Camera::Pose3D keyFrameArcwing13 = keyFrameArcwing12;
+	keyFrameArcwing13.positionX_ = 200.0; // -200.0
+	keyFrameArcwing13.positionY_ = 400.0;
+	keyFrameArcwing13.positionZ_ = 1200.0;
+	keyFrameArcwing13.rotationZ_ = -XM_PI / 4; // XM_PI / 4
+	model->AddKeyFrame(keyFrameArcwing1, std::chrono::duration<double>(0));
+	model->AddKeyFrame(keyFrameArcwing2, std::chrono::duration<double>(5));
+	model->AddKeyFrame(keyFrameArcwing3, std::chrono::duration<double>(5));
+	model->AddKeyFrame(keyFrameArcwing4, std::chrono::duration<double>(8));	
+	model->AddKeyFrame(keyFrameArcwing5, std::chrono::duration<double>(6));
+	model->AddKeyFrame(keyFrameArcwing6, std::chrono::duration<double>(5));
+	model->AddKeyFrame(keyFrameArcwing7, std::chrono::duration<double>(4));
+	model->AddKeyFrame(keyFrameArcwing8, std::chrono::duration<double>(4));
+	model->AddKeyFrame(keyFrameArcwing9, std::chrono::duration<double>(3));
+	model->AddKeyFrame(keyFrameArcwing10, std::chrono::duration<double>(2));
+	model->AddKeyFrame(keyFrameArcwing11, std::chrono::duration<double>(8));
+	model->AddKeyFrame(keyFrameArcwing12, std::chrono::duration<double>(2));
+	model->AddKeyFrame(keyFrameArcwing13, std::chrono::duration<double>(12));
+	model->StartAnimation();
+
+	WaitForSingleObject(modelsMutex_, INFINITE);
+	models_.push_back(model);
+	current_model_idx_ = 0;
+	ReleaseMutex(modelsMutex_);
+
+	// FLYING OBJECT [´FIN]
 
   // Create the first model object.
   model = new Model();
