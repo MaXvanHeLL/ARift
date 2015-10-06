@@ -558,7 +558,7 @@ bool GraphicsAPI::InitD3D(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// Initialize the Arcwing. model object.
 	// result = model_->Initialize(device_, L"data/texture.dds");
-	result = model->Initialize(device_, "data/arcwing.txt", L"data/starship6.dds", -2.2, -6.2, -31.5);
+	result = model->Initialize(device_, "data/arcwing.txt", L"data/starship3.dds", -2.2, -6.2, -31.5);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model 1. object.", L"Error", MB_OK);
