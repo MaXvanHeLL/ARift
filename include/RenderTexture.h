@@ -2,7 +2,9 @@
 #define _RENDERTEXTURE_H_
 
 #include <d3d11.h>
-
+/// <summary>
+/// Initializes, updates and destroys a render target that can be accessed as texture. All rendering is done to such a RenderTexture whose texture is then passed on to the Oculus SDK.
+/// <\summary>
 class RenderTexture
 {
 	public:

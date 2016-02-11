@@ -1,5 +1,8 @@
 #pragma once
 #include "Camera.h"
+/// <summary>
+/// This class is derived from Camera. The calculations needed to get from the head rotation update to the camera parameter update are provided by this class.
+/// <\summary>
 class HeadCamera :
   public Camera
 {

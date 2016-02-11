@@ -4,7 +4,9 @@
 #include <DirectXMath.h>
 
 using namespace DirectX;
-
+/// <summary>
+/// The parameters and calculations needed for a regular virtual camera are enclosed in this class.
+/// <\summary>
 class Camera
 {
 public:

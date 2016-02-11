@@ -5,7 +5,9 @@
 #include <DirectXMath.h>
 
 using namespace DirectX;
-
+/// <summary>
+/// For debug purposes a window for each eye can be provided. This class is very similar to Bitmap and a merge with it should be considered.
+/// <\summary>
 class EyeWindow
 {
 private:

@@ -11,7 +11,9 @@
 #define CAMERA_BUFFER_LENGTH ((CAMERA_CHANNELS * CAMERA_WIDTH * CAMERA_HEIGHT  * CAMERA_DEPTH) / 8)
 
 enum FlipStatus { NOFLIP = -2, BOTH = -1, VERTICAL = 0, HORIZONTAL = 1 };
-
+/// <summary>
+/// Manages the control of the cameras via interfacing with the camera driver. Image capture and retrieval as well as camera settings can be changed using this class.
+/// <\summary>
 class IDSuEyeInputHandler
 {
   public:

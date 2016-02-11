@@ -9,7 +9,9 @@
 // # include "../include/DDSTextureLoader.h"
 class IDSuEyeInputHandler;
 using namespace DirectX;
-
+/// <summary>
+/// This class represents a texture in the virtual scene. It provides methods to load it from a *.dds file and updating it from a camera image.
+/// <\summary>
 class Texture
 {
 	private:

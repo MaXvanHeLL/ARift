@@ -10,7 +10,9 @@
 
 using namespace std;
 using namespace DirectX;
-
+/// <summary>
+/// Loading, compiling and applying shaders is encapsulated here. The application compiles and loads a lighting pixel and vertex shader for the virtual objects and a undistortion pixel shader from files.
+/// <\summary>.
 class Shader
 {
 	private:

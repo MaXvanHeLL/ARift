@@ -8,7 +8,9 @@
 using namespace OVR;
 
 class GraphicsAPI;
-
+/// <summary>
+/// Provides an abstraction layer between the Oculus HMD SDK. It initializes the HMD and retrieves the rotation measurements. Once the scene rendering in GraphicsAPI is complete the OculusHMD class passes the images on to Oculus SDK for predistortion and display.
+/// <\summary>
 class OculusHMD
 {
 	private:

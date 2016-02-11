@@ -4,7 +4,9 @@
 #include <DirectXMath.h>
 
 using namespace DirectX;
-
+/// <summary>
+/// Information about the ambient and diffuse lighting that is calculated in the lighting shader is saved here.
+/// <\summary>
 class Lighting
 {
 	public:

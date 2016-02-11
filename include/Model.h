@@ -10,6 +10,9 @@
 #include <vector>
 
 using namespace DirectX;
+/// <summary>
+/// Represents a model in the virtual scene. A model's vertices, scale, position, rotation and texture are pooled together in this class. It further allows to specify and progress a model's animation. The loading of a model from a wavefromt file is also part of this class' methods.
+/// <\summary>
 class Model
 {
 public:

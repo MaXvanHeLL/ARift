@@ -14,7 +14,9 @@ using namespace DirectX;
 
 class ARiftControl;
 class Texture;
-
+/// <summary>
+/// To meld virtual and real scene the camera images need to be rendered, this class provides the required functionality. It is a virtual object - a rectangle - that is always placed so that it fills the respective eyes full field of view. The camera images are then rendered using an undistortion shader onto this rectangle as a texture. Finally a orthographic projection is applied to it in GraphicsAPI.
+/// <\summary>
 class BitMap
 {
 private:

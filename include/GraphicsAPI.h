@@ -25,7 +25,9 @@ class BitMap;
 class ARiftControl;
 class Texture;
 // -------------------------------
-
+/// <summary>
+/// Creates, updates and destroys the DirectX scene. In the constructor the scene is set up, the models are loaded and placed. While the application is running the scene is updated according to user input and HMD rotation measurements. When the application is prompted to close this class handles the destruction of the scene and the cleanup.
+/// <\summary>
 class GraphicsAPI
 {
 private:
