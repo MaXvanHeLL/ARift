@@ -17,7 +17,9 @@
 //#define RIFT_RESOLUTION_WIDTH (1122 * 2)
 //#define RIFT_RESOLUTION_HEIGHT 1553
 
-
+/// <summary>
+/// Class for handling and interpreting keyboard and mouse input.
+/// <\summary>
 class ARiftControl
 {
   public:

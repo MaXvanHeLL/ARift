@@ -1,16 +1,16 @@
-#ifndef _LIGHTNING_H_
-#define _LIGHTNING_H_
+#ifndef _LIGHTING_H_
+#define _LIGHTING_H_
 
 #include <DirectXMath.h>
 
 using namespace DirectX;
 
-class Lightning
+class Lighting
 {
 	public:
-		Lightning();
-		Lightning(const Lightning&);
-		~Lightning();
+		Lighting();
+		Lighting(const Lighting&);
+		~Lighting();
 
 		void SetAmbientColor(float, float, float, float);
 		void SetDiffuseColor(float, float, float, float);

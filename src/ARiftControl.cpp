@@ -144,8 +144,8 @@ void ARiftControl::handleKey(char key)
         case InputMode::MODEL:
         {
           // forget new model state if not promted by 'CR' before
+          oldModelState_ = graphicsAPI_->GetCurrentModelState();
           newModelState_ = oldModelState_;
-          graphicsAPI_->SetCurrentModelState(oldModelState_);
           inputMode_ = InputMode::WORLD;
           break;
         }

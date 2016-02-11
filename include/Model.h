@@ -100,7 +100,7 @@ public:
   void Move(float x, float y, float z);
   void SaveState();
   void SetState(Model::State newState);
-  Model::State GetCurrentState() { return currentState_; };
+  Model::State GetCurrentState();
   void RestoreState();
   XMMATRIX GetModelTransformation();
   void AddKeyFrame(

@@ -165,9 +165,25 @@ void Model::RestoreState()
   currentState_ = oldState_;
 }
 
+Model::State Model::GetCurrentState()
+{
+  if (isAnimated_)
+  {
+    return oldState_;
+  }
+  return currentState_;
+}
+
 void Model::SetState(Model::State newState)
 {
-  currentState_ = newState;
+  if (isAnimated_)
+  {
+    oldState_ = newState;
+  }
+  else
+  {
+    currentState_ = newState;
+  }
 }
 
 bool Model::InitializeBuffers(ID3D11Device* device)
@@ -590,13 +606,13 @@ void Model::Animate()
   std::chrono::duration<double> timeBetweenFrames = nextFrame->second - (previousFrame->second);
   double relativeCompletion = timeSinceLastFrame.count() / timeBetweenFrames.count();
 
-  currentState_.rotationX_ = (float)(previousFrame->first.rotationX_ * (1 - relativeCompletion) + nextFrame->first.rotationX_ * relativeCompletion);
-  currentState_.rotationY_ = (float)(previousFrame->first.rotationY_ * (1 - relativeCompletion) + nextFrame->first.rotationY_ * relativeCompletion);
-  currentState_.rotationZ_ = (float)(previousFrame->first.rotationZ_ * (1 - relativeCompletion) + nextFrame->first.rotationZ_ * relativeCompletion);
+  currentState_.rotationX_ = oldState_.rotationX_ + (float)(previousFrame->first.rotationX_ * (1 - relativeCompletion) + nextFrame->first.rotationX_ * relativeCompletion);
+  currentState_.rotationY_ = oldState_.rotationY_ + (float)(previousFrame->first.rotationY_ * (1 - relativeCompletion) + nextFrame->first.rotationY_ * relativeCompletion);
+  currentState_.rotationZ_ = oldState_.rotationZ_ + (float)(previousFrame->first.rotationZ_ * (1 - relativeCompletion) + nextFrame->first.rotationZ_ * relativeCompletion);
   
-  currentState_.positionX_ = (float)(previousFrame->first.positionX_ * (1 - relativeCompletion) + nextFrame->first.positionX_ * relativeCompletion);
-  currentState_.positionY_ = (float)(previousFrame->first.positionY_ * (1 - relativeCompletion) + nextFrame->first.positionY_ * relativeCompletion);
-  currentState_.positionZ_ = (float)(previousFrame->first.positionZ_ * (1 - relativeCompletion) + nextFrame->first.positionZ_ * relativeCompletion);
+  currentState_.positionX_ = oldState_.positionX_ + (float)(previousFrame->first.positionX_ * (1 - relativeCompletion) + nextFrame->first.positionX_ * relativeCompletion);
+  currentState_.positionY_ = oldState_.positionY_ + (float)(previousFrame->first.positionY_ * (1 - relativeCompletion) + nextFrame->first.positionY_ * relativeCompletion);
+  currentState_.positionZ_ = oldState_.positionZ_ + (float)(previousFrame->first.positionZ_ * (1 - relativeCompletion) + nextFrame->first.positionZ_ * relativeCompletion);
 }
 
 void Model::ShutdownBuffers()
