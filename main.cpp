@@ -7,23 +7,42 @@
 #include <iostream>
 #include <string>
 #include <windows.h>
+#include <chrono>
+#include <thread>
+
+// LSD-SLAM library stuff
+#include <highgui.h>
+#include <opencv2\opencv.hpp>
+#include <cv.h>
+#include "util/global_funcs.h"
+#include "util/Undistorter.h"
+#include "util/settings.h"
+#include "slam_system.h"
+#include "live_slam_wrapper.h"
+// #include "io_wrapper/OpenCVImageStreamThread.h"
+#include "io_wrapper/IDSuEyeCameraStreamThread.h"
+#include "include/LsdSlam3D.h"
+
 
 using namespace std;
 // ********************************************************************************
-DWORD WINAPI directXHandling(LPVOID lpArg);
-void render(ARiftControl* arift_c);
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+ DWORD WINAPI directXHandling(LPVOID lpArg);
+ void render(ARiftControl* arift_c);
+ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 #define SHOW_FPS false
-const bool FULL_SCREEN = true;
+#define LsdSlam_CAM 2 // using left or right camera for lsd-slam tracking and mapping
+const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 2000.0f;
 const float SCREEN_NEAR = 0.1f;
 GraphicsAPI* dx11 = NULL;
 // ********************************************************************************
 
+char key;
 int main(int, char**)
 {
+	// DirectX Graphics and OculusHMD --------------------------------------------------------------------
 	dx11 = new GraphicsAPI();
   HANDLE handle_render_thread = 0;
   ARiftControl cont;
@@ -31,21 +50,82 @@ int main(int, char**)
   if (AR_HMD_ENABLED)
   {
     cont.init(dx11);
-    std::cout << "init done" << std::endl;
+    std::cout << "[Graphics] DirectX init done" << std::endl;
   }  
 
-	// start the Render Thread
-  handle_render_thread = CreateThread(NULL, 0,
-	  directXHandling, &cont, 0, NULL);
+	//  Activate the Graphics (DirectX11) Thread
+    handle_render_thread = CreateThread(NULL, 0,
+	   directXHandling, &cont, 0, NULL);
   
-  std::cout << "Starting Camera loop" << std::endl;
+  std::cout << "Starting CameraStream" << std::endl;
   cont.start();
-  while(cont.keepRunning())
-  {
-		if (AR_HMD_ENABLED)
+
+	if (LsdSlam_UNDISTORTION) // if shader undistortion is enabled, LsdSlam needs to wait until the first undistorted shader img is ready
+	{
+		while (true)
 		{
+			if (dx11->isUndistortionReady())
+				break;
 		}
 	}
+	else // LsdSlam Thread needs to wait until autoshutter of cameras is finished to get a bright origin image
+	{
+		unsigned int autoShutter_ready = 1000;
+		std::this_thread::sleep_for(std::chrono::milliseconds(autoShutter_ready));
+	}
+
+
+	// Activate LSD-SLAM --------------------------------------------------------------------------------
+	std::cout << "[CV] Init LSD-SLAM Tracking and Mapping" << std::endl;
+  // std::string calib_fn = std::string(LsdSlam_DIR) + "/data/out_camera_data.xml"; // load calibration
+  std::string calib_fn = std::string(LsdSlam_DIR) + "/data/rift_camera_data.xml"; // load calibration
+
+	CvCapture* capture = cvCaptureFromCAM(LsdSlam_CAM); // Capture using any camera connected to your system
+	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, 640);
+	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, 480);
+
+	// lsd_slam::OpenCVImageStreamThread* inputStream = new lsd_slam::OpenCVImageStreamThread();
+	lsd_slam::IDSuEyeCameraStreamThread* inputStream = new lsd_slam::IDSuEyeCameraStreamThread();
+	inputStream->setCalibration(calib_fn);
+	inputStream->setCameraCapture(capture);
+	if (LsdSlam_UNDISTORTION)
+		inputStream->setIDSuEyeCameraStream(dx11->undistortedShaderBuffer_, dx11->undistortedShaderMutex_, true);
+	else
+		inputStream->setIDSuEyeCameraStream(cont.camInput_->lsdslamBuffer_, cont.camInput_->lsdslamMutex_, false);
+	inputStream->run();
+
+	// Init LSD-SLAM with outputstream and inputstream
+	lsd_slam::Output3DWrapper* outputStream = new lsd_slam::LsdSlam3D(inputStream->width(), inputStream->height());
+	lsd_slam::LiveSLAMWrapper slamNode(inputStream, outputStream);
+	dx11->setLsdSlamTrackingAndMapping(outputStream);
+
+	// -- [Show Undistortion | AR Oculus Rift CAM
+	//unsigned char* buffer = new unsigned char[CAMERA_BUFFER_LENGTH];
+	//WaitForSingleObject(inputStream->cameraMutex_, INFINITE);
+	//memcpy(buffer, inputStream->cameraBuffer_, CAMERA_BUFFER_LENGTH);
+	//ReleaseMutex(inputStream->cameraMutex_);
+	//IplImage* frame = cvCreateImageHeader(cvSize(CAMERA_WIDTH, CAMERA_HEIGHT), IPL_DEPTH_8U, 4);
+	//frame->imageData = (char*)buffer;
+	//frame->imageDataOrigin = frame->imageData;
+	//IplImage* resized_frame = inputStream->ResizeFrame(frame, LsdSlam_CAM_WIDTH, LsdSlam_CAM_HEIGHT);
+	//printf("wh(%d, %d)\n", resized_frame->width, resized_frame->height);
+	//cv::Mat mymat = cv::Mat(resized_frame, true);
+	//cv::Mat tracker_display = cv::Mat::ones(640, 480, CV_8UC3);
+	//cv::circle(mymat, cv::Point(100, 100), 20, cv::Scalar(255, 1, 0), 5);
+	//cv::imshow("Camera_Output_Undist", mymat);
+	//std::cout << "Tracking and Mapping Camera in 3D..." << std::endl;
+	//if (buffer != nullptr)
+	//	delete buffer;
+
+	// start LSD-SLAM Thread
+	slamNode.Loop();
+
+	if (inputStream != nullptr)
+		delete inputStream;
+	if (outputStream != nullptr)
+		delete outputStream;
+
+	cvReleaseCapture(&capture); //Release capture.
 
   return 0;
 }

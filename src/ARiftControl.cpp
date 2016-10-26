@@ -8,6 +8,8 @@
 #include <ctime>
 #include <iostream>
 #include <math.h>
+#include <string>
+#include <sstream>
 
 #define GetCurrentDir _getcwd
 
@@ -18,6 +20,9 @@ ARiftControl::ARiftControl()
   // these calibrations needs to be recomputed with ocamcalib
   // currently the vertical distortion is way larger than the horizintal one
   // Write / read from file for this
+
+	// fc = -0.5494
+
   if (HMD_DISTORTION)
   {
     leftCameraParameters_.Nxc = -79.4f;
@@ -59,28 +64,55 @@ ARiftControl::ARiftControl()
     rightCameraParameters_.Nxc = 79.0f;
     rightCameraParameters_.Nyc = 94.0f;
     rightCameraParameters_.z = -250.0f;
+
   }
-  rightCameraParameters_.p9 = 0.0;
-  rightCameraParameters_.p8 = 0.0;
-  rightCameraParameters_.p7 = 0.0;
-  rightCameraParameters_.p6 = 50.2189f;
-  rightCameraParameters_.p5 = 313.8636f;
-  rightCameraParameters_.p4 = 759.1147f;
-  rightCameraParameters_.p3 = 864.7065f;
-  rightCameraParameters_.p2 = 420.4562f;
-  rightCameraParameters_.p1 = 438.6404f;
-  rightCameraParameters_.p0 = 628.5998f;
-  rightCameraParameters_.c = 0.9993f;
-  rightCameraParameters_.d =  0.000046388f;
-  rightCameraParameters_.e = -0.000052631f;
-  rightCameraParameters_.xc = 238.1835f;
-  rightCameraParameters_.yc = 391.6032f;
-  rightCameraParameters_.width = 752.0f;
-  rightCameraParameters_.height = 480.0f;
+  //rightCameraParameters_.p9 = 0.0;
+  //rightCameraParameters_.p8 = 0.0;
+  //rightCameraParameters_.p7 = 0.0;
+  //rightCameraParameters_.p6 = 50.2189f;
+  //rightCameraParameters_.p5 = 313.8636f;
+  //rightCameraParameters_.p4 = 759.1147f;
+  //rightCameraParameters_.p3 = 864.7065f;
+  //rightCameraParameters_.p2 = 420.4562f;
+  //rightCameraParameters_.p1 = 438.6404f;
+  //rightCameraParameters_.p0 = 628.5998f;
+  //rightCameraParameters_.c = 0.9993f;
+  //rightCameraParameters_.d =  0.000046388f;
+  //rightCameraParameters_.e = -0.000052631f;
+  //rightCameraParameters_.xc = 238.1835f;
+  //rightCameraParameters_.yc = 391.6032f;
+  //rightCameraParameters_.width = 752.0f;
+  //rightCameraParameters_.height = 480.0f;
+	// -----------------------------------------------
+	rightCameraParameters_.p9 = 0.0f;
+	rightCameraParameters_.p8 = 0.0f;
+	rightCameraParameters_.p7 = 0.0f;
+	rightCameraParameters_.p6 = 0.0f;
+	rightCameraParameters_.p5 = 2.433748;
+	rightCameraParameters_.p4 = 27.232993f;
+	rightCameraParameters_.p3 = 105.465531f;
+	rightCameraParameters_.p2 = 188.838455f;
+	rightCameraParameters_.p1 = 580.959756f;
+	rightCameraParameters_.p0 = 712.870100f;
+	rightCameraParameters_.c = 1.000052f;
+	rightCameraParameters_.d = 0.000060f;
+	rightCameraParameters_.e = -0.000032f;
+	rightCameraParameters_.xc = 236.646089f;
+	rightCameraParameters_.yc = 394.135741f;
+	rightCameraParameters_.width = 752.0f;
+	rightCameraParameters_.height = 480.0f;
 
   lastKeyTime = std::chrono::system_clock::now();
   programStartTime = lastKeyTime;
   minimumKeyInputDelay = std::chrono::duration<double>(0.1); // seconds
+
+
+  // fine tuning
+  leftCameraParameters_.Nxc -= step_ * 15;
+  rightCameraParameters_.Nxc += step_ * 15;
+
+  leftCameraParameters_.Nyc -= step_ * 2;
+  rightCameraParameters_.Nyc += step_ * 2;
 }
 
 ARiftControl::~ARiftControl()
@@ -229,6 +261,10 @@ void ARiftControl::handleKey(char key)
       }
       break;
     }
+	case 'k':
+	{
+		graphicsAPI_->reInitLsdSlam();
+	}
     case 'r':
     {
       if (inputMode_ == InputMode::DEFAULT)
@@ -296,6 +332,18 @@ void ARiftControl::handleKey(char key)
       }
       break;
     }
+		case 'Z':
+		{
+			leftCameraParameters_.z += step_;
+			rightCameraParameters_.z += step_;
+			break;
+		}
+		case 'z':
+		{
+			leftCameraParameters_.z -= step_;
+			rightCameraParameters_.z -= step_;
+			break;
+		}
     case 'a':
     {
       switch (inputMode_)
@@ -758,6 +806,16 @@ void ARiftControl::handleKey(char key)
       lastKeyTime = std::chrono::system_clock::now();
       break;
     }
+		case 'b':
+		{
+			// ignore long/fast repeating keypress
+			if (lastKey_ == 'b' && timeSinceLastKey < minimumKeyInputDelay)
+				break;
+			handleSave();
+			std::cout << " Saved Camera Distorted Image To File! " << std::endl;
+			lastKeyTime = std::chrono::system_clock::now();
+			break;
+		}
     default:
       break;
   }
@@ -773,8 +831,29 @@ void ARiftControl::hanldeFlip()
 
 void ARiftControl::handleSave()
 {
+	unsigned char* buffer = new unsigned char[CAMERA_BUFFER_LENGTH];
+	WaitForSingleObject(camInput_->lsdslamBuffer_, INFINITE);
+	memcpy(buffer, camInput_->lsdslamBuffer_, CAMERA_BUFFER_LENGTH);
+	ReleaseMutex(camInput_->lsdslamBuffer_);
+
+	IplImage* frame = cvCreateImageHeader(cvSize(CAMERA_WIDTH, CAMERA_HEIGHT), IPL_DEPTH_8U, CAMERA_CHANNELS);
+	frame->imageData = (char*)buffer;
+	cvSetData(frame, buffer, frame->widthStep);
+	cv::Mat mymat = cv::Mat(frame, true);
+
+	// save image from lsdBuffer to File
+	ostringstream ostream;
+	ostream << "CameraDistortion" << writeCounter_  << ".bmp";
+	imwrite(ostream.str(), mymat);
+	writeCounter_++;
+
+	if (buffer)
+		delete(buffer);
 }
 
 void ARiftControl::handleCameraAutoFeatures()
 {
 }
+
+
+

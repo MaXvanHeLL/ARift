@@ -67,6 +67,15 @@ void Camera::Render()
 
 	// Setup the vector that points upwards.
 	XMVECTOR up = XMVectorSet(0.0, 1.0, 0.0, 1.0);
+
+	//float oculusMotionX, oculusMotionY, oculusMotionZ;
+	//OculusHMD::instance()->trackMotion(oculusMotionY, oculusMotionX, oculusMotionZ);
+	//float move_direction = -(oculusMotionY)* 0.0174532925f;
+
+	//cameraPositionX_ -= sinf(move_direction) * step_;
+	//cameraPositionY_ -= cosf(move_direction) * step_;
+
+
 	// Setup the position of the camera in the world.
   XMVECTOR position = XMVectorSet(currentPose_.positionX_, currentPose_.positionY_, currentPose_.positionZ_, 1.0f);
 	// Setup where the camera is looking by default.

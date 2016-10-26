@@ -17,10 +17,14 @@
 #include "../include/EyeWindow.h"
 #include "../include/RenderTexture.h"
 #include "../include/OculusHMD.h"
-#include "../include/Lightning.h"
+#include "../include/Lighting.h"
+#include "../include/LsdSlam3D.h"
+
 
 #define AR_HMD_ENABLED 1
 #define HMD_DISTORTION 1
+#define OpenLabNight_DEMO 0
+
 class BitMap;
 class ARiftControl;
 class Texture;
@@ -29,6 +33,9 @@ class Texture;
 class GraphicsAPI
 {
 private:
+	lsd_slam::LsdSlam3D::RiftPosition3D lsdslam_reference_;
+	bool lsdslam_init_ = true;
+	lsd_slam::Output3DWrapper* lsdslam3D_;
 	ARiftControl* ariftcontrol_;
 	ID3D11Device* device_;
 	ID3D11DeviceContext* devicecontext_;
@@ -43,6 +50,7 @@ private:
 	float screenNear_;
 	float fieldOfView_;
 	float screenAspect_;
+	bool undistortionReady_ = false;
 
 	Camera* camera3D_;
   Camera* camera2D_;
@@ -57,14 +65,26 @@ private:
 
 	BitMap* bitmap_;
 	Shader* shader_;
-	Lightning* illumination_;
+	Lighting* illumination_;
 
 	ID3D11DepthStencilState* depthDisabledStencilState_;
 
 	// used for Eye Rendering
+	void OculusMotion();
 	bool RenderToTexture(RenderTexture*,int);
 	bool RenderScene(int cam_id);
 	bool RenderEyeWindow(EyeWindow*, RenderTexture*);
+
+	// Lsd-Slam
+	void UndistortionForLsdSlam(int camID);
+	void updateLsdSlam3DPosition();
+	bool acquireLsdSlam3DPositionMutex();
+	lsd_slam::LsdSlam3D::RiftPosition3D* getLsdSlam3DPosition();
+	bool releaseLsdSlam3DPositionMutex();
+	void updateLsdSlam3DRotation();
+	bool acquireLsdSlam3DRotationMutex();
+	XMFLOAT3X3 getLsdSlam3DRotation();
+	bool releaseLsdSlam3DRotationMutex();
          
 public:
   HANDLE modelsMutex_;
@@ -80,6 +100,8 @@ public:
 
 	void BeginScene(float, float, float, float);
 	void EndScene();
+
+	void reInitLsdSlam();
 
   int SetNextModelActive();
   int SetPreviousModelActive();
@@ -102,6 +124,10 @@ public:
 	void GetOrthoMatrix(DirectX::XMFLOAT4X4&);
 	void GetVideoCardInfo(char*, int&);
 	void StereoProjectionTransformation(int camID);
+	bool isUndistortionReady();
+
+	// Lsd-Slam 
+	void setLsdSlamTrackingAndMapping(lsd_slam::Output3DWrapper* lsdslam3D);
 
 	// Windows stuff
 	HINSTANCE hinstance_;
@@ -121,10 +147,14 @@ public:
 	ID3D11RasterizerState* rasterstate_;
 
 	// used for Eye Rendering
+	HANDLE undistortedShaderMutex_;
+	unsigned char* undistortedShaderBuffer_;
+	// ID3D11Texture2D* lsdslamUndistortImage_;
 	RenderTexture* renderTextureLeft_;
 	EyeWindow* eyeWindowLeft_;
 	RenderTexture* renderTextureRight_;
 	EyeWindow* eyeWindowRight_;
+
 };
 
 #endif // GraphicsAPI_H

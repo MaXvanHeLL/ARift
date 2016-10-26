@@ -1,5 +1,7 @@
 #pragma once
 #include "Camera.h"
+#include "LsdSlam3D.h"
+
 class HeadCamera :
   public Camera
 {
@@ -10,5 +12,8 @@ public:
   void RenderEye(bool isLeftEye);
 
   Camera::Pose3D headToEyeOffset_;
+
+	XMFLOAT3X3 LsdSlamRotationMatrix_;
+
 };
 

@@ -9,6 +9,7 @@
 #include <chrono>
 #include <ctime>
 #include <iostream>
+#include <opencv2/highgui/highgui.hpp>
 
 #define CAM1 1
 #define CAM2 2
@@ -16,7 +17,6 @@
 #define RIFT_RESOLUTION_HEIGHT 800
 //#define RIFT_RESOLUTION_WIDTH (1122 * 2)
 //#define RIFT_RESOLUTION_HEIGHT 1553
-
 
 class ARiftControl
 {
@@ -51,8 +51,9 @@ class ARiftControl
     float worldOffsetY_ = 4.6f;
     float worldOffsetZ_ = 9.2f;
 
-    float headToEyeOffsetX_ = 0.032f;
-    float headToEyeOffsetY_ = -0.28f;
+    // float headToEyeOffsetX_ = 0.032f;
+	float headToEyeOffsetX_ = 0.032f -( 0.2 * 0.01 * 12);
+	float headToEyeOffsetY_ = -0.28f;
     float headToEyeOffsetZ_ = 0.936f;
     float interPupillaryOffset_ = 0.064f;
     

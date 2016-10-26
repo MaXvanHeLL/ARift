@@ -14,33 +14,35 @@ enum FlipStatus { NOFLIP = -2, BOTH = -1, VERTICAL = 0, HORIZONTAL = 1 };
 
 class IDSuEyeInputHandler
 {
-  public:
-    // Methods
-    IDSuEyeInputHandler();
-    virtual ~IDSuEyeInputHandler();
+public:
+	// Methods
+	IDSuEyeInputHandler();
+	virtual ~IDSuEyeInputHandler();
 
-    bool openCams(int left_cam, int right_cam);
-    bool grabFrames();
-    bool grabFrame(int cam);
-    void retrieveFrame(int cam);
-		void readFrame(int cam);
-    bool switchAutoSensorShutter(int cam);
-    bool switchAutoSensorGain(int cam);
-    void changeAutoSensorSpeeds(double step);
-    double getFrameRate(int cam);
+	bool openCams(int left_cam, int right_cam);
+	bool grabFrames();
+	bool grabFrame(int cam);
+	void retrieveFrame(int cam);
+	void readFrame(int cam);
+	bool switchAutoSensorShutter(int cam);
+	bool switchAutoSensorGain(int cam);
+	void changeAutoSensorSpeeds(double step);
+	double getFrameRate(int cam);
 
-    // Members
-    unsigned char* cameraBufferLeft_;
-    unsigned char* cameraBufferRight_;
+	// Members
+	unsigned char* cameraBufferLeft_;
+	unsigned char* cameraBufferRight_;
+	unsigned char* lsdslamBuffer_;
     HANDLE cameraMutexLeft_;
     HANDLE cameraMutexRight_;
+		HANDLE lsdslamMutex_;
     FlipStatus flip_status_cam_[2];
   protected:
   private:
     // Methods
     void initMemory();
     bool addMemoryToCam(int cam);
-    void printMem(int cam);
+		void printMem(int cam);
     // Members
     bool auto_sensor_shutter_[2];
 		bool cameraCaptureing_;

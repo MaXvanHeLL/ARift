@@ -14,9 +14,12 @@ IDSuEyeInputHandler::IDSuEyeInputHandler()
 	cameraCaptureing_ = false;
   cameraBufferLeft_ = new unsigned char[CAMERA_BUFFER_LENGTH];
   cameraBufferRight_ = new unsigned char[CAMERA_BUFFER_LENGTH];
+	lsdslamBuffer_ = new unsigned char[CAMERA_BUFFER_LENGTH];
   cameraMutexLeft_ = CreateMutex(NULL, FALSE, L"Camera Left Mutex");
   cameraMutexRight_ = CreateMutex(NULL, FALSE, L"Camera Right Mutex");
-  if (cameraMutexLeft_ == NULL || cameraMutexRight_ == NULL)
+	lsdslamMutex_ = CreateMutex(NULL, FALSE, L"Lsd-Slam Buffer Mutex");
+
+  if (cameraMutexLeft_ == NULL || cameraMutexRight_ == NULL || lsdslamMutex_ == NULL)
   {
     std::cout << "Create Mutex error!" << std::endl;
   }
@@ -168,6 +171,11 @@ bool IDSuEyeInputHandler::grabFrame(int cam)
       buffer += byte_per_pixel;
       driver_buffer -= byte_per_pixel;
     }
+		// [LsdSlam]
+		WaitForSingleObject(lsdslamMutex_, INFINITE);
+		memcpy(lsdslamBuffer_, cameraBufferRight_, CAMERA_BUFFER_LENGTH);
+		ReleaseMutex(lsdslamMutex_);
+
     ReleaseMutex(cameraMutexRight_);
   }
   delete[] driver_data;

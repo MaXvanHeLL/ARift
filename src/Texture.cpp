@@ -26,7 +26,7 @@ bool Texture::Initialize(ID3D11Device* device, WCHAR* filename)
 	result = CreateDDSTextureFromFile(device, filename, nullptr, &shaderResource_);
 	if (FAILED(result))
 	{
-    std::cout << "Could no create texture " << filename << " Error: " << result << std::endl;
+		std::wcout << "Could no create texture " << filename << " Error: " << result << std::endl;
 		return false;
 	}
 
@@ -92,6 +92,7 @@ bool Texture::InitCameraStream(ID3D11Device* device, IDSuEyeInputHandler* cam_in
 
 bool Texture::Update(ID3D11DeviceContext* devicecontext, IDSuEyeInputHandler* cam_input, int cam_id)
 {
+
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
   unsigned char* cameraBuffer = NULL;
   if (cam_id == 1)
