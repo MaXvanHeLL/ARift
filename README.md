@@ -1,4 +1,4 @@
-# ARift
+# ARift with LSD-SLAM integration
 developing augmented reality version of the Oculus rift
 
 ## Usage
